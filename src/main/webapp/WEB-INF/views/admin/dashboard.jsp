@@ -140,6 +140,7 @@
             <a class="${pageContext.request.servletPath == '/admin/dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dashboard"><i class="fas fa-tachometer-alt me-2"></i> Bảng điều khiển</a>
             <a class="${pageContext.request.servletPath == '/admin/tai-khoan' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/tai-khoan"><i class="fas fa-user-cog me-2"></i> Quản lý tài khoản</a>
             <a class="${pageContext.request.servletPath == '/admin/phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/phong"><i class="fas fa-bed me-2"></i> Quản lý phòng</a>
+            <a class="${pageContext.request.servletPath == '/admin/loai-phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/loai-phong"><i class="fas fa-layer-group me-2"></i> Quản lý loại phòng</a>
             <a class="${pageContext.request.servletPath == '/admin/dich-vu' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dich-vu"><i class="fas fa-hammer me-2"></i> Quản lý dịch vụ</a>
             <a class="${pageContext.request.servletPath == '/admin/dat-phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dat-phong"><i class="fas fa-clipboard-list me-2"></i> Quản lý đặt phòng / đơn</a>
             <a class="${pageContext.request.servletPath == '/admin/doanh-thu' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/doanh-thu"><i class="fas fa-file-invoice-dollar me-2"></i> Doanh thu</a>

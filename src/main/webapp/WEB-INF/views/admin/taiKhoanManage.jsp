@@ -155,6 +155,9 @@
             <a href="${pageContext.request.contextPath}/admin/phong">
                 <i class="fas fa-bed me-2"></i> Quản lý phòng
             </a>
+            <a href="${pageContext.request.contextPath}/admin/loai-phong">
+                <i class="fas fa-layer-group me-2"></i> Quản lý loại phòng
+            </a>
             <a href="${pageContext.request.contextPath}/admin/dich-vu">
                 <i class="fas fa-concierge-bell me-2"></i> Quản lý dịch vụ
             </a>

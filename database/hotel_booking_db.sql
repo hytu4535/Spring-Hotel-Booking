@@ -34,7 +34,7 @@ CREATE TABLE `chi_tiet_dat_phong` (
   KEY `ma_phong` (`ma_phong`),
   CONSTRAINT `chi_tiet_dat_phong_ibfk_1` FOREIGN KEY (`ma_dp`) REFERENCES `dat_phong` (`ma_dp`) ON DELETE CASCADE,
   CONSTRAINT `chi_tiet_dat_phong_ibfk_2` FOREIGN KEY (`ma_phong`) REFERENCES `phong` (`ma_phong`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,7 @@ CREATE TABLE `chi_tiet_dat_phong` (
 
 LOCK TABLES `chi_tiet_dat_phong` WRITE;
 /*!40000 ALTER TABLE `chi_tiet_dat_phong` DISABLE KEYS */;
-INSERT INTO `chi_tiet_dat_phong` VALUES (1,1,5,800000.00,2,1600000.00),(2,2,6,500000.00,3,1500000.00);
+INSERT INTO `chi_tiet_dat_phong` VALUES (1,1,5,800000.00,2,1600000.00),(2,2,6,500000.00,3,1500000.00),(3,3,1,500000.00,21,10500000.00),(4,3,2,500000.00,21,10500000.00),(5,4,4,800000.00,11,8800000.00),(6,5,3,500000.00,3,1500000.00),(7,5,4,800000.00,3,2400000.00),(8,6,5,800000.00,1,800000.00);
 /*!40000 ALTER TABLE `chi_tiet_dat_phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -113,7 +113,7 @@ CREATE TABLE `dat_phong` (
   CONSTRAINT `dat_phong_ibfk_1` FOREIGN KEY (`ma_kh`) REFERENCES `khach_hang` (`ma_kh`),
   CONSTRAINT `dat_phong_ibfk_2` FOREIGN KEY (`ma_nv_xu_ly`) REFERENCES `tai_khoan` (`ma_tk`),
   CONSTRAINT `dat_phong_chk_1` CHECK ((`ngay_tra_phong` > `ngay_nhan_phong`))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -122,7 +122,7 @@ CREATE TABLE `dat_phong` (
 
 LOCK TABLES `dat_phong` WRITE;
 /*!40000 ALTER TABLE `dat_phong` DISABLE KEYS */;
-INSERT INTO `dat_phong` VALUES (1,'HTL2610A7X2',1,2,'2026-09-18 11:22:29','2026-10-01','2026-10-03','DA_XAC_NHAN',1600000.00,300000.00,1900000.00,NULL),(2,'HTL2609B3K9',2,2,'2026-09-18 11:22:29','2026-09-15','2026-09-18','DA_NHAN_PHONG',1500000.00,0.00,1500000.00,NULL);
+INSERT INTO `dat_phong` VALUES (1,'HTL2610A7X2',1,2,'2026-09-18 11:22:29','2026-10-01','2026-10-03','DA_XAC_NHAN',1600000.00,300000.00,1900000.00,NULL),(2,'HTL2609B3K9',2,2,'2026-09-18 11:22:29','2026-09-15','2026-09-18','DA_NHAN_PHONG',1500000.00,0.00,1500000.00,NULL),(3,'HTL8D3EU9X0',3,1,'2026-10-16 13:31:33','2026-10-01','2026-10-22','DA_TRA_PHONG',21000000.00,0.00,0.00,NULL),(4,'HTLTMLSTVMY',4,NULL,'2026-10-16 13:34:28','2026-10-10','2026-10-21','DA_HUY',8800000.00,0.00,0.00,NULL),(5,'HTLUFGWVNTE',4,NULL,'2026-10-16 13:35:48','2026-10-03','2026-10-06','CHO_XAC_NHAN',3900000.00,0.00,0.00,NULL),(6,'HTLWT0J7EGP',5,NULL,'2026-10-17 01:20:21','2026-10-03','2026-10-04','DA_HUY',800000.00,0.00,0.00,NULL);
 /*!40000 ALTER TABLE `dat_phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -174,7 +174,7 @@ CREATE TABLE `khach_hang` (
   KEY `idx_kh_email` (`email`),
   KEY `fk_kh_tk` (`ma_tk`),
   CONSTRAINT `fk_kh_tk` FOREIGN KEY (`ma_tk`) REFERENCES `tai_khoan` (`ma_tk`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -183,7 +183,7 @@ CREATE TABLE `khach_hang` (
 
 LOCK TABLES `khach_hang` WRITE;
 /*!40000 ALTER TABLE `khach_hang` DISABLE KEYS */;
-INSERT INTO `khach_hang` VALUES (1,NULL,'Tran Van Nam','nam@gmail.com','0912345678','079201001234','Quan 1, TP.HCM','2026-09-18 11:22:29'),(2,NULL,'Le Thi Hoa','hoa@gmail.com','0987654321','079201005678','Quan 7, TP.HCM','2026-09-18 11:22:29');
+INSERT INTO `khach_hang` VALUES (1,NULL,'Tran Van Nam','nam@gmail.com','0912345678','079201001234','Quan 1, TP.HCM','2026-09-18 11:22:29'),(2,NULL,'Le Thi Hoa','hoa@gmail.com','0987654321','079201005678','Quan 7, TP.HCM','2026-09-18 11:22:29'),(3,NULL,'aaa','aaaa@gmail.com','2132','','','2026-10-16 13:31:33'),(4,NULL,'aa','nguyenanhtu4537@gmail.com','a','','','2026-10-16 13:34:28'),(5,NULL,'ss','ss@g','s','q23','','2026-10-17 01:20:21');
 /*!40000 ALTER TABLE `khach_hang` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +203,7 @@ CREATE TABLE `loai_phong` (
   `dien_tich` decimal(6,2) DEFAULT NULL,
   `hinh_anh` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`ma_loai`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -212,7 +212,7 @@ CREATE TABLE `loai_phong` (
 
 LOCK TABLES `loai_phong` WRITE;
 /*!40000 ALTER TABLE `loai_phong` DISABLE KEYS */;
-INSERT INTO `loai_phong` VALUES (1,'Standard','Phong tieu chuan, 1 giuong doi, may lanh, TV',500000.00,2,20.00,'standard.jpg'),(2,'Deluxe','Phong cao cap, view thanh pho, minibar',800000.00,2,28.00,'deluxe.jpg'),(3,'Suite','Phong hang sang, co phong khach rieng',1500000.00,4,45.00,'suite.jpg');
+INSERT INTO `loai_phong` VALUES (1,'Standard','Phong tieu chuan, 1 giuong doi, may lanh, TV',500000.00,2,20.00,'standard.jpg'),(2,'Deluxe','Phong cao cap, view thanh pho, minibar',800000.00,2,28.00,'deluxe.jpg'),(3,'Suite','Phong hang sang, co phong khach rieng',1500000.00,4,45.00,'suite.jpg'),(4,'zzzz','rr',5656.00,6565,75.00,'aaa');
 /*!40000 ALTER TABLE `loai_phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -281,7 +281,7 @@ CREATE TABLE `tai_khoan` (
 
 LOCK TABLES `tai_khoan` WRITE;
 /*!40000 ALTER TABLE `tai_khoan` DISABLE KEYS */;
-INSERT INTO `tai_khoan` VALUES (1,'admin','$2a$12$hsjCmFsH/Sbw7LLjvXL5SeD/2PkpSJUqYtrHyOp4R9U7m9EZj.2RW','Nguyen Tuong Huy','z@gmail.com','0786026878',NULL,'ADMIN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(2,'nv_lan','$2a$12$5ZGI0jXY.hMaSKNjx9.N7OSWZ.ffJ3XHVsUX9yHcfjBDINHhPUTZW','Nguyen Thi Lanrr','lan@hotel.com','0900000002',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(3,'nv_tuan','123456','Pham Anh Tuan','tuan@hotel.com','0900000003',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(4,'d','$2a$12$b8J/P6hxbiKqLA.DlR1qY.h9EHHqPgKPxcShx4oNc/JnSnRUcYTO6','d','d@gmail.com','',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-10-04 06:19:21',0);
+INSERT INTO `tai_khoan` VALUES (1,'admin','$2a$12$hsjCmFsH/Sbw7LLjvXL5SeD/2PkpSJUqYtrHyOp4R9U7m9EZj.2RW','Nguyen Tuong Huyaa','hytu4535@gmail.com','0786026878',NULL,'ADMIN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(2,'nv_lan','$2a$12$5ZGI0jXY.hMaSKNjx9.N7OSWZ.ffJ3XHVsUX9yHcfjBDINHhPUTZW','Nguyen Thi Lanrr','lan@hotel.com','0900000002',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(3,'nv_tuan','123456','Pham Anh Tuan','tuan@hotel.com','0900000003',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-09-18 11:22:29',1),(4,'d','$2a$12$b8J/P6hxbiKqLA.DlR1qY.h9EHHqPgKPxcShx4oNc/JnSnRUcYTO6','d','d@gmail.com','',NULL,'NHANVIEN','LOCAL',NULL,0,'2026-10-04 06:19:21',0);
 /*!40000 ALTER TABLE `tai_khoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -329,4 +329,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-16 18:40:29
+-- Dump completed on 2026-10-19  0:07:55

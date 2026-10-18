@@ -1,9 +1,12 @@
 spring:
+  config:
+    import: optional:classpath:db.properties
   datasource:
-    url: jdbc:mysql://localhost:3306/hotel_booking_db?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
-    username: root
-    password: YOUR_PASSWORD
+    url: ${DB_URL:${db.url}}
+    username: ${DB_USERNAME:${db.username}}
+    password: ${DB_PASSWORD:${db.password}}
   jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update          # dev: update | prod: validate
     show-sql: true

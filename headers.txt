@@ -1,0 +1,6 @@
+HTTP/1.1 200 
+Set-Cookie: JSESSIONID=23657B8FC60E77F9099E0CD18A126E82; Path=/; HttpOnly
+Content-Type: text/html;charset=UTF-8
+Content-Length: 2110
+Date: Sun, 18 Oct 2026 16:58:37 GMT
+
