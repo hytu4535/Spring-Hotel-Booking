@@ -9,6 +9,7 @@
     <title>Quản lý loại phòng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
     <style>
         :root {
             --primary: #0d6efd;
@@ -56,24 +57,9 @@
     </style>
 </head>
 <body class="bg-light">
-<div class="sidebar">
-    <div class="header">
-        <h3><i class="fas fa-hotel"></i> HotelBooking</h3>
-        <p class="mb-0 small">${sessionScope.currentUser.hoTen} - Quản trị</p>
-    </div>
-    <div class="sidebar-menu">
-        <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
-        <a href="${pageContext.request.contextPath}/admin/tai-khoan"><i class="fas fa-user-cog me-2"></i>Quản lý tài khoản</a>
-        <a class="active" href="${pageContext.request.contextPath}/admin/loai-phong"><i class="fas fa-layer-group me-2"></i>Quản lý loại phòng</a>
-        <a href="${pageContext.request.contextPath}/admin/phong"><i class="fas fa-bed me-2"></i>Quản lý phòng</a>
-        <a href="${pageContext.request.contextPath}/admin/dich-vu"><i class="fas fa-concierge-bell me-2"></i>Quản lý dịch vụ</a>
-    </div>
-    <div class="sidebar-footer">
-        <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger btn-sm w-100">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-        </a>
-    </div>
-</div>
+<jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
+    <jsp:param name="active" value="loaiphong" />
+</jsp:include>
 
 <div class="main-content">
     <div class="d-flex justify-content-between align-items-center mb-4">

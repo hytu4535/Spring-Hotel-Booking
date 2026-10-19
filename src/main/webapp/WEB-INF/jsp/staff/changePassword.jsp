@@ -10,6 +10,8 @@
     <title>Đổi mật khẩu - Hotel Booking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-sidebar.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #0d6efd;
@@ -105,44 +107,22 @@
             background-color: #5c636a;
         }
     </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="position-sticky pt-4">
-        <div class="header">
-            <h3><i class="bi bi-hospital"></i> HotelBooking</h3>
-            <p>${sessionScope.currentUser.hoTen} - ${sessionScope.currentUser.vaiTro == 'ADMIN' ? 'Quản trị' : 'Nhân viên'}</p>
-        </div>
-
-        <!-- Admin menus (only for ADMIN) -->
-        <c:if test="${sessionScope.currentUser.vaiTro == 'ADMIN'}">
-            <a class="${pageContext.request.servletPath == '/admin/dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dashboard"><i class="bi bi-speedometer2"></i> Bảng điều khiển</a>
-            <a class="${pageContext.request.servletPath == '/admin/tai-khoan' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/tai-khoan"><i class="bi bi-person-gear"></i> Quản lý tài khoản</a>
-            <a class="${pageContext.request.servletPath == '/admin/phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/phong"><i class="bi bi-building"></i> Quản lý phòng</a>
-            <a class="${pageContext.request.servletPath == '/admin/dich-vu' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dich-vu"><i class="bi bi-gear"></i> Quản lý dịch vụ</a>
-            <a class="${pageContext.request.servletPath == '/admin/dat-phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/dat-phong"><i class="bi bi-calendar-check"></i> Quản lý đặt phòng / đơn</a>
-            <a class="${pageContext.request.servletPath == '/admin/doanh-thu' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/doanh-thu"><i class="bi bi-cash-stack"></i> Doanh thu</a>
-            <a class="${pageContext.request.servletPath == '/admin/thong-ke' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/thong-ke"><i class="bi bi-bar-chart"></i> Thống kê</a>
-        </c:if>
-
-        <!-- Staff menus (for both ADMIN and NHANVIEN) -->
-        <c:if test="${sessionScope.currentUser.vaiTro == 'ADMIN' || sessionScope.currentUser.vaiTro == 'NHANVIEN'}">
-            <a class="${pageContext.request.servletPath == '/staff/nhan-tra-phong' ? 'active' : ''}" href="${pageContext.request.contextPath}/staff/nhan-tra-phong"><i class="bi bi-box-arrow-in-left"></i> Nhận / Trả phòng</a>
-            <a class="${pageContext.request.servletPath == '/staff/dich-vu-thanh-toan' ? 'active' : ''}" href="${pageContext.request.contextPath}/staff/dich-vu-thanh-toan"><i class="bi bi-cash-coin"></i> Dịch vụ & Thanh toán</a>
-            <a class="${pageContext.request.servletPath == '/profile' ? 'active' : ''}" href="${pageContext.request.contextPath}/profile"><i class="bi bi-person"></i> Hồ sơ cá nhân</a>
-            <a class="${pageContext.request.servletPath == '/doi-mat-khau' ? 'active' : ''}" href="${pageContext.request.contextPath}/doi-mat-khau"><i class="bi bi-key"></i> Đổi mật khẩu</a>
-        </c:if>
-
-        <hr class="dropdown-divider bg-light">
-        <div class="mb-4 mt-auto p-4">
-            <a class="btn btn-danger btn-block" href="${pageContext.request.contextPath}/logout">
-                <i class="bi bi-box-arrow-left"></i> Đăng xuất
-            </a>
-        </div>
-    </div>
-</div>
+<c:choose>
+    <c:when test="${isAdminView}">
+        <jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
+            <jsp:param name="active" value="password"/>
+        </jsp:include>
+    </c:when>
+    <c:otherwise>
+        <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
+            <jsp:param name="active" value="password"/>
+        </jsp:include>
+    </c:otherwise>
+</c:choose>
 
 <!-- Main content -->
 <div class="main-content">
@@ -172,7 +152,7 @@
 
     <div class="change-password-form">
         <h3>Đổi mật khẩu</h3>
-        <form method="POST" action="${pageContext.request.contextPath}/staff/doi-mat-khau">
+        <form method="POST" action="${pageContext.request.contextPath}${passwordBasePath}">
             <div class="mb-3">
                 <label class="form-label">Mật khẩu cũ</label>
                 <input type="password" class="form-control ${not empty errorMessages && errorMessages.containsKey('matKhauCu') ? 'is-invalid' : ''}" name="matKhauCu" value="${not empty param.matKhauCu ? param.matKhauCu : ''}" required>

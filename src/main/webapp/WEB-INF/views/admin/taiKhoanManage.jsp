@@ -11,6 +11,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
 
     <style>
         :root {
@@ -134,68 +135,9 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-    <div class="header">
-        <h3><i class="fas fa-hotel"></i> HotelBooking</h3>
-        <p class="mb-0 small">
-            ${sessionScope.currentUser.hoTen} -
-            ${sessionScope.currentUser.vaiTro == 'ADMIN' ? 'Quản trị' : 'Nhân viên'}
-        </p>
-    </div>
-
-    <div class="sidebar-menu">
-        <c:if test="${sessionScope.currentUser.vaiTro == 'ADMIN'}">
-            <a href="${pageContext.request.contextPath}/admin/dashboard">
-                <i class="fas fa-tachometer-alt me-2"></i> Bảng điều khiển
-            </a>
-            <a class="active" href="${pageContext.request.contextPath}/admin/tai-khoan">
-                <i class="fas fa-user-cog me-2"></i> Quản lý tài khoản
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/phong">
-                <i class="fas fa-bed me-2"></i> Quản lý phòng
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/loai-phong">
-                <i class="fas fa-layer-group me-2"></i> Quản lý loại phòng
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/dich-vu">
-                <i class="fas fa-concierge-bell me-2"></i> Quản lý dịch vụ
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/dat-phong">
-                <i class="fas fa-clipboard-list me-2"></i> Quản lý đặt phòng
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/doanh-thu">
-                <i class="fas fa-file-invoice-dollar me-2"></i> Doanh thu
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/thong-ke">
-                <i class="fas fa-chart-bar me-2"></i> Thống kê
-            </a>
-            <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 15px;">
-        </c:if>
-
-        <a href="${pageContext.request.contextPath}/staff/quan-ly-don">
-            <i class="fas fa-list me-2"></i> Quản lý đơn
-        </a>
-        <a href="${pageContext.request.contextPath}/staff/nhan-tra-phong">
-            <i class="fas fa-key me-2"></i> Nhận / Trả phòng
-        </a>
-        <a href="${pageContext.request.contextPath}/staff/dich-vu-thanh-toan">
-            <i class="fas fa-coins me-2"></i> Dịch vụ & Thanh toán
-        </a>
-        <a href="${pageContext.request.contextPath}/profile">
-            <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
-        </a>
-        <a href="${pageContext.request.contextPath}/doi-mat-khau">
-            <i class="fas fa-key me-2"></i> Đổi mật khẩu
-        </a>
-    </div>
-
-    <div class="sidebar-footer">
-        <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger btn-sm w-100">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-        </a>
-    </div>
-</div>
+<jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
+    <jsp:param name="active" value="taikhoan" />
+</jsp:include>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">

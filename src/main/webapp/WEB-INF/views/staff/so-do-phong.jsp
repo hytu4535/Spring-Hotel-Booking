@@ -8,6 +8,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-sidebar.css">
+    <style>
+        .admin-operation-page .admin-wrapper {
+            display: block !important;
+            position: relative;
+        }
+
+        .admin-operation-page .main-content {
+            box-sizing: border-box;
+            margin-left: 280px !important;
+            width: calc(100% - 280px) !important;
+        }
+
+        @media (max-width: 768px) {
+            .admin-operation-page .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
     <style>
         .room-box {
             border-radius: 8px;
@@ -27,11 +48,20 @@
         .guest-name { font-weight: bold; margin-top: 10px; font-size: 0.9rem; }
     </style>
 </head>
-<body>
+<body class="admin-operation-page">
 <div class="admin-wrapper">
-    <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
-        <jsp:param name="active" value="sodo"/>
-    </jsp:include>
+    <c:choose>
+        <c:when test="${isAdminView}">
+            <jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
+                <jsp:param name="active" value="nhantraphong"/>
+            </jsp:include>
+        </c:when>
+        <c:otherwise>
+            <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
+                <jsp:param name="active" value="frontdesk"/>
+            </jsp:include>
+        </c:otherwise>
+    </c:choose>
 
     <div class="main-content">
         <div class="top-navbar">
@@ -70,7 +100,7 @@
                         <!-- Nút thao tác -->
                         <div class="mt-3 text-center">
                             <c:if test="${p.trangThai == 'DA_DAT' && not empty p.maDpHienTai}">
-                                <form action="${pageContext.request.contextPath}/staff/nhan-tra-phong" method="post">
+                                <form action="${pageContext.request.contextPath}${roomBasePath}" method="post">
                                     <input type="hidden" name="action" value="check_in">
                                     <input type="hidden" name="maDp" value="${p.maDpHienTai}">
                                     <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold">Nhận phòng</button>
@@ -78,7 +108,7 @@
                             </c:if>
                             
                             <c:if test="${p.trangThai == 'DANG_O' && not empty p.maDpHienTai}">
-                                <form action="${pageContext.request.contextPath}/staff/nhan-tra-phong" method="post">
+                                <form action="${pageContext.request.contextPath}${roomBasePath}" method="post">
                                     <input type="hidden" name="action" value="check_out">
                                     <input type="hidden" name="maDp" value="${p.maDpHienTai}">
                                     <!-- Sau này nút này có thể sửa thành link chuyển qua trang Thanh Toán -->

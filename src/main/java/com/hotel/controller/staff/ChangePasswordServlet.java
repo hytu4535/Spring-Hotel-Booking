@@ -17,7 +17,7 @@ import java.util.Map;
  * Servlet để đổi mật khẩu
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet("/staff/doi-mat-khau")
+@WebServlet({"/staff/doi-mat-khau", "/admin/doi-mat-khau"})
 public class ChangePasswordServlet extends HttpServlet {
 
     private final TaiKhoanService taiKhoanService = new TaiKhoanService();
@@ -34,6 +34,7 @@ public class ChangePasswordServlet extends HttpServlet {
             return;
         }
 
+        setViewPaths(request);
         request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
     }
 
@@ -97,6 +98,7 @@ public class ChangePasswordServlet extends HttpServlet {
             request.setAttribute("matKhauCu", matKhauCu);
             request.setAttribute("matKhauMoi", matKhauMoi);
             request.setAttribute("xacNhanMatKhauMoi", xacNhanMatKhauMoi);
+            setViewPaths(request);
             request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
             return;
         }
@@ -116,6 +118,13 @@ public class ChangePasswordServlet extends HttpServlet {
         }
 
         // Hiển thị lại form đổi mật khẩu
+        setViewPaths(request);
         request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
+    }
+
+    private void setViewPaths(HttpServletRequest request) {
+        boolean admin = request.getServletPath().startsWith("/admin/");
+        request.setAttribute("isAdminView", admin);
+        request.setAttribute("passwordBasePath", admin ? "/admin/doi-mat-khau" : "/staff/doi-mat-khau");
     }
 }

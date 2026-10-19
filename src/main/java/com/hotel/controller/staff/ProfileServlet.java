@@ -16,7 +16,7 @@ import java.util.Map;
  * Servlet để hiển thị và cập nhật hồ sơ cá nhân
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet("/staff/profile")
+@WebServlet({"/staff/profile", "/admin/profile"})
 public class ProfileServlet extends HttpServlet {
 
     private final TaiKhoanService taiKhoanService = new TaiKhoanService();
@@ -43,6 +43,7 @@ public class ProfileServlet extends HttpServlet {
         request.setAttribute("user", user);
         // Also set currentUser for JSP access
         request.setAttribute("currentUser", currentUser);
+        setViewPaths(request);
         request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
     }
 
@@ -95,6 +96,7 @@ public class ProfileServlet extends HttpServlet {
             // Lấy lại thông tin người dùng để hiển thị form
             TaiKhoan user = taiKhoanService.findById(currentUser.getMaTk());
             request.setAttribute("user", user);
+            setViewPaths(request);
             request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
             return;
         }
@@ -117,6 +119,13 @@ public class ProfileServlet extends HttpServlet {
         // Lấy lại thông tin để hiển thị
         TaiKhoan user = taiKhoanService.findById(currentUser.getMaTk());
         request.setAttribute("user", user);
+        setViewPaths(request);
         request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
+    }
+
+    private void setViewPaths(HttpServletRequest request) {
+        boolean admin = request.getServletPath().startsWith("/admin/");
+        request.setAttribute("isAdminView", admin);
+        request.setAttribute("profileBasePath", admin ? "/admin/profile" : "/staff/profile");
     }
 }

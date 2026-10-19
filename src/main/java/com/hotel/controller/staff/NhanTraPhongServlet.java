@@ -14,7 +14,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/staff/nhan-tra-phong")
+@WebServlet({"/staff/nhan-tra-phong", "/admin/nhan-tra-phong"})
 public class NhanTraPhongServlet extends HttpServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();
@@ -25,6 +25,8 @@ public class NhanTraPhongServlet extends HttpServlet {
         // Lấy dữ liệu hiển thị Sơ đồ
         List<PhongSoDoDTO> danhSachPhong = phongDAO.getSoDoPhong();
         request.setAttribute("danhSachPhong", danhSachPhong);
+        request.setAttribute("roomBasePath", isAdminRequest(request) ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong");
+        request.setAttribute("isAdminView", isAdminRequest(request));
         request.getRequestDispatcher("/WEB-INF/views/staff/so-do-phong.jsp").forward(request, response);
     }
 
@@ -49,6 +51,11 @@ public class NhanTraPhongServlet extends HttpServlet {
                                  success ? "Đã Check-out trả phòng thành công!" : "Lỗi Check-out!");
         }
 
-        response.sendRedirect(request.getContextPath() + "/staff/nhan-tra-phong");
+        String basePath = isAdminRequest(request) ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong";
+        response.sendRedirect(request.getContextPath() + basePath);
+    }
+
+    private boolean isAdminRequest(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/admin/");
     }
 }

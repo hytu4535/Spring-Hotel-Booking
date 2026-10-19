@@ -9,13 +9,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-sidebar.css">
+    <style>
+        .admin-operation-page .admin-wrapper {
+            display: block !important;
+            position: relative;
+        }
+
+        .admin-operation-page .main-content {
+            box-sizing: border-box;
+            margin-left: 280px !important;
+            width: calc(100% - 280px) !important;
+        }
+
+        @media (max-width: 768px) {
+            .admin-operation-page .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="admin-operation-page">
 <div class="admin-wrapper">
-    <!-- Gọi Sidebar Menu chung -->
-    <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
-        <jsp:param name="active" value="don"/>
-    </jsp:include>
+    <c:choose>
+        <c:when test="${isAdminView}">
+            <jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
+                <jsp:param name="active" value="datphong"/>
+            </jsp:include>
+        </c:when>
+        <c:otherwise>
+            <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
+                <jsp:param name="active" value="reservations"/>
+            </jsp:include>
+        </c:otherwise>
+    </c:choose>
 
     <div class="main-content">
         <div class="top-navbar">
@@ -69,13 +98,13 @@
                                 <td class="text-center">
                                     <!-- Nút đổi trạng thái linh hoạt -->
                                     <c:if test="${dp.trangThai == 'CHO_XAC_NHAN'}">
-                                        <form action="${pageContext.request.contextPath}/staff/don" method="post" class="d-inline">
+                                        <form action="${pageContext.request.contextPath}${bookingBasePath}" method="post" class="d-inline">
                                             <input type="hidden" name="action" value="update_status">
                                             <input type="hidden" name="maDp" value="${dp.maDp}">
                                             <input type="hidden" name="trangThaiMoi" value="DA_XAC_NHAN">
                                             <button type="submit" class="btn btn-sm btn-primary">Xác nhận đơn</button>
                                         </form>
-                                        <form action="${pageContext.request.contextPath}/staff/don" method="post" class="d-inline">
+                                        <form action="${pageContext.request.contextPath}${bookingBasePath}" method="post" class="d-inline">
                                             <input type="hidden" name="action" value="update_status">
                                             <input type="hidden" name="maDp" value="${dp.maDp}">
                                             <input type="hidden" name="trangThaiMoi" value="DA_HUY">
@@ -84,7 +113,7 @@
                                     </c:if>
 
                                     <c:if test="${dp.trangThai == 'DA_XAC_NHAN'}">
-                                        <form action="${pageContext.request.contextPath}/staff/don" method="post" class="d-inline">
+                                        <form action="${pageContext.request.contextPath}${bookingBasePath}" method="post" class="d-inline">
                                             <input type="hidden" name="action" value="update_status">
                                             <input type="hidden" name="maDp" value="${dp.maDp}">
                                             <input type="hidden" name="trangThaiMoi" value="DA_NHAN_PHONG">
@@ -93,7 +122,7 @@
                                     </c:if>
 
                                     <c:if test="${dp.trangThai == 'DA_NHAN_PHONG'}">
-                                        <form action="${pageContext.request.contextPath}/staff/don" method="post" class="d-inline">
+                                        <form action="${pageContext.request.contextPath}${bookingBasePath}" method="post" class="d-inline">
                                             <input type="hidden" name="action" value="update_status">
                                             <input type="hidden" name="maDp" value="${dp.maDp}">
                                             <input type="hidden" name="trangThaiMoi" value="DA_TRA_PHONG">

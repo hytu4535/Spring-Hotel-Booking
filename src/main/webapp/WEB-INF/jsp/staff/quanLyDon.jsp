@@ -10,6 +10,7 @@
     <title>Trang chính Nhân viên - Hotel Booking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-sidebar.css">
     <style>
         :root {
             --primary: #0d6efd;
@@ -65,49 +66,9 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="position-sticky pt-4">
-            <ul class="nav flex-column mb-6">
-                <li class="nav-item">
-                    <a class="nav-link text-white active" href="${pageContext.request.contextPath}/staff/quan-ly-don">
-                        <i class="bi bi-speedometer2"></i> Trang chính
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${pageContext.request.contextPath}/staff/don">
-                        <i class="bi bi-list-task"></i> Quản lý đơn đặt phòng
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${pageContext.request.contextPath}/staff/nhan-tra-phong">
-                        <i class="bi bi-box-arrow-in-left"></i> Nhận / Trả phòng
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${pageContext.request.contextPath}/staff/dich-vu-thanh-toan">
-                        <i class="bi bi-cash-coin"></i> Dịch vụ & Thanh toán
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${pageContext.request.contextPath}/staff/profile">
-                        <i class="bi bi-person"></i> Hồ sơ cá nhân
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${pageContext.request.contextPath}/staff/doi-mat-khau">
-                        <i class="bi bi-key"></i> Đổi mật khẩu
-                    </a>
-                </li>
-            </ul>
-            <hr class="dropdown-divider bg-light">
-            <div class="mb-4 mt-auto p-4">
-                <a class="btn btn-danger btn-block" href="${pageContext.request.contextPath}/logout">
-                    <i class="bi bi-box-arrow-left"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-    </div>
+    <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
+        <jsp:param name="active" value="overview"/>
+    </jsp:include>
 
     <!-- Main content -->
     <div class="main-content">
