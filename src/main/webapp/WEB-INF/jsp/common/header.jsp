@@ -22,6 +22,17 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
+                <c:if test="${sessionScope.currentUser.vaiTro == 'CUSTOMER'}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> ${sessionScope.currentUser.hoTen}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/customer/profile">Hồ sơ của tôi</a></li>
+                            <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </c:if>
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/">Trang chủ</a>
                 </li>
@@ -33,11 +44,10 @@
                 </li>
             </ul>
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/login">
-                        <i class="bi bi-person"></i> Nhân viên
-                    </a>
-                </li>
+                <c:if test="${empty sessionScope.currentUser}">
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/login">
+                            <i class="bi bi-person"></i> Đăng nhập</a></li>
+                </c:if>
             </ul>
         </div>
     </div>

@@ -1,21 +1,43 @@
 package com.hotel.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+@Entity
+@Table(name = "dat_phong")
 public class DatPhong {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_dp")
     private int maDp;
+    @Column(name = "ma_tra_cuu", nullable = false, length = 20)
     private String maTraCuu;
+    @Column(name = "ma_kh", nullable = false)
     private int maKh;
+    @Column(name = "ma_nv_xu_ly")
     private Integer maNvXuLy;
+    @Column(name = "ngay_dat")
     private Timestamp ngayDat;
+    @Column(name = "ngay_nhan_phong", nullable = false)
     private Date ngayNhanPhong;
+    @Column(name = "ngay_tra_phong", nullable = false)
     private Date ngayTraPhong;
+    @Column(name = "trang_thai", nullable = false, length = 20)
     private String trangThai;
+    @Column(name = "tien_phong", nullable = false)
     private BigDecimal tienPhong;
+    @Column(name = "tien_dich_vu", nullable = false)
     private BigDecimal tienDichVu;
+    @Column(name = "tong_tien", nullable = false)
     private BigDecimal tongTien;
+    @Column(name = "ghi_chu", length = 255)
     private String ghiChu;
 
     // Getters and Setters

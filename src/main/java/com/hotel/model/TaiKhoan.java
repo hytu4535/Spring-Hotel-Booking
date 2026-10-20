@@ -1,18 +1,43 @@
 package com.hotel.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.sql.Timestamp;
 
+@Entity
+@Table(name = "tai_khoan")
 public class TaiKhoan {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_tk")
     private int maTk;
+    @Column(name = "ten_dang_nhap", length = 100)
     private String tenDangNhap;
+    @Column(name = "mat_khau", length = 255)
     private String matKhau;
+    @Column(name = "ho_ten", nullable = false, length = 100)
     private String hoTen;
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
+    @Column(name = "so_dien_thoai", length = 15)
     private String soDienThoai;
+    @Column(name = "vai_tro", nullable = false, length = 20)
     private String vaiTro;
+    @Column(name = "ngay_tao")
     private Timestamp ngayTao;
+    @Column(name = "trang_thai", nullable = false)
     private int trangThai;
+    @Column(name = "provider", length = 20)
+    private String provider;
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
+    @Column(name = "anh_dai_dien", length = 255)
+    private String anhDaiDien;
 
     public TaiKhoan() {
     }
@@ -88,5 +113,10 @@ public class TaiKhoan {
     public void setTrangThai(int trangThai) {
         this.trangThai = trangThai;
     }
+    public String getProvider() { return provider; }
+    public void setProvider(String provider) { this.provider = provider; }
+    public String getProviderId() { return providerId; }
+    public void setProviderId(String providerId) { this.providerId = providerId; }
+    public String getAnhDaiDien() { return anhDaiDien; }
+    public void setAnhDaiDien(String anhDaiDien) { this.anhDaiDien = anhDaiDien; }
 }
-

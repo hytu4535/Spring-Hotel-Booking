@@ -1,19 +1,40 @@
 package com.hotel.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.sql.Timestamp;
 
+@Entity
+@Table(name = "khach_hang")
 public class KhachHang {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_kh")
     private int maKh;
+    @Column(name = "ma_tk")
+    private Integer maTk;
+    @Column(name = "ho_ten", nullable = false, length = 100)
     private String hoTen;
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
+    @Column(name = "so_dien_thoai", length = 15)
     private String soDienThoai;
+    @Column(name = "cccd", length = 20)
     private String cccd;
+    @Column(name = "dia_chi", length = 255)
     private String diaChi;
+    @Column(name = "ngay_tao")
     private Timestamp ngayTao;
 
     // Getters and Setters
     public int getMaKh() { return maKh; }
     public void setMaKh(int maKh) { this.maKh = maKh; }
+    public Integer getMaTk() { return maTk; }
+    public void setMaTk(Integer maTk) { this.maTk = maTk; }
     public String getHoTen() { return hoTen; }
     public void setHoTen(String hoTen) { this.hoTen = hoTen; }
     public String getEmail() { return email; }

@@ -18,14 +18,18 @@
             <div class="card shadow">
                 <div class="card-body p-4">
                     <h3 class="text-center mb-4">
-                        <i class="bi bi-building"></i> Đăng nhập nhân viên
+                        <i class="bi bi-building"></i>
+                        <c:choose><c:when test="${adminMode}">Đăng nhập nhân viên / quản trị</c:when><c:otherwise>Đăng nhập khách hàng</c:otherwise></c:choose>
                     </h3>
 
                     <c:if test="${not empty error}">
                         <div class="alert alert-danger">${error}</div>
                     </c:if>
+                    <c:if test="${not empty param.oauthError}">
+                        <div class="alert alert-warning"><c:out value="${param.oauthError}"/></div>
+                    </c:if>
 
-                    <form method="post" action="${pageContext.request.contextPath}/login">
+                    <form method="post" action="${pageContext.request.contextPath}${adminMode ? '/admin/login' : '/login'}">
                         <div class="mb-3">
                             <label class="form-label">Tên đăng nhập</label>
                             <input type="text" name="tenDangNhap" class="form-control"
@@ -39,6 +43,17 @@
                             <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
                         </button>
                     </form>
+                    <c:if test="${not adminMode}">
+                        <div class="text-center text-muted my-3">Hoặc đăng nhập với</div>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-danger flex-fill" href="${pageContext.request.contextPath}/login/google">
+                                <i class="bi bi-google"></i> Google
+                            </a>
+                            <a class="btn btn-outline-primary flex-fill" href="${pageContext.request.contextPath}/login/facebook">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                        </div>
+                    </c:if>
 
                     <div class="text-center mt-3">
                         <a href="${pageContext.request.contextPath}/">← Về trang chủ</a>

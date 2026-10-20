@@ -26,6 +26,9 @@
                     <a class="${activeMenu == 'taikhoan' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/tai-khoan">
                         <i class="fas fa-user-cog me-2"></i> Quản lý tài khoản
                     </a>
+                    <a class="${activeMenu == 'khachhang' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/khach-hang">
+                        <i class="fas fa-users me-2"></i> Quản lý khách hàng
+                    </a>
                 </div>
             </details>
 
