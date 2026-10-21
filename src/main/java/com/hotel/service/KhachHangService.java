@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.Comparator;
 
 @Service
 public class KhachHangService {
@@ -80,6 +81,30 @@ public class KhachHangService {
         String value = keyword == null ? "" : keyword.trim();
         return (value.isEmpty() ? khachHangRepository.findAll() : khachHangRepository.search(value))
                 .stream().map(this::toAdminDTO).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<KhachHangAdminDTO> searchAdvanced(String hoTen, String email, String phone,
+                                                    String cccd, String order) {
+        String nameFilter = normalizeFilter(hoTen);
+        String emailFilter = normalizeFilter(email);
+        String phoneFilter = normalizeFilter(phone);
+        String cccdFilter = normalizeFilter(cccd);
+        List<KhachHangAdminDTO> result = khachHangRepository.findAllByOrderByNgayTaoDesc().stream()
+                .filter(item -> contains(item.getHoTen(), nameFilter))
+                .filter(item -> contains(item.getEmail(), emailFilter))
+                .filter(item -> contains(item.getSoDienThoai(), phoneFilter))
+                .filter(item -> contains(item.getCccd(), cccdFilter))
+                .map(this::toAdminDTO)
+                .collect(Collectors.toList());
+        Comparator<KhachHangAdminDTO> comparator = Comparator.comparingLong(KhachHangAdminDTO::getSoDonDatPhong);
+        if ("desc".equalsIgnoreCase(order)) {
+            comparator = comparator.reversed();
+        }
+        if ("asc".equalsIgnoreCase(order) || "desc".equalsIgnoreCase(order)) {
+            result.sort(comparator);
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -178,6 +203,14 @@ public class KhachHangService {
 
     private String normalize(String value) {
         return value == null || value.trim().isEmpty() ? null : value.trim();
+    }
+
+    private String normalizeFilter(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
+
+    private boolean contains(String value, String filter) {
+        return filter.isEmpty() || (value != null && value.toLowerCase().contains(filter));
     }
 
     private void validateEmail(String email, Integer customerId) {

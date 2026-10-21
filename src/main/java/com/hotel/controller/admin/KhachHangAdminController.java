@@ -25,9 +25,19 @@ public class KhachHangAdminController {
     }
 
     @GetMapping
-    public String list(@RequestParam(required = false) String keyword, Model model) {
-        model.addAttribute("keyword", keyword == null ? "" : keyword);
-        model.addAttribute("khachHangList", khachHangService.search(keyword));
+    public String list(@RequestParam(required = false) String hoTen,
+                       @RequestParam(required = false) String email,
+                       @RequestParam(required = false) String soDienThoai,
+                       @RequestParam(required = false) String cccd,
+                       @RequestParam(required = false) String soDonOrder,
+                       Model model) {
+        model.addAttribute("hoTen", hoTen == null ? "" : hoTen);
+        model.addAttribute("email", email == null ? "" : email);
+        model.addAttribute("soDienThoai", soDienThoai == null ? "" : soDienThoai);
+        model.addAttribute("cccd", cccd == null ? "" : cccd);
+        model.addAttribute("soDonOrder", soDonOrder == null ? "" : soDonOrder);
+        model.addAttribute("khachHangList",
+                khachHangService.searchAdvanced(hoTen, email, soDienThoai, cccd, soDonOrder));
         return "admin/quan-ly-khach-hang";
     }
 

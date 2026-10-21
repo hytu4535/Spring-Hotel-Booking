@@ -64,9 +64,6 @@
 <div class="main-content">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0"><i class="fas fa-layer-group me-2"></i>Quản lý loại phòng</h2>
-        <a href="${pageContext.request.contextPath}/admin/loai-phong/them" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Thêm loại phòng
-        </a>
     </div>
 
     <c:if test="${not empty success}">
@@ -75,6 +72,32 @@
     <c:if test="${not empty error}">
         <div class="alert alert-danger">${error}</div>
     </c:if>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white">
+            <i class="fas fa-filter text-primary me-2"></i><strong>Bộ lọc</strong>
+        </div>
+        <div class="card-body">
+            <form method="get" action="${pageContext.request.contextPath}/admin/loai-phong" class="row g-2">
+                <div class="col-md-5">
+                    <input name="tenLoai" value="${tenLoai}" class="form-control" placeholder="Tên loại phòng">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Tra cứu</button>
+                </div>
+                <div class="col-auto">
+                    <a href="${pageContext.request.contextPath}/admin/loai-phong" class="btn btn-outline-secondary">
+                        <i class="fas fa-rotate-left me-1"></i>Xóa lọc
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="${pageContext.request.contextPath}/admin/loai-phong/them" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Thêm loại phòng
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow-sm">
         <div class="card-header bg-white fw-semibold">

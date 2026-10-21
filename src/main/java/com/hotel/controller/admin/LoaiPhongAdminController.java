@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
@@ -28,8 +29,9 @@ public class LoaiPhongAdminController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("loaiPhongList", loaiPhongService.getAll());
+    public String list(@RequestParam(required = false) String tenLoai, Model model) {
+        model.addAttribute("tenLoai", tenLoai == null ? "" : tenLoai);
+        model.addAttribute("loaiPhongList", loaiPhongService.search(tenLoai));
         return "admin/quan-ly-loai-phong";
     }
 

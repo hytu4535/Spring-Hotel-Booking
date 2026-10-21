@@ -28,6 +28,7 @@
 
         body {
             background-color: var(--light);
+            overflow-x: hidden;
         }
 
         .sidebar {
@@ -97,20 +98,47 @@
             padding: 20px;
             min-height: 100vh;
             background-color: var(--light);
+            width: calc(100% - var(--sidebar-width));
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .main-content > .card,
+        .main-content > .alert {
+            max-width: 100%;
+        }
+
+        .table-responsive {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .table-responsive table {
+            min-width: 1050px;
         }
 
         .status-badge {
-            font-size: 0.8rem;
-            padding: 0.35em 0.65em;
-            border-radius: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 78px;
+            white-space: nowrap;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 0.42rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid transparent;
         }
         .status-active {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: #e8f7ee;
+            color: #137a3d;
+            border-color: #b9e7c9;
         }
         .status-locked {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: #fff0f1;
+            color: #b4232f;
+            border-color: #f3b7bd;
         }
 
         .table thead th {
@@ -126,6 +154,7 @@
             }
             .main-content {
                 margin-left: 0;
+                width: 100%;
             }
             .sidebar .header {
                 display: none;
@@ -166,6 +195,40 @@
         </div>
     </c:if>
 
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-filter text-primary"></i>
+                <strong>Bộ lọc nâng cao</strong>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" action="${pageContext.request.contextPath}/admin/tai-khoan" class="row g-2">
+                <div class="col-xl-2 col-md-4"><input name="tenDangNhap" value="${filterTenDangNhap}" class="form-control" placeholder="Tên đăng nhập"></div>
+                <div class="col-xl-2 col-md-4"><input name="hoTen" value="${filterHoTen}" class="form-control" placeholder="Họ tên"></div>
+                <div class="col-xl-2 col-md-4"><input name="email" value="${filterEmail}" class="form-control" placeholder="Email"></div>
+                <div class="col-xl-2 col-md-4"><input name="soDienThoai" value="${filterSoDienThoai}" class="form-control" placeholder="Số điện thoại"></div>
+                <div class="col-xl-2 col-md-4">
+                    <select name="vaiTro" class="form-select">
+                        <option value="">Tất cả vai trò</option>
+                        <option value="ADMIN" ${filterVaiTro == 'ADMIN' ? 'selected' : ''}>Quản trị</option>
+                        <option value="NHANVIEN" ${filterVaiTro == 'NHANVIEN' ? 'selected' : ''}>Nhân viên</option>
+                        <option value="CUSTOMER" ${filterVaiTro == 'CUSTOMER' ? 'selected' : ''}>Khách hàng</option>
+                    </select>
+                </div>
+                <div class="col-xl-2 col-md-4">
+                    <select name="trangThai" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="1" ${filterTrangThai == '1' ? 'selected' : ''}>Hoạt động</option>
+                        <option value="0" ${filterTrangThai == '0' ? 'selected' : ''}>Bị khóa</option>
+                    </select>
+                </div>
+                <div class="col-auto"><button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Tra cứu</button></div>
+                <div class="col-auto"><a href="${pageContext.request.contextPath}/admin/tai-khoan" class="btn btn-outline-secondary"><i class="fas fa-rotate-left me-1"></i>Xóa lọc</a></div>
+            </form>
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-header bg-white fw-semibold">
             Danh sách tài khoản
@@ -182,7 +245,7 @@
                             <th>Email</th>
                             <th>Số điện thoại</th>
                             <th>Vai trò</th>
-                            <th>Trạng thái</th>
+                            <th class="text-center" style="width: 110px">Trạng thái</th>
                             <th>Ngày tạo</th>
                             <th class="text-center" style="width:120px">Thao tác</th>
                         </tr>
@@ -194,15 +257,15 @@
                                 <td class="fw-semibold">${tk.tenDangNhap}</td>
                                 <td>${tk.hoTen}</td>
                                 <td>${tk.email}</td>
-                                <td>
+                                <td class="text-center">
                                     <c:choose>
                                         <c:when test="${not empty tk.soDienThoai}">${tk.soDienThoai}</c:when>
                                         <c:otherwise><span class="text-muted">—</span></c:otherwise>
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <span class="badge ${tk.vaiTro == 'ADMIN' ? 'bg-primary' : 'bg-success'}">
-                                        ${tk.vaiTro == 'ADMIN' ? 'Quản trị' : 'Nhân viên'}
+                                    <span class="badge ${tk.vaiTro == 'ADMIN' ? 'bg-primary' : (tk.vaiTro == 'NHANVIEN' ? 'bg-success' : 'bg-secondary')}">
+                                        ${tk.vaiTro == 'ADMIN' ? 'Quản trị' : (tk.vaiTro == 'NHANVIEN' ? 'Nhân viên' : 'Khách hàng')}
                                     </span>
                                 </td>
                                 <td>

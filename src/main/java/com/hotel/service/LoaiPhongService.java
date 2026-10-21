@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Locale;
 
 @Service
 public class LoaiPhongService {
@@ -27,6 +28,16 @@ public class LoaiPhongService {
         return loaiPhongRepository.findAll()
                 .stream()
                 .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoaiPhongResponseDTO> search(String tenLoai) {
+        String filter = tenLoai == null ? "" : tenLoai.trim().toLowerCase(Locale.ROOT);
+        return getAll().stream()
+                .filter(item -> filter.isEmpty()
+                        || (item.getTenLoai() != null
+                        && item.getTenLoai().toLowerCase(Locale.ROOT).contains(filter)))
                 .collect(Collectors.toList());
     }
 

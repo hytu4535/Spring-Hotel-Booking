@@ -12,6 +12,8 @@ import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Servlet để quản lý tài khoản (chỉ ADMIN)
@@ -35,9 +37,10 @@ public class AccountManagementServlet extends HttpServlet {
         }
 
         // Lấy danh sách tất cả tài khoản
-        List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
         request.setAttribute("taiKhoanList", taiKhoanList);
         request.setAttribute("currentUser", user);
+        setFilterAttributes(request);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
     }
@@ -112,7 +115,7 @@ public class AccountManagementServlet extends HttpServlet {
                 request.setAttribute("soDienThoai", soDienThoai);
                 request.setAttribute("vaiTro", vaiTro);
 
-                List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
                 request.setAttribute("taiKhoanList", taiKhoanList);
                 request.setAttribute("currentUser", user);
                 request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
@@ -137,7 +140,7 @@ public class AccountManagementServlet extends HttpServlet {
             }
 
             // Lấy lại danh sách sau khi tạo
-            List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
             request.setAttribute("taiKhoanList", taiKhoanList);
             request.setAttribute("currentUser", user);
             request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
@@ -148,7 +151,7 @@ public class AccountManagementServlet extends HttpServlet {
         String maTkStr = request.getParameter("maTk");
         if (maTkStr == null || maTkStr.isBlank()) {
             request.setAttribute("error", "Thông tin tài khoản không hợp lệ");
-            List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
             request.setAttribute("taiKhoanList", taiKhoanList);
             request.setAttribute("currentUser", user);
             request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
@@ -160,7 +163,7 @@ public class AccountManagementServlet extends HttpServlet {
         // Không cho phép tự thao tác trên chính mình
         if (maTk == user.getMaTk()) {
             request.setAttribute("error", "Không thể thực hiện hành động trên tài khoản của chính bạn");
-            List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
             request.setAttribute("taiKhoanList", taiKhoanList);
             request.setAttribute("currentUser", user);
             request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
@@ -191,7 +194,7 @@ public class AccountManagementServlet extends HttpServlet {
                 break;
             default:
                 request.setAttribute("error", "Hành động không hợp lệ");
-                List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
                 request.setAttribute("taiKhoanList", taiKhoanList);
                 request.setAttribute("currentUser", user);
                 request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
@@ -205,9 +208,49 @@ public class AccountManagementServlet extends HttpServlet {
         }
 
         // Lấy lại danh sách sau khi thực hiện hành động
-        List<TaiKhoan> taiKhoanList = taiKhoanDAO.findAll();
+        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
         request.setAttribute("taiKhoanList", taiKhoanList);
         request.setAttribute("currentUser", user);
+        setFilterAttributes(request);
         request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
+    }
+
+    private List<TaiKhoan> loadFilteredAccounts(HttpServletRequest request) {
+        String username = normalize(request.getParameter("tenDangNhap"));
+        String name = normalize(request.getParameter("hoTen"));
+        String email = normalize(request.getParameter("email"));
+        String phone = normalize(request.getParameter("soDienThoai"));
+        String role = normalize(request.getParameter("vaiTro"));
+        String status = normalize(request.getParameter("trangThai"));
+        return taiKhoanDAO.findAll().stream()
+                .filter(tk -> contains(tk.getTenDangNhap(), username))
+                .filter(tk -> contains(tk.getHoTen(), name))
+                .filter(tk -> contains(tk.getEmail(), email))
+                .filter(tk -> contains(tk.getSoDienThoai(), phone))
+                .filter(tk -> role.isEmpty() || role.equalsIgnoreCase(tk.getVaiTro()))
+                .filter(tk -> status.isEmpty() || (("1".equals(status) || "0".equals(status))
+                        && Integer.toString(tk.getTrangThai()).equals(status)))
+                .collect(Collectors.toList());
+    }
+
+    private void setFilterAttributes(HttpServletRequest request) {
+        request.setAttribute("filterTenDangNhap", valueOrEmpty(request.getParameter("tenDangNhap")));
+        request.setAttribute("filterHoTen", valueOrEmpty(request.getParameter("hoTen")));
+        request.setAttribute("filterEmail", valueOrEmpty(request.getParameter("email")));
+        request.setAttribute("filterSoDienThoai", valueOrEmpty(request.getParameter("soDienThoai")));
+        request.setAttribute("filterVaiTro", valueOrEmpty(request.getParameter("vaiTro")));
+        request.setAttribute("filterTrangThai", valueOrEmpty(request.getParameter("trangThai")));
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String valueOrEmpty(String value) {
+        return value == null ? "" : value;
+    }
+
+    private boolean contains(String value, String filter) {
+        return filter.isEmpty() || (value != null && value.toLowerCase(Locale.ROOT).contains(filter));
     }
 }

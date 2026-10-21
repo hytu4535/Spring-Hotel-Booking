@@ -18,4 +18,6 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
             "or k.soDienThoai like concat('%', :keyword, '%') or k.cccd like concat('%', :keyword, '%') " +
             "order by k.ngayTao desc")
     List<KhachHang> search(@Param("keyword") String keyword);
+
+    List<KhachHang> findAllByOrderByNgayTaoDesc();
 }
