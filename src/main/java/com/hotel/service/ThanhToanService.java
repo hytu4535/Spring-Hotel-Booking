@@ -86,37 +86,44 @@ public class ThanhToanService {
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
-        Collections.sort(fieldNames);
+        // Sắp xếp tham số theo thứ tự tên trường tăng dần
+        Map<String, String> sortedParams = new TreeMap<>(vnp_Params);
         StringBuilder hashData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
-        Iterator<String> itr = fieldNames.iterator();
-        while (itr.hasNext()) {
-            String fieldName = itr.next();
-            String fieldValue = vnp_Params.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                // Build hash data
-                hashData.append(fieldName);
-                hashData.append('=');
-                try {
-                    hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
-                    // Build query
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString()));
-                    query.append('=');
-                    query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
-                } catch (Exception e) {
-                    // fallback
+
+        try {
+            for (Map.Entry<String, String> entry : sortedParams.entrySet()) {
+                String fieldName = entry.getKey();
+                String fieldValue = entry.getValue();
+
+                // Bỏ qua tham số null hoặc rỗng
+                if (fieldValue == null || fieldValue.isEmpty()) {
+                    continue;
                 }
-                if (itr.hasNext()) {
-                    query.append('&');
+
+                // Chỉ thêm dấu & giữa các tham số thực sự được ký
+                if (hashData.length() > 0) {
                     hashData.append('&');
                 }
+
+                hashData.append(
+                        URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())
+                );
+                hashData.append('=');
+                hashData.append(
+                        URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString())
+                );
             }
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new IllegalStateException("Không thể mã hóa tham số VNPay", e);
         }
-        String queryUrl = query.toString();
-        String vnp_SecureHash = VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
-        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        return vnp_PayUrl + "?" + queryUrl;
+
+        // Tạo chữ ký trên chính chuỗi tham số đã mã hóa
+        String vnp_SecureHash =
+                VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
+
+        // Dùng cùng chuỗi tham số để tạo URL thanh toán
+        return vnp_PayUrl + "?" + hashData
+                + "&vnp_SecureHash=" + vnp_SecureHash;
     }
 
     // Xử lý kết quả trả về từ VNPay

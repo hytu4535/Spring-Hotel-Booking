@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class PhongTrongDTO {
     private int maPhong;
+    private int maLoai;
     private String soPhong;
     private int tang;
     private String tenLoai;
@@ -19,6 +20,14 @@ public class PhongTrongDTO {
 
     public void setMaPhong(int maPhong) {
         this.maPhong = maPhong;
+    }
+
+    public int getMaLoai() {
+        return maLoai;
+    }
+
+    public void setMaLoai(int maLoai) {
+        this.maLoai = maLoai;
     }
 
     public String getSoPhong() {

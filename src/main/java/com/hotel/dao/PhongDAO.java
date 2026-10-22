@@ -15,7 +15,7 @@ public class PhongDAO extends BaseDAO {
 
     public List<PhongTrongDTO> timPhongTrong(Date ngayNhanPhong, Date ngayTraPhong) {
         List<PhongTrongDTO> list = new ArrayList<>();
-        String sql = "SELECT p.ma_phong, p.so_phong, p.tang, lp.ten_loai, lp.gia_mac_dinh, lp.suc_chua, lp.dien_tich, lp.mo_ta, lp.hinh_anh " +
+        String sql = "SELECT p.ma_phong, p.so_phong, p.tang, lp.ma_loai, lp.ten_loai, lp.gia_mac_dinh, lp.suc_chua, lp.dien_tich, lp.mo_ta, lp.hinh_anh " +
                 "FROM phong p JOIN loai_phong lp ON p.ma_loai = lp.ma_loai " +
                 "WHERE p.trang_thai <> 'BAO_TRI' " +
                 "AND NOT EXISTS ( " +
@@ -37,6 +37,7 @@ public class PhongDAO extends BaseDAO {
                 while (rs.next()) {
                     PhongTrongDTO dto = new PhongTrongDTO();
                     dto.setMaPhong(rs.getInt("ma_phong"));
+                    dto.setMaLoai(rs.getInt("ma_loai"));
                     dto.setSoPhong(rs.getString("so_phong"));
                     dto.setTang(rs.getInt("tang"));
                     dto.setTenLoai(rs.getString("ten_loai"));
@@ -56,7 +57,7 @@ public class PhongDAO extends BaseDAO {
     }
 
     public PhongTrongDTO findPhongChiTiet(int maPhong) {
-        String sql = "SELECT p.ma_phong, p.so_phong, p.tang, p.trang_thai, lp.ten_loai, lp.gia_mac_dinh, lp.suc_chua, lp.dien_tich, lp.mo_ta, lp.hinh_anh " +
+        String sql = "SELECT p.ma_phong, p.so_phong, p.tang, p.trang_thai, lp.ma_loai, lp.ten_loai, lp.gia_mac_dinh, lp.suc_chua, lp.dien_tich, lp.mo_ta, lp.hinh_anh " +
                 "FROM phong p JOIN loai_phong lp ON p.ma_loai = lp.ma_loai WHERE p.ma_phong = ?";
 
         try (Connection conn = getConnection();
@@ -67,6 +68,7 @@ public class PhongDAO extends BaseDAO {
                 if (rs.next()) {
                     PhongTrongDTO dto = new PhongTrongDTO();
                     dto.setMaPhong(rs.getInt("ma_phong"));
+                    dto.setMaLoai(rs.getInt("ma_loai"));
                     dto.setSoPhong(rs.getString("so_phong"));
                     dto.setTang(rs.getInt("tang"));
                     dto.setTenLoai(rs.getString("ten_loai"));

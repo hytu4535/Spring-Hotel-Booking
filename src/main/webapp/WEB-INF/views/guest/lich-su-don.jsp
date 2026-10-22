@@ -74,6 +74,44 @@
                                 </c:if>
                             </div>
                         </div>
+
+                        <!-- Đánh giá phòng (Chỉ hiển thị khi đơn đã trả phòng DA_TRA_PHONG) -->
+                        <c:if test="${dp.trangThai == 'DA_TRA_PHONG'}">
+                            <hr class="my-3">
+                            <div class="p-3 bg-light rounded border">
+                                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-star-fill text-warning"></i> Đánh giá của bạn cho đơn phòng này</h6>
+                                <c:set var="review" value="${reviewMap[dp.maDp]}"/>
+                                <c:if test="${not empty review}">
+                                    <div class="text-success fw-bold mb-1">
+                                        <c:forEach begin="1" end="${review.soSao}">⭐</c:forEach> (${review.soSao}/5 sao)
+                                    </div>
+                                    <p class="mb-1 fst-italic">"${review.noiDung}"</p>
+                                    <small class="text-muted">Đánh giá vào: ${review.ngayDanhGia}</small>
+                                </c:if>
+                                <c:if test="${empty review}">
+                                    <form action="${pageContext.request.contextPath}/khach-hang/danh-gia" method="post" class="mt-2">
+                                        <input type="hidden" name="maDp" value="${dp.maDp}">
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-md-3">
+                                                <select name="soSao" class="form-select form-select-sm" required>
+                                                    <option value="5">⭐⭐⭐⭐⭐ (5 sao)</option>
+                                                    <option value="4">⭐⭐⭐⭐ (4 sao)</option>
+                                                    <option value="3">⭐⭐⭐ (3 sao)</option>
+                                                    <option value="2">⭐⭐ (2 sao)</option>
+                                                    <option value="1">⭐ (1 sao)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <input type="text" name="noiDung" class="form-control form-control-sm" placeholder="Nhập nhận xét của bạn về phòng..." required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Gửi đánh giá</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </c:if>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </c:forEach>

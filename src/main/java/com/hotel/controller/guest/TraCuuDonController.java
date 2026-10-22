@@ -1,11 +1,13 @@
 package com.hotel.controller.guest;
 
 import com.hotel.model.DatPhong;
+import com.hotel.model.DanhGia;
 import com.hotel.model.KhachHang;
 import com.hotel.model.TaiKhoan;
 import com.hotel.model.ThanhToan;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.KhachHangRepository;
+import com.hotel.service.DanhGiaService;
 import com.hotel.service.ThanhToanService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,13 +27,16 @@ public class TraCuuDonController {
     private final DatPhongRepository datPhongRepository;
     private final KhachHangRepository khachHangRepository;
     private final ThanhToanService thanhToanService;
+    private final DanhGiaService danhGiaService;
 
     public TraCuuDonController(DatPhongRepository datPhongRepository,
                                KhachHangRepository khachHangRepository,
-                               ThanhToanService thanhToanService) {
+                               ThanhToanService thanhToanService,
+                               DanhGiaService danhGiaService) {
         this.datPhongRepository = datPhongRepository;
         this.khachHangRepository = khachHangRepository;
         this.thanhToanService = thanhToanService;
+        this.danhGiaService = danhGiaService;
     }
 
     @GetMapping("/tra-cuu-don")
@@ -52,17 +57,44 @@ public class TraCuuDonController {
         }
 
         if (khOpt.isPresent()) {
-            List<DatPhong> danhSachDon = datPhongRepository.findByKhachHang_MaKhOrderByNgayDatDesc(khOpt.get().getMaKh());
+            KhachHang kh = khOpt.get();
+            List<DatPhong> danhSachDon = datPhongRepository.findByKhachHang_MaKhOrderByNgayDatDesc(kh.getMaKh());
             model.addAttribute("danhSachDon", danhSachDon);
 
             Map<Integer, List<ThanhToan>> paymentMap = new HashMap<>();
+            Map<Integer, DanhGia> reviewMap = new HashMap<>();
             for (DatPhong dp : danhSachDon) {
                 paymentMap.put(dp.getMaDp(), thanhToanService.getThanhToanByMaDp(dp.getMaDp()));
+                Optional<DanhGia> dgOpt = danhGiaService.getDanhGiaByMaDp(dp.getMaDp());
+                dgOpt.ifPresent(danhGia -> reviewMap.put(dp.getMaDp(), danhGia));
             }
             model.addAttribute("paymentMap", paymentMap);
+            model.addAttribute("reviewMap", reviewMap);
         }
 
         return "guest/lich-su-don";
+    }
+
+    @PostMapping("/khach-hang/danh-gia")
+    public String submitReview(@RequestParam("maDp") Integer maDp,
+                               @RequestParam("soSao") Integer soSao,
+                               @RequestParam("noiDung") String noiDung,
+                               HttpSession session) {
+        TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/staff/login";
+        }
+
+        Optional<KhachHang> khOpt = khachHangRepository.findByMaTk(currentUser.getMaTk());
+        if (!khOpt.isPresent()) {
+            khOpt = khachHangRepository.findByEmailIgnoreCase(currentUser.getEmail());
+        }
+
+        if (khOpt.isPresent()) {
+            danhGiaService.submitReview(maDp, khOpt.get().getMaKh(), soSao, noiDung);
+        }
+
+        return "redirect:/khach-hang/lich-su-don";
     }
 
     @PostMapping("/tra-cuu-don")

@@ -54,27 +54,64 @@ public class VNPayUtil {
         return sb.toString();
     }
 
-    public static String hashAllFields(Map<String, String> fields, String secretKey) {
-        List<String> fieldNames = new ArrayList<>(fields.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> itr = fieldNames.iterator();
-        while (itr.hasNext()) {
-            String fieldName = itr.next();
-            String fieldValue = fields.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                sb.append(fieldName);
-                sb.append("=");
-                try {
-                    sb.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
-                } catch (UnsupportedEncodingException e) {
-                    sb.append(fieldValue);
-                }
-                if (itr.hasNext()) {
-                    sb.append("&");
-                }
+
+    public static String hashAllFields(
+            Map<String, String> fields,
+            String secretKey
+    ) {
+        Map<String, String> sortedFields = new TreeMap<>();
+
+        for (Map.Entry<String, String> entry : fields.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            // Chỉ ký các tham số VNPay
+            if (key == null || !key.startsWith("vnp_")) {
+                continue;
+            }
+
+            // Không đưa chữ ký vào dữ liệu dùng để tính chữ ký
+            if ("vnp_SecureHash".equals(key)
+                    || "vnp_SecureHashType".equals(key)) {
+                continue;
+            }
+
+            if (value != null && !value.isEmpty()) {
+                sortedFields.put(key, value);
             }
         }
-        return hmacSHA512(secretKey, sb.toString());
+
+        StringBuilder hashData = new StringBuilder();
+
+        try {
+            for (Map.Entry<String, String> entry
+                    : sortedFields.entrySet()) {
+
+                if (hashData.length() > 0) {
+                    hashData.append('&');
+                }
+
+                hashData.append(
+                        URLEncoder.encode(
+                                entry.getKey(),
+                                StandardCharsets.UTF_8.toString()
+                        )
+                );
+                hashData.append('=');
+                hashData.append(
+                        URLEncoder.encode(
+                                entry.getValue(),
+                                StandardCharsets.UTF_8.toString()
+                        )
+                );
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(
+                    "Không thể mã hóa tham số VNPay", e
+            );
+        }
+
+        return hmacSHA512(secretKey, hashData.toString());
     }
+
 }
