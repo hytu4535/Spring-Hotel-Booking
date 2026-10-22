@@ -52,15 +52,15 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
-                            <input type="text" name="hoTen" class="form-control" required placeholder="Nhập họ tên...">
+                            <input type="text" name="hoTen" class="form-control" required value="${not empty currentUser ? currentUser.hoTen : ''}" placeholder="Nhập họ tên...">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" required placeholder="Gửi mã tra cứu về mail này">
+                            <input type="email" name="email" class="form-control" required value="${not empty currentUser ? currentUser.email : ''}" placeholder="Gửi mã tra cứu về mail này">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
-                            <input type="text" name="soDienThoai" class="form-control" required placeholder="09xxxxxxxxx">
+                            <input type="text" name="soDienThoai" class="form-control" required value="${not empty currentUser ? currentUser.soDienThoai : ''}" placeholder="09xxxxxxxxx">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">CCCD/CMND <span class="text-muted fw-normal">(Tùy chọn)</span></label>
