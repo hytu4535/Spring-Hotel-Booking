@@ -18,6 +18,11 @@ public class AdminFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
+        String path = req.getServletPath();
+        if ("/admin".equals(path) || "/admin/login".equals(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
         HttpSession session = req.getSession(false);
 
         TaiKhoan user = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;

@@ -27,6 +27,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        request.setAttribute("adminMode", false);
         request.getRequestDispatcher("/WEB-INF/jsp/staff/login.jsp").forward(request, response);
     }
 
@@ -38,13 +39,17 @@ public class LoginServlet extends HttpServlet {
         String matKhau = request.getParameter("matKhau");
 
         TaiKhoan tk = authService.login(tenDangNhap, matKhau);
-        if (tk == null) {
-            request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.");
+        if (tk == null || !"CUSTOMER".equals(tk.getVaiTro())) {
+            request.setAttribute("error", "Tên đăng nhập không đúng hoặc tài khoản không có quyền khách hàng.");
             request.setAttribute("tenDangNhap", tenDangNhap);
             request.getRequestDispatcher("/WEB-INF/jsp/staff/login.jsp").forward(request, response);
             return;
         }
 
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
         HttpSession session = request.getSession(true);
         session.setAttribute("currentUser", tk);
         redirectByRole(request, response, tk);
@@ -55,6 +60,8 @@ public class LoginServlet extends HttpServlet {
         String context = request.getContextPath();
         if ("ADMIN".equals(user.getVaiTro())) {
             response.sendRedirect(context + "/admin/dashboard");
+        } else if ("CUSTOMER".equals(user.getVaiTro())) {
+            response.sendRedirect(context + "/customer/profile");
         } else {
             response.sendRedirect(context + "/staff/quan-ly-don");
         }
