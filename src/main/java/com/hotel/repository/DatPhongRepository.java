@@ -11,7 +11,11 @@ import java.util.List;
 public interface DatPhongRepository extends JpaRepository<DatPhong, Integer> {
     List<DatPhong> findByMaKhOrderByNgayDatDesc(int maKh);
 
-    @Modifying
+    Optional<DatPhong> findByMaTraCuu(String maTraCuu);
+    
+    List<DatPhong> findAllByOrderByNgayDatDesc();
+
+    @Modifying(clearAutomatically = true)
     @Query("update DatPhong d set d.maKh = :primaryId where d.maKh = :duplicateId")
     int moveBookings(@Param("duplicateId") int duplicateId, @Param("primaryId") int primaryId);
 }
