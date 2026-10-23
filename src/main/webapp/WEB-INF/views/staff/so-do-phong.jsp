@@ -4,115 +4,75 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Sơ Đồ Phòng</title>
+    <title>Sơ Đồ Phòng Lễ Tân</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-sidebar.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-sidebar.css">
     <style>
-        .admin-operation-page .admin-wrapper {
-            display: block !important;
-            position: relative;
-        }
-
-        .admin-operation-page .main-content {
-            box-sizing: border-box;
-            margin-left: 280px !important;
-            width: calc(100% - 280px) !important;
-        }
-
-        @media (max-width: 768px) {
-            .admin-operation-page .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
-        }
-    </style>
-    <style>
-        .room-box {
-            border-radius: 8px;
-            padding: 15px;
-            min-height: 140px;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .room-TRONG { background: #198754; }      /* Xanh lá */
-        .room-DA_DAT { background: #ffc107; color: #000; }  /* Vàng */
-        .room-DANG_O { background: #dc3545; }      /* Đỏ */
-        .room-BAO_TRI { background: #6c757d; }     /* Xám */
-        
-        .room-number { font-size: 1.5rem; font-weight: bold; }
-        .room-type { font-size: 0.9rem; opacity: 0.8; }
-        .guest-name { font-weight: bold; margin-top: 10px; font-size: 0.9rem; }
+        .room-box { border-radius: 8px; padding: 15px; min-height: 150px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display:flex; flex-direction: column; justify-content: space-between;}
+        .room-TRONG { background: #198754; } 
+        .room-DA_DAT { background: #ffc107; color: #000; } 
+        .room-DANG_O { background: #dc3545; } 
+        .room-BAO_TRI { background: #6c757d; }
     </style>
 </head>
 <body class="admin-operation-page">
-<div class="admin-wrapper">
+<div class="admin-wrapper d-flex">
     <c:choose>
-        <c:when test="${isAdminView}">
-            <jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp">
-                <jsp:param name="active" value="nhantraphong"/>
-            </jsp:include>
-        </c:when>
-        <c:otherwise>
-            <jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp">
-                <jsp:param name="active" value="frontdesk"/>
-            </jsp:include>
-        </c:otherwise>
+        <c:when test="${isAdminView}"><jsp:include page="/WEB-INF/views/common/sidebar-admin.jsp"><jsp:param name="active" value="nhantraphong"/></jsp:include></c:when>
+        <c:otherwise><jsp:include page="/WEB-INF/views/common/sidebar-staff.jsp"><jsp:param name="active" value="frontdesk"/></jsp:include></c:otherwise>
     </c:choose>
 
-    <div class="main-content">
-        <div class="top-navbar">
-            <h4 class="mb-0 fw-bold text-primary"><i class="bi bi-grid-3x3-gap"></i> Sơ Đồ Khách Sạn</h4>
-            <div>
-                <span class="badge bg-success me-2">Phòng Trống</span>
-                <span class="badge bg-warning text-dark me-2">Đã Đặt (Chờ Check-in)</span>
-                <span class="badge bg-danger me-2">Đang Ở</span>
-                <span class="badge bg-secondary">Bảo Trì</span>
+    <div class="main-content w-100 p-4">
+        <h4 class="mb-3 fw-bold text-primary"><i class="bi bi-grid-3x3-gap"></i> Sơ Đồ Khách Sạn</h4>
+        
+        <!-- Thanh công cụ (Bộ lọc trạng thái & tầng) -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <form class="d-flex gap-2" method="get">
+                    <input type="text" class="form-control" name="soPhong" placeholder="Tìm số phòng...">
+                    <select name="tang" class="form-select"><option value="">Tất cả các tầng</option><option value="1">Tầng 1</option><option value="2">Tầng 2</option></select>
+                    <button class="btn btn-primary"><i class="bi bi-search"></i> Lọc</button>
+                </form>
+                <div>
+                    <span class="badge bg-success p-2">Trống</span>
+                    <span class="badge bg-warning text-dark p-2">Sắp Check-in</span>
+                    <span class="badge bg-danger p-2">Đang Ở</span>
+                    <span class="badge bg-secondary p-2">Bảo Trì</span>
+                </div>
             </div>
         </div>
 
-        <c:if test="${not empty sessionScope.successMsg}">
-            <div class="alert alert-success fw-bold"><i class="bi bi-check-circle"></i> ${sessionScope.successMsg}</div>
-            <c:remove var="successMsg" scope="session"/>
-        </c:if>
+        <c:if test="${not empty successMsg}"><div class="alert alert-success fw-bold">${successMsg}</div></c:if>
 
         <div class="row g-4">
             <c:forEach var="p" items="${danhSachPhong}">
                 <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                     <div class="room-box room-${p.trangThai}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <span class="room-number">${p.soPhong}</span>
-                            <span class="badge bg-light text-dark">Tầng ${p.tang}</span>
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-4 fw-bold">${p.soPhong}</span>
+                            <span class="badge bg-light text-dark align-self-start">T${p.tang}</span>
                         </div>
-                        <div class="room-type">${p.tenLoaiPhong}</div>
+                        <div class="small opacity-75">${p.tenLoaiPhong}</div>
 
-                        <!-- Nếu có khách -->
                         <c:if test="${not empty p.tenKhachHang}">
-                            <div class="guest-name"><i class="bi bi-person-fill"></i> ${p.tenKhachHang}</div>
-                        </c:if>
-                        <c:if test="${empty p.tenKhachHang}">
-                            <div class="guest-name" style="opacity: 0.5;">(Trống)</div>
+                            <div class="mt-2 fw-bold small"><i class="bi bi-person-fill"></i> ${p.tenKhachHang}</div>
                         </c:if>
 
-                        <!-- Nút thao tác -->
-                        <div class="mt-3 text-center">
+                        <div class="mt-3">
                             <c:if test="${p.trangThai == 'DA_DAT' && not empty p.maDpHienTai}">
                                 <form action="${pageContext.request.contextPath}${roomBasePath}" method="post">
-                                    <input type="hidden" name="action" value="check_in">
-                                    <input type="hidden" name="maDp" value="${p.maDpHienTai}">
-                                    <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold">Nhận phòng</button>
+                                    <input type="hidden" name="action" value="check_in"><input type="hidden" name="maDp" value="${p.maDpHienTai}">
+                                    <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold shadow-sm" onclick="return confirm('Tiến hành Check-in phòng ${p.soPhong}?');"><i class="bi bi-box-arrow-in-right"></i> Nhận phòng</button>
                                 </form>
                             </c:if>
                             
                             <c:if test="${p.trangThai == 'DANG_O' && not empty p.maDpHienTai}">
+                                <!-- Task #24: Check-out và chuyển qua màn hình thanh toán -->
                                 <form action="${pageContext.request.contextPath}${roomBasePath}" method="post">
-                                    <input type="hidden" name="action" value="check_out">
-                                    <input type="hidden" name="maDp" value="${p.maDpHienTai}">
-                                    <!-- Sau này nút này có thể sửa thành link chuyển qua trang Thanh Toán -->
-                                    <button type="submit" class="btn btn-sm btn-light w-100 fw-bold" onclick="return confirm('Xác nhận trả phòng?');">Trả phòng</button>
+                                    <input type="hidden" name="action" value="check_out"><input type="hidden" name="maDp" value="${p.maDpHienTai}">
+                                    <button type="submit" class="btn btn-sm btn-light text-danger w-100 fw-bold shadow-sm" onclick="return confirm('Chốt đơn và tiến hành Trả phòng ${p.soPhong}?');"><i class="bi bi-box-arrow-right"></i> Trả phòng</button>
                                 </form>
                             </c:if>
                         </div>
@@ -122,5 +82,4 @@
         </div>
     </div>
 </div>
-</body>
-</html>
+</body></html>
