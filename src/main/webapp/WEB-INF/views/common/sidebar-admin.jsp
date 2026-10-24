@@ -32,7 +32,7 @@
                 </div>
             </details>
 
-            <details class="menu-group" ${activeMenu == 'loaiphong' || activeMenu == 'phong' || activeMenu == 'dichvu' || activeMenu == 'datphong' || activeMenu == 'nhantraphong' || activeMenu == 'doanhthu' || activeMenu == 'thongke' ? 'open' : ''}>
+            <details class="menu-group" ${activeMenu == 'loaiphong' || activeMenu == 'phong' || activeMenu == 'dichvu' || activeMenu == 'datphong' || activeMenu == 'nhantraphong' || activeMenu == 'thanhtoan' || activeMenu == 'khuyenmai' || activeMenu == 'baocao' || activeMenu == 'doanhthu' ? 'open' : ''}>
                 <summary class="menu-group-toggle">
                     <span><i class="fas fa-layer-group me-2"></i> Vận hành khách sạn</span>
                     <i class="fas fa-chevron-right caret"></i>
@@ -53,11 +53,17 @@
                     <a class="${activeMenu == 'nhantraphong' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/nhan-tra-phong">
                         <i class="fas fa-concierge-bell me-2"></i> Nhận / Trả phòng
                     </a>
+                    <a class="${activeMenu == 'thanhtoan' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/thanh-toan">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Quản lý thanh toán
+                    </a>
+                    <a class="${activeMenu == 'khuyenmai' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/khuyen-mai">
+                        <i class="fas fa-ticket-alt me-2"></i> Quản lý khuyến mãi
+                    </a>
+                    <a class="${activeMenu == 'baocao' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/bao-cao">
+                        <i class="fas fa-chart-line me-2"></i> Báo cáo thống kê
+                    </a>
                     <a class="${activeMenu == 'doanhthu' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/doanh-thu">
                         <i class="fas fa-file-invoice-dollar me-2"></i> Doanh thu
-                    </a>
-                    <a class="${activeMenu == 'thongke' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/thong-ke">
-                        <i class="fas fa-chart-bar me-2"></i> Thống kê
                     </a>
                 </div>
             </details>

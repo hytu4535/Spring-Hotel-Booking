@@ -125,4 +125,26 @@ public class PhongDAO extends BaseDAO {
         }
         return list;
     }
+
+    public List<PhongTrongDTO> findAllPhong() {
+        List<PhongTrongDTO> list = new ArrayList<>();
+        String sql = "SELECT p.ma_phong, p.so_phong, p.tang, p.trang_thai, lp.ma_loai, lp.ten_loai, lp.gia_mac_dinh " +
+                     "FROM phong p JOIN loai_phong lp ON p.ma_loai = lp.ma_loai ORDER BY p.tang, p.so_phong";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                PhongTrongDTO dto = new PhongTrongDTO();
+                dto.setMaPhong(rs.getInt("ma_phong"));
+                dto.setSoPhong(rs.getString("so_phong"));
+                dto.setTang(rs.getInt("tang"));
+                dto.setTenLoai(rs.getString("ten_loai"));
+                dto.setGiaPhong(rs.getBigDecimal("gia_mac_dinh"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

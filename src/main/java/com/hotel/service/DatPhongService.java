@@ -6,7 +6,12 @@ import com.hotel.util.MaTraCuuGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -16,31 +21,37 @@ public class DatPhongService {
     private final KhachHangRepository khachHangRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
     private final PhongRepository phongRepository;
+    private final ThanhToanRepository thanhToanRepository;
 
     public DatPhongService(DatPhongRepository datPhongRepository,
                            KhachHangRepository khachHangRepository,
                            ChiTietDatPhongRepository chiTietDatPhongRepository,
-                           PhongRepository phongRepository) {
+                           PhongRepository phongRepository,
+                           ThanhToanRepository thanhToanRepository) {
         this.datPhongRepository = datPhongRepository;
         this.khachHangRepository = khachHangRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
         this.phongRepository = phongRepository;
+        this.thanhToanRepository = thanhToanRepository;
     }
 
     @Transactional
     public String taoDonDatPhong(KhachHang khRequest, DatPhong dpRequest, List<ChiTietDatPhong> danhSachChiTiet, TaiKhoan currentUser) {
+        return taoDonDatPhong(khRequest, dpRequest, danhSachChiTiet, null, currentUser);
+    }
+
+    @Transactional
+    public String taoDonDatPhong(KhachHang khRequest, DatPhong dpRequest, List<ChiTietDatPhong> danhSachChiTiet, List<CartServiceItem> danhSachDichVu, TaiKhoan currentUser) {
         if (khRequest == null || dpRequest == null || danhSachChiTiet == null || danhSachChiTiet.isEmpty()) {
             return null;
         }
 
-        // 1. Xử lý Khách hàng (Nhóm 1: Chưa đăng nhập hoặc Nhóm 2: Đã đăng nhập)
+        // 1. Xử lý Khách hàng
         KhachHang kh;
         if (currentUser != null) {
-            // Khách hàng đã đăng nhập (Nhóm 2)
             Optional<KhachHang> khOpt = khachHangRepository.findByMaTk(currentUser.getMaTk());
             if (khOpt.isPresent()) {
                 kh = khOpt.get();
-                // Cập nhật thông tin mới nhất từ form nếu có
                 kh.setHoTen(khRequest.getHoTen());
                 kh.setSoDienThoai(khRequest.getSoDienThoai());
                 if (khRequest.getCccd() != null) kh.setCccd(khRequest.getCccd());
@@ -56,7 +67,6 @@ public class DatPhongService {
                 khachHangRepository.save(kh);
             }
         } else {
-            // Khách chưa đăng nhập (Nhóm 1)
             kh = khachHangRepository.findByEmailIgnoreCase(khRequest.getEmail().trim())
                     .orElseGet(() -> {
                         khRequest.setEmail(khRequest.getEmail().trim());
@@ -65,7 +75,7 @@ public class DatPhongService {
                     });
         }
 
-        // 2. Kiểm tra trùng lịch (Room Overlap Check) trước khi tạo đơn
+        // 2. Kiểm tra trùng lịch
         for (ChiTietDatPhong ct : danhSachChiTiet) {
             long overlapCount = chiTietDatPhongRepository.countOverlappingBookings(
                     ct.getPhong().getMaPhong(),
@@ -73,7 +83,6 @@ public class DatPhongService {
                     dpRequest.getNgayTraPhong()
             );
             if (overlapCount > 0) {
-                // Trùng lịch -> rollback transaction tự động khi throw exception hoặc trả về null
                 throw new IllegalStateException("Phòng " + ct.getPhong().getMaPhong() + " đã có người đặt trong khoảng thời gian này.");
             }
         }
@@ -88,10 +97,14 @@ public class DatPhongService {
         dpRequest.setKhachHang(kh);
         dpRequest.setTrangThai("CHO_XAC_NHAN");
         dpRequest.setNgayDat(new java.sql.Timestamp(System.currentTimeMillis()));
-        if (dpRequest.getTienDichVu() == null) {
-            dpRequest.setTienDichVu(java.math.BigDecimal.ZERO);
+        
+        if (dpRequest.getTienPhong() == null) {
+            dpRequest.setTienPhong(BigDecimal.ZERO);
         }
-        if (dpRequest.getTongTien() == null || dpRequest.getTongTien().compareTo(java.math.BigDecimal.ZERO) == 0) {
+        if (dpRequest.getTienDichVu() == null) {
+            dpRequest.setTienDichVu(BigDecimal.ZERO);
+        }
+        if (dpRequest.getTongTien() == null || dpRequest.getTongTien().compareTo(BigDecimal.ZERO) == 0) {
             dpRequest.setTongTien(dpRequest.getTienPhong().add(dpRequest.getTienDichVu()));
         }
 
@@ -107,6 +120,33 @@ public class DatPhongService {
             chiTietDatPhongRepository.save(ct);
         }
 
+        // 5. Lưu dịch vụ phát sinh vào dat_dich_vu nếu có
+        if (danhSachDichVu != null && !danhSachDichVu.isEmpty()) {
+            BigDecimal tongTienDv = BigDecimal.ZERO;
+            String insertDvSql = "INSERT INTO dat_dich_vu (ma_dp, ma_dv, so_luong, don_gia, ngay_su_dung, thanh_tien) VALUES (?, ?, ?, ?, ?, ?)";
+            try (java.sql.Connection conn = com.hotel.util.DBConnection.getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(insertDvSql)) {
+                for (CartServiceItem s : danhSachDichVu) {
+                    ps.setInt(1, savedDp.getMaDp());
+                    ps.setInt(2, s.getMaDv());
+                    ps.setInt(3, s.getSoLuong());
+                    ps.setBigDecimal(4, s.getGia());
+                    ps.setDate(5, dpRequest.getNgayNhanPhong());
+                    ps.setBigDecimal(6, s.getThanhTien());
+                    ps.addBatch();
+                    tongTienDv = tongTienDv.add(s.getThanhTien());
+                }
+                ps.executeBatch();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (tongTienDv.compareTo(BigDecimal.ZERO) > 0) {
+                savedDp.setTienDichVu(tongTienDv);
+                savedDp.setTongTien(savedDp.getTienPhong().add(tongTienDv));
+                datPhongRepository.save(savedDp);
+            }
+        }
+
         return maTraCuu;
     }
 
@@ -118,5 +158,122 @@ public class DatPhongService {
     @Transactional(readOnly = true)
     public List<DatPhong> getBookingsByCustomerMaKh(Integer maKh) {
         return datPhongRepository.findByKhachHang_MaKhOrderByNgayDatDesc(maKh);
+    }
+
+    @Transactional
+    public Map<String, Object> themDichVuPhatSinh(Integer maDp, Integer maDv, Integer soLuong, java.sql.Date ngaySuDung, TaiKhoan currentUser) {
+        if (maDp == null || maDv == null || soLuong == null || soLuong < 1) {
+            throw new IllegalArgumentException("Dữ liệu đầu vào không hợp lệ.");
+        }
+
+        DatPhong dp = datPhongRepository.findById(maDp)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng với ID: " + maDp));
+
+        String trangThai = dp.getTrangThai();
+        List<String> allowedStatuses = Arrays.asList("CHO_XAC_NHAN", "DA_XAC_NHAN", "DA_NHAN_PHONG", "DANG_O");
+        if (trangThai == null || !allowedStatuses.contains(trangThai)) {
+            throw new IllegalStateException("Không thể thêm dịch vụ cho đơn đặt phòng ở trạng thái: " + trangThai);
+        }
+
+        com.hotel.dao.DichVuDAO dichVuDAO = new com.hotel.dao.DichVuDAO();
+        com.hotel.model.DichVu dv = dichVuDAO.findById(maDv);
+        if (dv == null) {
+            throw new IllegalArgumentException("Không tìm thấy dịch vụ với ID: " + maDv);
+        }
+
+        BigDecimal giaDv = dv.getGia() != null ? dv.getGia() : BigDecimal.ZERO;
+        BigDecimal thanhTien = giaDv.multiply(BigDecimal.valueOf(soLuong));
+        Integer maNvGhiNhan = (currentUser != null) ? currentUser.getMaTk() : null;
+
+        String insertSql = "INSERT INTO dat_dich_vu (ma_dp, ma_dv, so_luong, don_gia, ngay_su_dung, thanh_tien, ma_nv_ghi_nhan) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (java.sql.Connection conn = com.hotel.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            ps.setInt(1, maDp);
+            ps.setInt(2, maDv);
+            ps.setInt(3, soLuong);
+            ps.setBigDecimal(4, giaDv);
+            ps.setDate(5, ngaySuDung != null ? ngaySuDung : new java.sql.Date(System.currentTimeMillis()));
+            ps.setBigDecimal(6, thanhTien);
+            if (maNvGhiNhan != null && maNvGhiNhan > 0) {
+                ps.setInt(7, maNvGhiNhan);
+            } else {
+                ps.setNull(7, java.sql.Types.INTEGER);
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi lưu dịch vụ phát sinh vào cơ sở dữ liệu: " + e.getMessage(), e);
+        }
+
+        // Cập nhật lại tien_dich_vu và tong_tien trong dat_phong
+        BigDecimal tienDichVuMoi = BigDecimal.ZERO;
+        String sumSql = "SELECT COALESCE(SUM(thanh_tien), 0) FROM dat_dich_vu WHERE ma_dp = ?";
+        try (java.sql.Connection conn = com.hotel.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sumSql)) {
+            ps.setInt(1, maDp);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    tienDichVuMoi = rs.getBigDecimal(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dp.setTienDichVu(tienDichVuMoi);
+        BigDecimal tienPhong = dp.getTienPhong() != null ? dp.getTienPhong() : BigDecimal.ZERO;
+        dp.setTongTien(tienPhong.add(tienDichVuMoi));
+        datPhongRepository.save(dp);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Thêm dịch vụ thành công!");
+        result.put("tongTien", dp.getTongTien());
+        result.put("tienDichVu", dp.getTienDichVu());
+        return result;
+    }
+
+    @Transactional
+    public Map<String, Object> hoanTienVaHuyDon(Integer maDp, BigDecimal soTienHoan, String phuongThuc, String ghiChu, TaiKhoan currentUser) {
+        if (maDp == null) {
+            throw new IllegalArgumentException("Mã đơn đặt phòng không được để trống.");
+        }
+        DatPhong dp = datPhongRepository.findById(maDp)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng với ID: " + maDp));
+
+        if ("DA_HUY".equals(dp.getTrangThai())) {
+            throw new IllegalStateException("Đơn đặt phòng này đã bị hủy trước đó.");
+        }
+
+        // 1. Thêm mới bản ghi hoàn tiền vào bảng thanh_toan (Không sửa bản ghi cũ)
+        if (soTienHoan != null && soTienHoan.compareTo(BigDecimal.ZERO) > 0) {
+            ThanhToan thanhToan = new ThanhToan();
+            thanhToan.setDatPhong(dp);
+            thanhToan.setSoTien(soTienHoan);
+            thanhToan.setLoaiThanhToan("HOAN_TIEN");
+            thanhToan.setPhuongThuc(phuongThuc != null && !phuongThuc.isEmpty() ? phuongThuc : "TIEN_MAT");
+            thanhToan.setMaNvThu(currentUser != null ? currentUser.getMaTk() : null);
+            thanhToan.setGhiChu(ghiChu != null && !ghiChu.isEmpty() ? ghiChu : "Hoàn tiền hủy đơn đặt phòng");
+            thanhToan.setNgayThanhToan(new Timestamp(System.currentTimeMillis()));
+            thanhToanRepository.save(thanhToan);
+        }
+
+        // 2. Cập nhật trạng thái đơn thành DA_HUY
+        dp.setTrangThai("DA_HUY");
+        datPhongRepository.save(dp);
+
+        // 3. Trả lại phòng về trạng thái TRONG
+        List<ChiTietDatPhong> chiTiets = chiTietDatPhongRepository.findByDatPhong_MaDp(maDp);
+        for (ChiTietDatPhong ct : chiTiets) {
+            if (ct.getPhong() != null) {
+                Phong phong = ct.getPhong();
+                phong.setTrangThai("TRONG");
+                phongRepository.save(phong);
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Đã hoàn tiền và hủy đơn thành công!");
+        return result;
     }
 }

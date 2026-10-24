@@ -49,10 +49,10 @@ public class KhachHangService {
             customer.setMaTk(maTk);
             customer.setNgayTao(new java.sql.Timestamp(System.currentTimeMillis()));
         }
-        int currentCustomerId = customer.getMaKh();
+        Integer currentCustomerId = customer.getMaKh();
         String email = request.getEmail().trim();
         khachHangRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
-            if (existing.getMaKh() != currentCustomerId) {
+            if (currentCustomerId == null || !existing.getMaKh().equals(currentCustomerId)) {
                 throw new IllegalArgumentException("Email đã được sử dụng bởi hồ sơ khách hàng khác.");
             }
         });

@@ -52,7 +52,8 @@ public class DatPhongController {
             DatPhong dp = new DatPhong();
             dp.setNgayNhanPhong(java.sql.Date.valueOf(cart.getNgayNhan()));
             dp.setNgayTraPhong(java.sql.Date.valueOf(cart.getNgayTra()));
-            dp.setTienPhong(cart.getTongTien());
+            dp.setTienPhong(cart.getTienPhong());
+            dp.setTienDichVu(cart.getTienDichVu());
             dp.setTongTien(cart.getTongTien());
 
             List<ChiTietDatPhong> ctList = new ArrayList<>();
@@ -68,7 +69,7 @@ public class DatPhongController {
             }
 
             TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
-            String maTraCuu = datPhongService.taoDonDatPhong(kh, dp, ctList, currentUser);
+            String maTraCuu = datPhongService.taoDonDatPhong(kh, dp, ctList, cart.getServices(), currentUser);
 
             if (maTraCuu != null) {
                 session.removeAttribute("cart");

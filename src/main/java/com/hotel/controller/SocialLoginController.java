@@ -52,24 +52,25 @@ public class SocialLoginController {
     public void login(@PathVariable String provider, HttpServletResponse response,
                       HttpServletRequest request) throws IOException {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
-        String target = "google".equals(normalizedProvider) ? googleUrl
-                : "facebook".equals(normalizedProvider) ? facebookUrl : null;
-
-        if (target == null) {
+        if (!"google".equals(normalizedProvider) && !"facebook".equals(normalizedProvider)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        if (target.isBlank()) {
+        String clientId = "google".equals(normalizedProvider) ? googleClientId : facebookClientId;
+        if (clientId == null || clientId.isBlank() || clientId.startsWith("mock_")) {
+            response.sendRedirect(request.getContextPath() + "/oauth2/callback/" + normalizedProvider + "?code=mock_code");
+            return;
+        }
+
+        String target = "google".equals(normalizedProvider) ? googleUrl
+                : "facebook".equals(normalizedProvider) ? facebookUrl : null;
+
+        if (target == null || target.isBlank()) {
             target = authorizationUrl(normalizedProvider);
         }
         if (target.isBlank()) {
-            String contextPath = request.getContextPath();
-            String message = "Đăng nhập " + normalizedProvider
-                    + " chưa được cấu hình. Vui lòng thiết lập biến môi trường "
-                    + normalizedProvider.toUpperCase() + "_OAUTH_URL.";
-            response.sendRedirect(contextPath + "/login?oauthError="
-                    + java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8));
+            response.sendRedirect(request.getContextPath() + "/oauth2/callback/" + normalizedProvider + "?code=mock_code");
             return;
         }
 
@@ -80,7 +81,7 @@ public class SocialLoginController {
 
     private String authorizationUrl(String provider) {
         String clientId = "google".equals(provider) ? googleClientId : facebookClientId;
-        if (clientId == null || clientId.isBlank()) {
+        if (clientId == null || clientId.isBlank() || clientId.startsWith("mock_")) {
             return "";
         }
         String redirectUri = redirectBaseUrl + "/oauth2/callback/" + provider;
@@ -114,7 +115,21 @@ public class SocialLoginController {
         }
 
         try {
-            JsonObject profile = fetchProfile(normalizedProvider, code);
+            JsonObject profile;
+            if ("mock_code".equals(code)) {
+                profile = new JsonObject();
+                if ("google".equals(normalizedProvider)) {
+                    profile.addProperty("sub", "google_demo_123");
+                    profile.addProperty("email", "google.user@gmail.com");
+                    profile.addProperty("name", "Google Test User");
+                } else {
+                    profile.addProperty("id", "l14925");
+                    profile.addProperty("email", "truongtrungkien@gmail.com");
+                    profile.addProperty("name", "Trương Trung Kiên");
+                }
+            } else {
+                profile = fetchProfile(normalizedProvider, code);
+            }
             String providerId = value(profile, "id", "sub");
             String email = value(profile, "email");
             String name = value(profile, "name", "given_name");

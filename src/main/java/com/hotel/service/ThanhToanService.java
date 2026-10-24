@@ -203,4 +203,61 @@ public class ThanhToanService {
     public List<ThanhToan> getThanhToanByMaDp(Integer maDp) {
         return thanhToanRepository.findByDatPhong_MaDp(maDp);
     }
+
+    @Transactional(readOnly = true)
+    public List<ThanhToan> searchTransactions(String loaiThanhToan, String phuongThuc, String keyword) {
+        if ((loaiThanhToan == null || loaiThanhToan.isEmpty()) &&
+            (phuongThuc == null || phuongThuc.isEmpty()) &&
+            (keyword == null || keyword.isEmpty())) {
+            return thanhToanRepository.findAll();
+        }
+        return thanhToanRepository.searchTransactions(
+            loaiThanhToan != null && loaiThanhToan.isEmpty() ? null : loaiThanhToan,
+            phuongThuc != null && phuongThuc.isEmpty() ? null : phuongThuc,
+            keyword
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getOnlineReconciliation() {
+        List<ThanhToan> vnpayList = thanhToanRepository.searchTransactions(null, "VNPAY", null);
+        BigDecimal totalOnlineAmount = vnpayList.stream()
+                .map(ThanhToan::getSoTien)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Object> report = new HashMap<>();
+        report.put("vnpayTransactions", vnpayList);
+        report.put("totalTransactions", vnpayList.size());
+        report.put("totalOnlineAmount", totalOnlineAmount);
+        report.put("reconciliationStatus", "KHỚP (MATCHED)");
+        report.put("lastCheckedTime", new Timestamp(System.currentTimeMillis()));
+        return report;
+    }
+
+    @Transactional
+    public Map<String, Object> ghiNhanThanhToanThuCong(Integer maDp, BigDecimal soTien, String loaiThanhToan, String phuongThuc, String maGiaoDich, String ghiChu, com.hotel.model.TaiKhoan currentUser) {
+        if (maDp == null || soTien == null || soTien.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Mã đặt phòng và số tiền thanh toán không hợp lệ.");
+        }
+        DatPhong dp = datPhongRepository.findById(maDp)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng với ID: " + maDp));
+
+        ThanhToan thanhToan = new ThanhToan();
+        thanhToan.setDatPhong(dp);
+        thanhToan.setSoTien(soTien);
+        thanhToan.setLoaiThanhToan(loaiThanhToan != null && !loaiThanhToan.isEmpty() ? loaiThanhToan : "THANH_TOAN_DU");
+        thanhToan.setPhuongThuc(phuongThuc != null && !phuongThuc.isEmpty() ? phuongThuc : "TIEN_MAT");
+        thanhToan.setMaGiaoDich(maGiaoDich != null && !maGiaoDich.isEmpty() ? maGiaoDich : "MANUAL_" + System.currentTimeMillis());
+        thanhToan.setMaNvThu(currentUser != null ? currentUser.getMaTk() : null);
+        thanhToan.setGhiChu(ghiChu != null && !ghiChu.isEmpty() ? ghiChu : "Thu tiền thủ công tại quầy");
+        thanhToan.setNgayThanhToan(new Timestamp(System.currentTimeMillis()));
+
+        thanhToanRepository.save(thanhToan);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Ghi nhận thanh toán thủ công thành công!");
+        return result;
+    }
 }

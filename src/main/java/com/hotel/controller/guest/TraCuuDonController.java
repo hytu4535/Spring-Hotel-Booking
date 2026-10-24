@@ -59,17 +59,34 @@ public class TraCuuDonController {
         if (khOpt.isPresent()) {
             KhachHang kh = khOpt.get();
             List<DatPhong> danhSachDon = datPhongRepository.findByKhachHang_MaKhOrderByNgayDatDesc(kh.getMaKh());
+            for (DatPhong dp : danhSachDon) {
+                if (dp.getChiTietDatPhongs() != null) {
+                    dp.getChiTietDatPhongs().size();
+                    for (com.hotel.model.ChiTietDatPhong ctdp : dp.getChiTietDatPhongs()) {
+                        if (ctdp.getPhong() != null) {
+                            ctdp.getPhong().getSoPhong();
+                            if (ctdp.getPhong().getLoaiPhong() != null) {
+                                ctdp.getPhong().getLoaiPhong().getTenLoai();
+                            }
+                        }
+                    }
+                }
+            }
             model.addAttribute("danhSachDon", danhSachDon);
 
             Map<Integer, List<ThanhToan>> paymentMap = new HashMap<>();
             Map<Integer, DanhGia> reviewMap = new HashMap<>();
+            Map<Integer, List<com.hotel.model.DatDichVu>> serviceMap = new HashMap<>();
+            com.hotel.dao.DatDichVuDAO datDichVuDAO = new com.hotel.dao.DatDichVuDAO();
             for (DatPhong dp : danhSachDon) {
                 paymentMap.put(dp.getMaDp(), thanhToanService.getThanhToanByMaDp(dp.getMaDp()));
                 Optional<DanhGia> dgOpt = danhGiaService.getDanhGiaByMaDp(dp.getMaDp());
                 dgOpt.ifPresent(danhGia -> reviewMap.put(dp.getMaDp(), danhGia));
+                serviceMap.put(dp.getMaDp(), datDichVuDAO.findByMaDp(dp.getMaDp()));
             }
             model.addAttribute("paymentMap", paymentMap);
             model.addAttribute("reviewMap", reviewMap);
+            model.addAttribute("serviceMap", serviceMap);
         }
 
         return "guest/lich-su-don";
