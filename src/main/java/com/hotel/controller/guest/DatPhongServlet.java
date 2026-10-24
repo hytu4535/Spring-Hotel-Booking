@@ -1,5 +1,11 @@
 package com.hotel.controller.guest;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.model.CartItem;
 import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
@@ -7,56 +13,52 @@ import com.hotel.model.GioHang;
 import com.hotel.model.KhachHang;
 import com.hotel.service.DatPhongService;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/dat-phong")
-public class DatPhongServlet extends HttpServlet {
+@Controller
+public class DatPhongServlet {
 
     private final DatPhongService datPhongService = new DatPhongService();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
+    @GetMapping("/dat-phong")
+    public String doGet(HttpSession session) {
         GioHang cart = (GioHang) session.getAttribute("cart");
 
         // 1. Nếu giỏ hàng rỗng -> Đá về trang Tìm phòng
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/tim-phong");
-            return;
+            return "redirect:/tim-phong";
+
         }
 
         // 2. Nếu có đồ trong giỏ -> Mở trang điền thông tin khách
-        request.getRequestDispatcher("/WEB-INF/views/guest/dat-phong.jsp").forward(request, response);
+        return "guest/dat-phong";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        HttpSession session = request.getSession();
+    @PostMapping("/dat-phong")
+    public String doPost(@RequestParam(required = false) String hoTen,
+                         @RequestParam(required = false) String email,
+                         @RequestParam(required = false) String soDienThoai,
+                         @RequestParam(required = false) String cccd,
+                         @RequestParam(required = false) String diaChi,
+                         HttpSession session, Model model) {
         GioHang cart = (GioHang) session.getAttribute("cart");
 
         // Kiểm tra lại lần nữa lúc Submit form lỡ giỏ hàng bị timeout
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/tim-phong");
-            return;
+            return "redirect:/tim-phong";
+
         }
 
         try {
             // 1. Lấy thông tin khách hàng từ Form
             KhachHang kh = new KhachHang();
-            kh.setHoTen(request.getParameter("hoTen"));
-            kh.setEmail(request.getParameter("email"));
-            kh.setSoDienThoai(request.getParameter("soDienThoai"));
-            kh.setCccd(request.getParameter("cccd"));
-            kh.setDiaChi(request.getParameter("diaChi"));
+            kh.setHoTen(hoTen);
+            kh.setEmail(email);
+            kh.setSoDienThoai(soDienThoai);
+            kh.setCccd(cccd);
+            kh.setDiaChi(diaChi);
 
             // 2. Map dữ liệu Đặt Phòng từ Giỏ hàng
             DatPhong dp = new DatPhong();
@@ -85,17 +87,17 @@ public class DatPhongServlet extends HttpServlet {
                 session.setAttribute("emailDatPhong", kh.getEmail());
                 
                 // (Chỗ này sau này Trung Kiên sẽ đổi sang redirect VNPay)
-                response.sendRedirect(request.getContextPath() + "/dat-phong-thanh-cong");
+                return "redirect:/dat-phong-thanh-cong";
             } else {
                 // Thất bại do ai đó nhanh tay đặt mất phòng
-                request.setAttribute("error", "Một số phòng bạn chọn vừa bị người khác đặt mất. Vui lòng kiểm tra lại sơ đồ phòng!");
-                request.getRequestDispatcher("/WEB-INF/views/guest/dat-phong.jsp").forward(request, response);
+                model.addAttribute("error", "Một số phòng bạn chọn vừa bị người khác đặt mất. Vui lòng kiểm tra lại sơ đồ phòng!");
+                return "guest/dat-phong";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Dữ liệu nhập vào chưa hợp lệ, vui lòng kiểm tra lại.");
-            request.getRequestDispatcher("/WEB-INF/views/guest/dat-phong.jsp").forward(request, response);
+            model.addAttribute("error", "Dữ liệu nhập vào chưa hợp lệ, vui lòng kiểm tra lại.");
+            return "guest/dat-phong";
         }
     }
 }

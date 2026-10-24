@@ -1,0 +1,72 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+
+<div class="container mt-4 mb-5">
+    <h2 class="fw-bold text-primary mb-4"><i class="bi bi-cart-check"></i> Các phòng bạn đã chọn</h2>
+
+    <th:block th:if="${session.cart || session.cart.items}">
+        <div class="alert alert-warning text-center p-5">
+            <h4>Giỏ hàng của bạn đang trống!</h4>
+            <a th:href="@{/tim-phong}" class="btn btn-primary mt-3">Tìm phòng ngay</a>
+        </div>
+    </th:block>
+
+    <th:block th:if="${session.cart && session.cart.items}">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Thời gian lưu trú: 
+                            <span class="text-success">[[${session.cart.ngayNhan}]]</span> đến 
+                            <span class="text-danger">[[${session.cart.ngayTra}]]</span> 
+                            ([[${session.cart.soDem}]] đêm)
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Phòng</th>
+                                    <th>Loại phòng</th>
+                                    <th>Giá / Đêm</th>
+                                    <th>Thành tiền</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <th:block th:each="item : ${session.cart.items}">
+                                    <tr>
+                                        <td><strong>P.[[${item.soPhong}]]</strong></td>
+                                        <td>[[${item.tenLoai}]]</td>
+                                        <td><span th:text="${#numbers.formatDecimal(item.giaPhong, 1, 2)}"></span></td>
+                                        <td class="text-primary fw-bold"><span th:text="${#numbers.formatDecimal(item.thanhTien, 1, 2)}"></span></td>
+                                        <td>
+                                            <a th:href="@{/gio-hang(action='remove',maPhong=${item.maPhong})}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <a th:href="@{/tim-phong}" class="btn btn-outline-primary"><i class="bi bi-plus-circle"></i> Chọn thêm phòng khác</a>
+            </div>
+
+            <!-- Tổng kết tiền -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-body bg-light">
+                        <h5 class="card-title fw-bold">Tổng Thanh Toán</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Tiền phòng:</span>
+                            <span class="fs-5 fw-bold text-danger"><span th:text="${#numbers.formatDecimal(session.cart.tongTien, 1, 2)}"></span></span>
+                        </div>
+                        <a th:href="@{/dat-phong}" class="btn btn-primary w-100 btn-lg fw-bold">Tiến hành Đặt Phòng</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</div>
+
+<div th:replace="~{common/footer :: footer}"></div></html>

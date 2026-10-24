@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${loaiPhongId != null} ? 'Cập Nhật Loại Phòng' : 'Thêm Mới Loại Phòng'">Quản Lý Loại Phòng</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+
+                <!-- Card Header: Đổi tiêu đề linh hoạt theo Thêm mới / Cập nhật -->
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-door-open-fill me-2"></i>
+                        <span th:text="${loaiPhongId != null} ? 'CẬP NHẬT LOẠI PHÒNG' : 'THÊM MỚI LOẠI PHÒNG'">THÔNG TIN LOẠI PHÒNG</span>
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Hiển thị thông báo lỗi chung từ Service Exception (nếu có) -->
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span th:text="${errorMessage}">Thông báo lỗi</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <!-- FORM SUBMIT -->
+                    <form th:action="${loaiPhongId != null} ? @{/admin/loai-phong/edit/{id}(id=${loaiPhongId})} : @{/admin/loai-phong/create}"
+                          th:object="${loaiPhongForm}"
+                          method="post">
+
+                        <!-- Tên Loại Phòng -->
+                        <div class="mb-3">
+                            <label for="tenLoai" class="form-label fw-semibold">Tên Loại Phòng <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   id="tenLoai"
+                                   th:field="*{tenLoai}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('tenLoai')} ? 'is-invalid'"
+                                   placeholder="Ví dụ: Phòng Deluxe, Phòng VIP...">
+                            <!-- Hiển thị lỗi validation của field tenLoai -->
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('tenLoai')}" th:errors="*{tenLoai}">
+                                Lỗi tên loại phòng
+                            </div>
+                        </div>
+
+                        <!-- Hàng chứa: Giá Mặc Định & Sức Chứa -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="giaMacDinh" class="form-label fw-semibold">Giá Mặc Định (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number"
+                                       step="1000"
+                                       id="giaMacDinh"
+                                       th:field="*{giaMacDinh}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('giaMacDinh')} ? 'is-invalid'"
+                                       placeholder="Ví dụ: 500000">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('giaMacDinh')}" th:errors="*{giaMacDinh}">
+                                    Lỗi giá phòng
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="sucChua" class="form-label fw-semibold">Sức Chứa (Người) <span class="text-danger">*</span></label>
+                                <input type="number"
+                                       id="sucChua"
+                                       th:field="*{sucChua}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('sucChua')} ? 'is-invalid'"
+                                       placeholder="Ví dụ: 2">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('sucChua')}" th:errors="*{sucChua}">
+                                    Lỗi sức chứa
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hàng chứa: Diện Tích & Hình Ảnh -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dienTich" class="form-label fw-semibold">Diện Tích (m²)</label>
+                                <input type="number"
+                                       step="0.1"
+                                       id="dienTich"
+                                       th:field="*{dienTich}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('dienTich')} ? 'is-invalid'"
+                                       placeholder="Ví dụ: 35.5">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('dienTich')}" th:errors="*{dienTich}">
+                                    Lỗi diện tích
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="hinhAnh" class="form-label fw-semibold">Đường Dẫn Hình Ảnh (URL)</label>
+                                <input type="text"
+                                       id="hinhAnh"
+                                       th:field="*{hinhAnh}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('hinhAnh')} ? 'is-invalid'"
+                                       placeholder="/images/deluxe.jpg">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('hinhAnh')}" th:errors="*{hinhAnh}">
+                                    Lỗi hình ảnh
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mô Tả -->
+                        <div class="mb-4">
+                            <label for="moTa" class="form-label fw-semibold">Mô Tả Chi Tiết</label>
+                            <textarea id="moTa"
+                                      th:field="*{moTa}"
+                                      rows="4"
+                                      class="form-control"
+                                      placeholder="Nhập thông tin mô tả chi tiết tiện nghi phòng..."></textarea>
+                        </div>
+
+                        <!-- Group Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a th:href="@{/admin/loai-phong}" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Quay Lại
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-1"></i>
+                                <span th:text="${loaiPhongId != null} ? 'Cập Nhật' : 'Lưu Lại'">Lưu Lại</span>
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

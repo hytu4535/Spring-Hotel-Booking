@@ -1,42 +1,44 @@
 package com.hotel.controller.guest;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.dao.PhongDAO;
 import com.hotel.model.PhongTrongDTO;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-@WebServlet("/chi-tiet-phong")
-public class ChiTietPhongServlet extends HttpServlet {
+@Controller
+public class ChiTietPhongServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String maPhongRaw = request.getParameter("maPhong");
+    @GetMapping("/chi-tiet-phong")
+    public String doGet(@RequestParam(required = false) String maPhong,
+                        @RequestParam(required = false) String ngayNhan,
+                        @RequestParam(required = false) String ngayTra,
+                        Model model) {
+        String maPhongRaw = maPhong;
         if (maPhongRaw == null) {
-            response.sendRedirect(request.getContextPath() + "/tim-phong");
-            return;
+            return "redirect:/tim-phong";
+
         }
 
         try {
-            int maPhong = Integer.parseInt(maPhongRaw);
-            PhongTrongDTO phong = phongDAO.findPhongChiTiet(maPhong);
+            int maPhongId = Integer.parseInt(maPhongRaw);
+            PhongTrongDTO phong = phongDAO.findPhongChiTiet(maPhongId);
             if (phong == null) {
-                response.sendRedirect(request.getContextPath() + "/tim-phong");
-                return;
+                return "redirect:/tim-phong";
+
             }
 
-            request.setAttribute("phong", phong);
-            request.setAttribute("ngayNhan", request.getParameter("ngayNhan"));
-            request.setAttribute("ngayTra", request.getParameter("ngayTra"));
-            request.getRequestDispatcher("/WEB-INF/views/guest/chi-tiet-phong.jsp").forward(request, response);
+            model.addAttribute("phong", phong);
+            model.addAttribute("ngayNhan", ngayNhan);
+            model.addAttribute("ngayTra", ngayTra);
+            return "guest/chi-tiet-phong";
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/tim-phong");
+            return "redirect:/tim-phong";
         }
     }
 }

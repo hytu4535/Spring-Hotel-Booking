@@ -1,0 +1,68 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+
+<div class="container mt-4 mb-5">
+    <h2 class="fw-bold text-primary mb-4"><i class="bi bi-search"></i> Tìm phòng trống</h2>
+
+    <form method="get" th:action="@{/tim-phong}" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Ngày nhận phòng</label>
+            <input type="date" name="ngayNhan" class="form-control" th:value="${ngayNhan}" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Ngày trả phòng</label>
+            <input type="date" name="ngayTra" class="form-control" th:value="${ngayTra}" required>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Tìm phòng</button>
+        </div>
+    </form>
+
+    <th:block th:if="${error}">
+        <div class="alert alert-danger">[[${error}]]</div>
+    </th:block>
+
+    <th:block th:if="${ngayNhan and ngayTra}">
+        <p class="text-muted">Khoảng lưu trú: <strong>[[${ngayNhan}]]</strong> đến <strong>[[${ngayTra}]]</strong> ([[${soDem}]] đêm)</p>
+    </th:block>
+
+    <th:block th:if="${danhSachPhong}">
+        <div class="row g-3">
+            <th:block th:each="phong : ${danhSachPhong}">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">Phòng [[${phong.soPhong}]]</h5>
+                            <p class="text-muted mb-2">[[${phong.tenLoai}]] - Tầng [[${phong.tang}]]</p>
+                            <p class="mb-1">Sức chứa: <strong>[[${phong.sucChua}]]</strong> người</p>
+                            <p class="mb-2">Diện tích: <strong>[[${phong.dienTich}]]</strong> m²</p>
+                            <p class="fw-bold text-danger mb-3">
+                                <span th:text="${#numbers.formatDecimal(phong.giaPhong, 1, 2)}"></span> / đêm
+                            </p>
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-outline-secondary btn-sm"
+                                   th:href="@{/chi-tiet-phong(maPhong=${phong.maPhong},ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">
+                                    Chi tiết
+                                </a>
+                                <form th:action="@{/gio-hang}" method="post" class="ms-auto">
+                                    <input type="hidden" name="maPhong" th:value="${phong.maPhong}">
+                                    <input type="hidden" name="soPhong" th:value="${phong.soPhong}">
+                                    <input type="hidden" name="tenLoai" th:value="${phong.tenLoai}">
+                                    <input type="hidden" name="giaPhong" th:value="${phong.giaPhong}">
+                                    <input type="hidden" name="ngayNhan" th:value="${ngayNhan}">
+                                    <input type="hidden" name="ngayTra" th:value="${ngayTra}">
+                                    <button type="submit" class="btn btn-primary btn-sm">Thêm vào giỏ</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </th:block>
+
+    <th:block th:if="${danhSachPhong and ngayNhan and ngayTra and error}">
+        <div class="alert alert-warning mt-3">Không có phòng trống trong khoảng thời gian đã chọn.</div>
+    </th:block>
+</div>
+
+<div th:replace="~{common/footer :: footer}"></div></html>

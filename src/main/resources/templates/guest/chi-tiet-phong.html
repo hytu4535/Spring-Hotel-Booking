@@ -1,0 +1,45 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+
+<div class="container mt-4 mb-5">
+    <th:block>
+        <th:block th:if="${phong}">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-3">Phòng [[${phong.soPhong}]] - [[${phong.tenLoai}]]</h3>
+                    <p><strong>Tầng:</strong> [[${phong.tang}]]</p>
+                    <p><strong>Sức chứa:</strong> [[${phong.sucChua}]] người</p>
+                    <p><strong>Diện tích:</strong> [[${phong.dienTich}]] m²</p>
+                    <p><strong>Mô tả:</strong> [[${phong.moTa}]]</p>
+                    <p class="text-danger fs-5 fw-bold">
+                        <span th:text="${#numbers.formatDecimal(phong.giaPhong, 1, 2)}"></span> / đêm
+                    </p>
+
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/tim-phong(ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">
+                            Quay lại tìm phòng
+                        </a>
+
+                        <th:block th:if="${ngayNhan and ngayTra}">
+                            <form th:action="@{/gio-hang}" method="post" class="ms-auto">
+                                <input type="hidden" name="maPhong" th:value="${phong.maPhong}">
+                                <input type="hidden" name="soPhong" th:value="${phong.soPhong}">
+                                <input type="hidden" name="tenLoai" th:value="${phong.tenLoai}">
+                                <input type="hidden" name="giaPhong" th:value="${phong.giaPhong}">
+                                <input type="hidden" name="ngayNhan" th:value="${ngayNhan}">
+                                <input type="hidden" name="ngayTra" th:value="${ngayTra}">
+                                <button type="submit" class="btn btn-primary">Thêm vào giỏ</button>
+                            </form>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        <th:block th:unless="${true}">
+            <div class="alert alert-warning">Không tìm thấy thông tin phòng.</div>
+            <a class="btn btn-outline-secondary" th:href="@{/tim-phong}">Quay lại</a>
+        </th:block>
+    </th:block>
+</div>
+
+<div th:replace="~{common/footer :: footer}"></div></html>

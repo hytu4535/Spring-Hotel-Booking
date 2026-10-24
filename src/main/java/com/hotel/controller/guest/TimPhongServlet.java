@@ -1,54 +1,53 @@
 package com.hotel.controller.guest;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.dao.PhongDAO;
 import com.hotel.model.PhongTrongDTO;
 import com.hotel.util.DateUtil;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-@WebServlet("/tim-phong")
-public class TimPhongServlet extends HttpServlet {
+@Controller
+public class TimPhongServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String ngayNhan = request.getParameter("ngayNhan");
-        String ngayTra = request.getParameter("ngayTra");
+    @GetMapping("/tim-phong")
+    public String doGet(@RequestParam(required = false) String ngayNhan,
+                        @RequestParam(required = false) String ngayTra,
+                        Model model) {
 
-        request.setAttribute("ngayNhan", ngayNhan);
-        request.setAttribute("ngayTra", ngayTra);
+        model.addAttribute("ngayNhan", ngayNhan);
+        model.addAttribute("ngayTra", ngayTra);
 
         if (ngayNhan == null || ngayTra == null) {
-            request.setAttribute("danhSachPhong", Collections.emptyList());
-            request.getRequestDispatcher("/WEB-INF/views/guest/tim-phong.jsp").forward(request, response);
-            return;
+            model.addAttribute("danhSachPhong", Collections.emptyList());
+            return "guest/tim-phong";
+
         }
 
         LocalDate dNhan = DateUtil.parse(ngayNhan);
         LocalDate dTra = DateUtil.parse(ngayTra);
 
         if (!DateUtil.isValidRange(dNhan, dTra)) {
-            request.setAttribute("error", "Ngày nhận/trả phòng không hợp lệ.");
-            request.setAttribute("danhSachPhong", Collections.emptyList());
-            request.getRequestDispatcher("/WEB-INF/views/guest/tim-phong.jsp").forward(request, response);
-            return;
+            model.addAttribute("error", "Ngày nhận/trả phòng không hợp lệ.");
+            model.addAttribute("danhSachPhong", Collections.emptyList());
+            return "guest/tim-phong";
+
         }
 
         int soDem = DateUtil.soDem(dNhan, dTra);
-        request.setAttribute("soDem", soDem);
+        model.addAttribute("soDem", soDem);
 
         List<PhongTrongDTO> danhSachPhong = phongDAO.timPhongTrong(Date.valueOf(dNhan), Date.valueOf(dTra));
-        request.setAttribute("danhSachPhong", danhSachPhong);
-        request.getRequestDispatcher("/WEB-INF/views/guest/tim-phong.jsp").forward(request, response);
+        model.addAttribute("danhSachPhong", danhSachPhong);
+        return "guest/tim-phong";
     }
 }

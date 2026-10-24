@@ -1,64 +1,64 @@
 package com.hotel.controller.guest;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.dao.DatPhongDAO;
 import com.hotel.dao.KhachHangDAO;
 import com.hotel.model.DatPhong;
 import com.hotel.model.KhachHang;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-@WebServlet("/tra-cuu-don")
-public class TraCuuDonServlet extends HttpServlet {
+@Controller
+public class TraCuuDonServlet {
 
     private final DatPhongDAO datPhongDAO = new DatPhongDAO();
     private final KhachHangDAO khachHangDAO = new KhachHangDAO();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/views/guest/tra-cuu-don.jsp").forward(request, response);
+    @GetMapping("/tra-cuu-don")
+    public String doGet() {
+        return "guest/tra-cuu-don";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
+    @PostMapping("/tra-cuu-don")
+    public String doPost(@RequestParam String action,
+                         @RequestParam(required = false) String maTraCuu,
+                         @RequestParam(required = false) String email,
+                         @RequestParam(required = false) Integer maDp,
+                         Model model) {
 
         // 1. CHỨC NĂNG TÌM KIẾM ĐƠN
         if ("search".equals(action)) {
-            String maTraCuu = request.getParameter("maTraCuu");
-            String email = request.getParameter("email");
-
             DatPhong dp = datPhongDAO.findByMaTraCuu(maTraCuu);
             if (dp != null) {
                 KhachHang kh = khachHangDAO.findById(dp.getMaKh()); // Nhớ tạo hàm này trong KhachHangDAO
                 if (kh != null && kh.getEmail().equalsIgnoreCase(email)) {
-                    request.setAttribute("donDatPhong", dp);
-                    request.setAttribute("khachHang", kh);
+                    model.addAttribute("donDatPhong", dp);
+                    model.addAttribute("khachHang", kh);
                 } else {
-                    request.setAttribute("error", "Email không khớp với mã tra cứu!");
+                    model.addAttribute("error", "Email không khớp với mã tra cứu!");
                 }
             } else {
-                request.setAttribute("error", "Không tìm thấy đơn hàng với mã này!");
+                model.addAttribute("error", "Không tìm thấy đơn hàng với mã này!");
             }
             
             // Giữ lại input để khách khỏi nhập lại
-            request.setAttribute("maTraCuuInput", maTraCuu);
-            request.setAttribute("emailInput", email);
-            request.getRequestDispatcher("/WEB-INF/views/guest/tra-cuu-don.jsp").forward(request, response);
+            model.addAttribute("maTraCuuInput", maTraCuu);
+            model.addAttribute("emailInput", email);
+            return "guest/tra-cuu-don";
         }
         
         // 2. CHỨC NĂNG HỦY ĐƠN (Khách tự hủy)
         else if ("cancel".equals(action)) {
-            int maDp = Integer.parseInt(request.getParameter("maDp"));
             // Khách chỉ được hủy khi đơn đang ở trạng thái CHỜ XÁC NHẬN
             datPhongDAO.updateTrangThai(maDp, "DA_HUY");
             
-            request.setAttribute("success", "Đã hủy đơn đặt phòng thành công!");
-            request.getRequestDispatcher("/WEB-INF/views/guest/tra-cuu-don.jsp").forward(request, response);
+            model.addAttribute("success", "Đã hủy đơn đặt phòng thành công!");
+            return "guest/tra-cuu-don";
         }
+        return "guest/tra-cuu-don";
     }
 }

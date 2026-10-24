@@ -1,62 +1,51 @@
 package com.hotel.controller.staff;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.AuthService;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 
-@WebServlet({"/admin", "/admin/login"})
-public class AdminLoginServlet extends HttpServlet {
+@Controller
+public class AdminLoginServlet {
 
     private final AuthService authService = new AuthService();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @GetMapping({"/admin", "/admin/login"})
+    public String doGet(HttpSession session, Model model) {
         TaiKhoan user = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
         if (user != null && !"CUSTOMER".equals(user.getVaiTro())) {
-            redirectByRole(request, response, user);
-            return;
+            return redirectByRole(user);
         }
-        request.setAttribute("adminMode", true);
-        request.getRequestDispatcher("/WEB-INF/jsp/staff/login.jsp").forward(request, response);
+        model.addAttribute("adminMode", true);
+        return "staff/login";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String username = request.getParameter("tenDangNhap");
-        TaiKhoan user = authService.login(username, request.getParameter("matKhau"));
+    @PostMapping({"/admin", "/admin/login"})
+    public String doPost(@RequestParam String tenDangNhap, @RequestParam String matKhau,
+                         HttpSession session, Model model) {
+        TaiKhoan user = authService.login(tenDangNhap, matKhau);
         if (user == null || "CUSTOMER".equals(user.getVaiTro())) {
-            request.setAttribute("adminMode", true);
-            request.setAttribute("tenDangNhap", username);
-            request.setAttribute("error", "Tên đăng nhập không đúng hoặc tài khoản không có quyền nhân viên/quản trị.");
-            request.getRequestDispatcher("/WEB-INF/jsp/staff/login.jsp").forward(request, response);
-            return;
+            model.addAttribute("adminMode", true);
+            model.addAttribute("tenDangNhap", tenDangNhap);
+            model.addAttribute("error", "Tên đăng nhập không đúng hoặc tài khoản không có quyền nhân viên/quản trị.");
+            return "staff/login";
         }
 
-        HttpSession oldSession = request.getSession(false);
-        if (oldSession != null) {
-            oldSession.invalidate();
-        }
-        request.getSession(true).setAttribute("currentUser", user);
-        redirectByRole(request, response, user);
+        session.setAttribute("currentUser", user);
+        return redirectByRole(user);
     }
 
-    private void redirectByRole(HttpServletRequest request, HttpServletResponse response,
-                                TaiKhoan user) throws IOException {
-        String context = request.getContextPath();
+    private String redirectByRole(TaiKhoan user) {
         if ("ADMIN".equals(user.getVaiTro())) {
-            response.sendRedirect(context + "/admin/dashboard");
+            return "redirect:/admin/dashboard";
         } else {
-            response.sendRedirect(context + "/staff/quan-ly-don");
+            return "redirect:/staff/quan-ly-don";
         }
     }
 }

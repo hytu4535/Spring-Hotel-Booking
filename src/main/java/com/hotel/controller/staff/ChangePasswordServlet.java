@@ -1,59 +1,55 @@
 package com.hotel.controller.staff;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.TaiKhoanService;
 import com.hotel.util.PasswordUtil;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Servlet để đổi mật khẩu
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet({"/staff/doi-mat-khau", "/admin/doi-mat-khau"})
-public class ChangePasswordServlet extends HttpServlet {
+@Controller
+public class ChangePasswordServlet {
 
     private final TaiKhoanService taiKhoanService = new TaiKhoanService();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @GetMapping({"/staff/doi-mat-khau", "/admin/doi-mat-khau"})
+    public String doGet(HttpSession session, Model model) {
         TaiKhoan currentUser = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra đăng nhập
         if (currentUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
-        setViewPaths(request);
-        request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
+        setViewPaths(model, false);
+        return "staff/changePassword";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @PostMapping({"/staff/doi-mat-khau", "/admin/doi-mat-khau"})
+    public String doPost(@RequestParam(required = false) String matKhauCu,
+                         @RequestParam(required = false) String matKhauMoi,
+                         @RequestParam(required = false) String xacNhanMatKhauMoi,
+                         HttpSession session, Model model) {
         TaiKhoan currentUser = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra đăng nhập
         if (currentUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
         // Lấy dữ liệu từ form
-        String matKhauCu = request.getParameter("matKhauCu");
-        String matKhauMoi = request.getParameter("matKhauMoi");
-        String xacNhanMatKhauMoi = request.getParameter("xacNhanMatKhauMoi");
 
         // Validate input
         boolean hasError = false;
@@ -62,45 +58,44 @@ public class ChangePasswordServlet extends HttpServlet {
         if (matKhauCu == null || matKhauCu.trim().isEmpty()) {
             hasError = true;
             errorMessages.put("matKhauCu", "Mật khẩu cũ không được để trống");
-            request.setAttribute("errorMatKhauCu", "Mật khẩu cũ không được để trống");
+            model.addAttribute("errorMatKhauCu", "Mật khẩu cũ không được để trống");
         } else if (matKhauMoi == null || matKhauMoi.trim().isEmpty()) {
             hasError = true;
             errorMessages.put("matKhauMoi", "Mật khẩu mới không được để trống");
-            request.setAttribute("errorMatKhauMoi", "Mật khẩu mới không được để trống");
+            model.addAttribute("errorMatKhauMoi", "Mật khẩu mới không được để trống");
         } else if (xacNhanMatKhauMoi == null || xacNhanMatKhauMoi.trim().isEmpty()) {
             hasError = true;
             errorMessages.put("xacNhanMatKhauMoi", "Vui lòng xác nhận mật khẩu mới");
-            request.setAttribute("errorXacNhanMatKhauMoi", "Vui lòng xác nhận mật khẩu mới");
+            model.addAttribute("errorXacNhanMatKhauMoi", "Vui lòng xác nhận mật khẩu mới");
         } else if (!matKhauMoi.equals(xacNhanMatKhauMoi)) {
             hasError = true;
             errorMessages.put("matKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
             errorMessages.put("xacNhanMatKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
-            request.setAttribute("errorMatKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
-            request.setAttribute("errorXacNhanMatKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
+            model.addAttribute("errorMatKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
+            model.addAttribute("errorXacNhanMatKhauMoi", "Mật khẩu mới và xác nhận mật khẩu mới không khớp");
         } else if (matKhauMoi.length() < 6) {
             hasError = true;
             errorMessages.put("matKhauMoi", "Mật khẩu mới phải có ít nhất 6 ký tự");
-            request.setAttribute("errorMatKhauMoi", "Mật khẩu mới phải có ít nhất 6 ký tự");
+            model.addAttribute("errorMatKhauMoi", "Mật khẩu mới phải có ít nhất 6 ký tự");
         }
 
         // Kiểm tra mật khẩu cũ
         if (!hasError && !PasswordUtil.checkPassword(matKhauCu, currentUser.getMatKhau())) {
             hasError = true;
             errorMessages.put("matKhauCu", "Mật khẩu cũ không đúng");
-            request.setAttribute("errorMatKhauCu", "Mật khẩu cũ không đúng");
+            model.addAttribute("errorMatKhauCu", "Mật khẩu cũ không đúng");
         }
 
         if (hasError) {
-            request.setAttribute("errorMessages", errorMessages);
+            model.addAttribute("errorMessages", errorMessages);
             // Also set general error for backward compatibility
-            request.setAttribute("error", "Vui lòng sửa các lỗi được đánh dấu bên dưới.");
-            // Keep the submitted values in request attributes as requested
-            request.setAttribute("matKhauCu", matKhauCu);
-            request.setAttribute("matKhauMoi", matKhauMoi);
-            request.setAttribute("xacNhanMatKhauMoi", xacNhanMatKhauMoi);
-            setViewPaths(request);
-            request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
-            return;
+            model.addAttribute("error", "Vui lòng sửa các lỗi được đánh dấu bên dưới.");
+            // Keep the submitted values when redisplaying the form
+            model.addAttribute("matKhauCu", matKhauCu);
+            model.addAttribute("matKhauMoi", matKhauMoi);
+            model.addAttribute("xacNhanMatKhauMoi", xacNhanMatKhauMoi);
+            setViewPaths(model, false);
+            return "staff/changePassword";
         }
 
         // Cập nhật mật khẩu mới (đã được hash)
@@ -112,19 +107,18 @@ public class ChangePasswordServlet extends HttpServlet {
         if (success) {
             // Cập nhật lại session với thông tin mới
             session.setAttribute("currentUser", currentUser);
-            request.setAttribute("success", "Đổi mật khẩu thành công! Bạn có thể tiếp tục làm việc hoặc đăng nhập lại bằng mật khẩu mới để đảm bảo bảo mật.");
+            model.addAttribute("success", "Đổi mật khẩu thành công! Bạn có thể tiếp tục làm việc hoặc đăng nhập lại bằng mật khẩu mới để đảm bảo bảo mật.");
         } else {
-            request.setAttribute("error", "Đổi mật khẩu thất bại. Vui lòng thử lại!");
+            model.addAttribute("error", "Đổi mật khẩu thất bại. Vui lòng thử lại!");
         }
 
         // Hiển thị lại form đổi mật khẩu
-        setViewPaths(request);
-        request.getRequestDispatcher("/WEB-INF/jsp/staff/changePassword.jsp").forward(request, response);
+        setViewPaths(model, false);
+        return "staff/changePassword";
     }
 
-    private void setViewPaths(HttpServletRequest request) {
-        boolean admin = request.getServletPath().startsWith("/admin/");
-        request.setAttribute("isAdminView", admin);
-        request.setAttribute("passwordBasePath", admin ? "/admin/doi-mat-khau" : "/staff/doi-mat-khau");
+    private void setViewPaths(Model model, boolean admin) {
+        model.addAttribute("isAdminView", admin);
+        model.addAttribute("passwordBasePath", admin ? "/admin/doi-mat-khau" : "/staff/doi-mat-khau");
     }
 }

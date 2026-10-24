@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -23,6 +22,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.UUID;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class SocialLoginController {
@@ -49,33 +49,27 @@ public class SocialLoginController {
     }
 
     @GetMapping("/login/{provider}")
-    public void login(@PathVariable String provider, HttpServletResponse response,
-                      HttpServletRequest request) throws IOException {
+    public Object login(@PathVariable String provider, HttpSession session) {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         String target = "google".equals(normalizedProvider) ? googleUrl
                 : "facebook".equals(normalizedProvider) ? facebookUrl : null;
 
         if (target == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            return "redirect:/404";
         }
 
         if (target.isBlank()) {
             target = authorizationUrl(normalizedProvider);
         }
         if (target.isBlank()) {
-            String contextPath = request.getContextPath();
             String message = "Đăng nhập " + normalizedProvider
                     + " chưa được cấu hình. Vui lòng thiết lập biến môi trường "
                     + normalizedProvider.toUpperCase() + "_OAUTH_URL.";
-            response.sendRedirect(contextPath + "/login?oauthError="
-                    + java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8));
-            return;
+            return "redirect:/login?oauthError=" + encode(message);
         }
 
-        HttpSession session = request.getSession(true);
         session.setAttribute("oauthProvider", normalizedProvider);
-        response.sendRedirect(target);
+        return new RedirectView(target);
     }
 
     private String authorizationUrl(String provider) {
@@ -98,19 +92,16 @@ public class SocialLoginController {
     }
 
     @GetMapping("/oauth2/callback/{provider}")
-    public void callback(@PathVariable String provider,
+    public String callback(@PathVariable String provider,
                          @RequestParam(required = false) String code,
                          @RequestParam(required = false) String error,
-                         HttpServletRequest request,
-                         HttpServletResponse response) throws IOException {
+                         HttpSession session) {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         if (!"google".equals(normalizedProvider) && !"facebook".equals(normalizedProvider)) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            return "redirect:/404";
         }
         if (error != null || code == null || code.isBlank()) {
-            redirectWithError(request, response, "Đăng nhập " + normalizedProvider + " đã bị hủy hoặc thất bại.");
-            return;
+            return redirectWithError("Đăng nhập " + normalizedProvider + " đã bị hủy hoặc thất bại.");
         }
 
         try {
@@ -140,17 +131,13 @@ public class SocialLoginController {
             account.setAnhDaiDien(safeAvatarUrl(profileImageUrl(profile)));
             account = taiKhoanRepository.save(account);
 
-            HttpSession oldSession = request.getSession(false);
-            if (oldSession != null) {
-                oldSession.invalidate();
-            }
-            request.getSession(true).setAttribute("currentUser", account);
-            response.sendRedirect(request.getContextPath() + "/customer/profile");
+            session.setAttribute("currentUser", account);
+            return "redirect:/customer/profile";
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            redirectWithError(request, response, "Không thể hoàn tất đăng nhập mạng xã hội.");
+            return redirectWithError("Không thể hoàn tất đăng nhập mạng xã hội.");
         } catch (Exception ex) {
-            redirectWithError(request, response, "Đăng nhập mạng xã hội thất bại: " + ex.getMessage());
+            return redirectWithError("Đăng nhập mạng xã hội thất bại: " + ex.getMessage());
         }
     }
 
@@ -241,8 +228,7 @@ public class SocialLoginController {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    private void redirectWithError(HttpServletRequest request, HttpServletResponse response,
-                                   String message) throws IOException {
-        response.sendRedirect(request.getContextPath() + "/login?oauthError=" + encode(message));
+    private String redirectWithError(String message) {
+        return "redirect:/login?oauthError=" + encode(message);
     }
 }

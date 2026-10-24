@@ -1,14 +1,14 @@
 package com.hotel.controller.staff;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.TaiKhoanService;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,89 +16,84 @@ import java.util.Map;
  * Servlet để hiển thị và cập nhật hồ sơ cá nhân
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet({"/staff/profile", "/admin/profile"})
-public class ProfileServlet extends HttpServlet {
+@Controller
+public class ProfileServlet {
 
     private final TaiKhoanService taiKhoanService = new TaiKhoanService();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @GetMapping({"/staff/profile", "/admin/profile"})
+    public String doGet(HttpSession session, Model model) {
         TaiKhoan currentUser = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra đăng nhập
         if (currentUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
         // Lấy thông tin tài khoản hiện tại từ database để có dữ liệu mới nhất
         TaiKhoan user = taiKhoanService.findById(currentUser.getMaTk());
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
-        request.setAttribute("user", user);
+        model.addAttribute("user", user);
         // Also set currentUser for JSP access
-        request.setAttribute("currentUser", currentUser);
-        setViewPaths(request);
-        request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
+        model.addAttribute("currentUser", currentUser);
+        setViewPaths(model, false);
+        return "staff/profile";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @PostMapping({"/staff/profile", "/admin/profile"})
+    public String doPost(@RequestParam(required = false) String hoTen,
+                         @RequestParam(required = false) String email,
+                         @RequestParam(required = false) String soDienThoai,
+                         HttpSession session, Model model) {
         TaiKhoan currentUser = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra đăng nhập
         if (currentUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
         // Lấy dữ liệu từ form
-        String hoTen = request.getParameter("hoTen");
-        String email = request.getParameter("email");
-        String soDienThoai = request.getParameter("soDienThoai");
 
         // Validate input
         boolean hasError = false;
 
         if (hoTen == null || hoTen.trim().isEmpty()) {
             hasError = true;
-            request.setAttribute("errorHoTen", "Họ tên không được để trống");
+            model.addAttribute("errorHoTen", "Họ tên không được để trống");
         }
         if (email == null || email.trim().isEmpty()) {
             hasError = true;
-            request.setAttribute("errorEmail", "Email không được để trống");
+            model.addAttribute("errorEmail", "Email không được để trống");
         } else if (!email.matches("[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
             hasError = true;
-            request.setAttribute("errorEmail", "Email không đúng định dạng");
+            model.addAttribute("errorEmail", "Email không đúng định dạng");
         }
         // Validate phone number: 10 digits, starting with 0
         if (soDienThoai != null && !soDienThoai.isEmpty()) {
             if (!soDienThoai.matches("^0[0-9]{9}$")) {
                 hasError = true;
-                request.setAttribute("errorSoDienThoai", "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0");
+                model.addAttribute("errorSoDienThoai", "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0");
             }
         }
 
         if (hasError) {
-            // Keep the submitted values in request attributes as requested
-            request.setAttribute("hoTen", hoTen);
-            request.setAttribute("email", email);
-            request.setAttribute("soDienThoai", soDienThoai);
+            // Keep the submitted values when redisplaying the form
+            model.addAttribute("hoTen", hoTen);
+            model.addAttribute("email", email);
+            model.addAttribute("soDienThoai", soDienThoai);
             // Set currentUser from session for JSP access
-            request.setAttribute("currentUser", currentUser);
+            model.addAttribute("currentUser", currentUser);
             // Lấy lại thông tin người dùng để hiển thị form
             TaiKhoan user = taiKhoanService.findById(currentUser.getMaTk());
-            request.setAttribute("user", user);
-            setViewPaths(request);
-            request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
-            return;
+            model.addAttribute("user", user);
+            setViewPaths(model, false);
+            return "staff/profile";
         }
 
         // Cập nhật thông tin
@@ -111,21 +106,20 @@ public class ProfileServlet extends HttpServlet {
         if (success) {
             // Cập nhật lại session
             session.setAttribute("currentUser", currentUser);
-            request.setAttribute("success", "Cập nhật hồ sơ thành công!");
+            model.addAttribute("success", "Cập nhật hồ sơ thành công!");
         } else {
-            request.setAttribute("error", "Cập nhật hồ sơ thất bại. Vui lòng thử lại!");
+            model.addAttribute("error", "Cập nhật hồ sơ thất bại. Vui lòng thử lại!");
         }
 
         // Lấy lại thông tin để hiển thị
         TaiKhoan user = taiKhoanService.findById(currentUser.getMaTk());
-        request.setAttribute("user", user);
-        setViewPaths(request);
-        request.getRequestDispatcher("/WEB-INF/jsp/staff/profile.jsp").forward(request, response);
+        model.addAttribute("user", user);
+        setViewPaths(model, false);
+        return "staff/profile";
     }
 
-    private void setViewPaths(HttpServletRequest request) {
-        boolean admin = request.getServletPath().startsWith("/admin/");
-        request.setAttribute("isAdminView", admin);
-        request.setAttribute("profileBasePath", admin ? "/admin/profile" : "/staff/profile");
+    private void setViewPaths(Model model, boolean admin) {
+        model.addAttribute("isAdminView", admin);
+        model.addAttribute("profileBasePath", admin ? "/admin/profile" : "/staff/profile");
     }
 }

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Loại Phòng</title>
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- 1. Bổ sung File CSS của Admin Sidebar -->
+    <link rel="stylesheet" th:href="@{/css/admin-sidebar.css}">
+
+    <style>
+        /* 2. Đẩy nội dung trang sang bên phải 250px để nhường chỗ cho Sidebar */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- 3. Nhúng Sidebar Admin vào đây -->
+<div th:replace="~{common/sidebar-admin :: sidebar}"></div>
+
+<!-- 4. Bọc toàn bộ nội dung trang trong div.main-content -->
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 text-primary fw-bold">
+            <i class="fas fa-layer-group me-2"></i>Quản Lý Loại Phòng
+        </h2>
+    </div>
+
+    <!-- Thông báo Success / Error từ RedirectAttributes -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}">Thao tác thành công!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${errorMessage}">Có lỗi xảy ra!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Card Thanh Công Cụ & Thêm Mới -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-6">
+                    <form th:action="@{/admin/loai-phong}" method="get" class="d-flex gap-2">
+                        <input type="text" name="tenLoai" th:value="${param.tenLoai}" class="form-control" placeholder="Tìm theo tên loại phòng...">
+                        <button type="submit" class="btn btn-primary text-nowrap">
+                            <i class="fas fa-search me-1"></i> Tra cứu
+                        </button>
+                        <a th:href="@{/admin/loai-phong}" class="btn btn-outline-secondary text-nowrap">
+                            <i class="fas fa-rotate-left me-1"></i> Xóa lọc
+                        </a>
+                    </form>
+                </div>
+                <div class="col-md-auto text-end">
+                    <a th:href="@{/admin/loai-phong/create}" class="btn btn-success fw-semibold">
+                        <i class="fas fa-plus me-1"></i> Thêm loại phòng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Bảng Danh Sách -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 fw-bold text-secondary">
+            <i class="fas fa-list me-2"></i>DANH SÁCH LOẠI PHÒNG
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 80px;">Mã</th>
+                        <th>Tên loại phòng</th>
+                        <th>Giá mặc định</th>
+                        <th class="text-center">Sức chứa</th>
+                        <th class="text-center">Diện tích</th>
+                        <th class="text-center">Hình ảnh</th>
+                        <th class="text-center" style="width: 130px;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Lặp danh sách Loại phòng từ Controller -->
+                    <tr th:each="item : ${dsLoaiPhong}">
+                        <td class="text-center fw-bold" th:text="${item.maLoai}">1</td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${item.tenLoai}">Phòng Deluxe</div>
+                            <div class="text-muted small text-truncate" style="max-width: 300px;" th:text="${item.moTa}">Mô tả loại phòng...</div>
+                        </td>
+                        <!-- Định dạng tiền tệ VND tự động -->
+                        <td class="fw-semibold text-success"
+                            th:text="${item.giaMacDinh != null ? #numbers.formatDecimal(item.giaMacDinh, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">
+                            1.000.000 VNĐ
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info text-dark" th:text="${item.sucChua + ' người'}">2 người</span>
+                        </td>
+                        <td class="text-center" th:text="${item.dienTich != null ? item.dienTich + ' m²' : '-'}">35 m²</td>
+                        <td class="text-center">
+                            <img th:if="${item.hinhAnh != null and !item.hinhAnh.isBlank()}"
+                                 th:src="${item.hinhAnh}"
+                                 alt="Ảnh phòng" class="rounded border" style="width: 60px; height: 40px; object-fit: cover;">
+                            <span th:unless="${item.hinhAnh != null and !item.hinhAnh.isBlank()}" class="text-muted small">Chưa có ảnh</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- Nút Sửa -->
+                                <a class="btn btn-sm btn-outline-primary"
+                                   th:href="@{/admin/loai-phong/edit/{id}(id=${item.maLoai})}"
+                                   title="Chỉnh sửa">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <!-- Form Xóa Mềm -->
+                                <form th:action="@{/admin/loai-phong/delete/{id}(id=${item.maLoai})}"
+                                      method="post"
+                                      th:onsubmit="return confirm('Bạn có chắc chắn muốn xóa loại phòng [[${item.tenLoai}]] không?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa loại phòng">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Trường hợp danh sách rỗng -->
+                    <tr th:if="${#lists.isEmpty(dsLoaiPhong)}">
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-folder-open fa-2x mb-2 d-block"></i>
+                            Chưa có dữ liệu loại phòng nào.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

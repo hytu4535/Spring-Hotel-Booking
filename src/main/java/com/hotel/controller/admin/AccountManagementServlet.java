@@ -1,16 +1,16 @@
 package com.hotel.controller.admin;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import com.hotel.dao.TaiKhoanDAO;
 import com.hotel.model.TaiKhoan;
 import com.hotel.util.PasswordUtil;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -19,107 +19,103 @@ import java.util.stream.Collectors;
  * Servlet để quản lý tài khoản (chỉ ADMIN)
  * Cho phép xem danh sách tài khoản, khóa/mở khóa, đổi vai trò, tạo tài khoản mới
  */
-@WebServlet("/admin/tai-khoan")
-public class AccountManagementServlet extends HttpServlet {
+@Controller
+public class AccountManagementServlet {
 
     private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @GetMapping("/admin/tai-khoan")
+    public String doGet(@RequestParam Map<String, String> params, HttpSession session, Model model) {
         TaiKhoan user = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra quyền_ADMIN
         if (user == null || !"ADMIN".equals(user.getVaiTro())) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
         // Lấy danh sách tất cả tài khoản
-        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-        request.setAttribute("taiKhoanList", taiKhoanList);
-        request.setAttribute("currentUser", user);
-        setFilterAttributes(request);
+        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+        model.addAttribute("taiKhoanList", taiKhoanList);
+        model.addAttribute("currentUser", user);
+        setFilterAttributes(params, model);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
+        return "admin/taiKhoanManage";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+    @PostMapping("/admin/tai-khoan")
+    public String doPost(@RequestParam Map<String, String> params, HttpSession session, Model model) {
         TaiKhoan user = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Kiểm tra quyền_ADMIN
         if (user == null || !"ADMIN".equals(user.getVaiTro())) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+            return "redirect:/login";
+
         }
 
-        String action = request.getParameter("action");
+        String action = params.get("action");
 
         // Xử lý tạo tài khoản mới
         if ("create".equals(action)) {
-            String tenDangNhap = request.getParameter("tenDangNhap");
-            String matKhau = request.getParameter("matKhau");
-            String hoTen = request.getParameter("hoTen");
-            String email = request.getParameter("email");
-            String soDienThoai = request.getParameter("soDienThoai");
-            String vaiTro = request.getParameter("vaiTro"); // NHANVIEN or ADMIN (but admin should only create NHANVIEN per requirements)
+            String tenDangNhap = params.get("tenDangNhap");
+            String matKhau = params.get("matKhau");
+            String hoTen = params.get("hoTen");
+            String email = params.get("email");
+            String soDienThoai = params.get("soDienThoai");
+            String vaiTro = params.get("vaiTro");
 
             boolean hasError = false;
             if (tenDangNhap == null || tenDangNhap.trim().isEmpty()) {
-                request.setAttribute("errorTenDangNhap", "Tên đăng nhập không được để trống");
+                model.addAttribute("errorTenDangNhap", "Tên đăng nhập không được để trống");
                 hasError = true;
             } else if (taiKhoanDAO.existsTenDangNhap(tenDangNhap.trim(), null)) {
-                request.setAttribute("errorTenDangNhap", "Tên đăng nhập đã tồn tại");
+                model.addAttribute("errorTenDangNhap", "Tên đăng nhập đã tồn tại");
                 hasError = true;
             }
             if (matKhau == null || matKhau.isBlank()) {
-                request.setAttribute("errorMatKhau", "Mật khẩu không được để trống");
+                model.addAttribute("errorMatKhau", "Mật khẩu không được để trống");
                 hasError = true;
             } else if (matKhau.length() < 6) {
-                request.setAttribute("errorMatKhau", "Mật khẩu phải có ít nhất 6 ký tự");
+                model.addAttribute("errorMatKhau", "Mật khẩu phải có ít nhất 6 ký tự");
                 hasError = true;
             }
             if (hoTen == null || hoTen.trim().isEmpty()) {
-                request.setAttribute("errorHoTen", "Họ tên không được để trống");
+                model.addAttribute("errorHoTen", "Họ tên không được để trống");
                 hasError = true;
             }
             if (email == null || email.trim().isEmpty()) {
-                request.setAttribute("errorEmail", "Email không được để trống");
+                model.addAttribute("errorEmail", "Email không được để trống");
                 hasError = true;
             } else if (!email.matches("^[^@]+@[^@]+\\.[^@]+$")) {
-                request.setAttribute("errorEmail", "Email không đúng định dạng");
+                model.addAttribute("errorEmail", "Email không đúng định dạng");
                 hasError = true;
             } else if (taiKhoanDAO.existsEmail(email.trim(), null)) {
-                request.setAttribute("errorEmail", "Email đã tồn tại");
+                model.addAttribute("errorEmail", "Email đã tồn tại");
                 hasError = true;
             }
             // Per requirements: Admin chỉ được tạo tài khoản nhân viên
             if (vaiTro == null || (!"NHANVIEN".equals(vaiTro) && !"ADMIN".equals(vaiTro))) {
-                request.setAttribute("errorVaiTro", "Vai trò không hợp lệ");
+                model.addAttribute("errorVaiTro", "Vai trò không hợp lệ");
                 hasError = true;
             } else if ("ADMIN".equals(vaiTro)) {
                 // Admin không được tạo tài khoản admin mới (per requirements: chỉ được tạo nhân viên)
-                request.setAttribute("errorVaiTro", "Chỉ được tạo tài khoản nhân viên");
+                model.addAttribute("errorVaiTro", "Chỉ được tạo tài khoản nhân viên");
                 hasError = true;
             }
 
             if (hasError) {
                 // Giữ lại các giá trị đã nhập
-                request.setAttribute("tenDangNhap", tenDangNhap);
-                request.setAttribute("hoTen", hoTen);
-                request.setAttribute("email", email);
-                request.setAttribute("soDienThoai", soDienThoai);
-                request.setAttribute("vaiTro", vaiTro);
+                model.addAttribute("tenDangNhap", tenDangNhap);
+                model.addAttribute("hoTen", hoTen);
+                model.addAttribute("email", email);
+                model.addAttribute("soDienThoai", soDienThoai);
+                model.addAttribute("vaiTro", vaiTro);
 
-                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-                request.setAttribute("taiKhoanList", taiKhoanList);
-                request.setAttribute("currentUser", user);
-                request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
-                return;
+                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+                model.addAttribute("taiKhoanList", taiKhoanList);
+                model.addAttribute("currentUser", user);
+                return "admin/taiKhoanManage";
+
             }
 
             // Tài khoản mới luôn được kích hoạt (trang_thai = 1)
@@ -134,40 +130,40 @@ public class AccountManagementServlet extends HttpServlet {
 
             boolean success = taiKhoanDAO.insert(newTk);
             if (success) {
-                request.setAttribute("success", "Tạo tài khoản thành công!");
+                model.addAttribute("success", "Tạo tài khoản thành công!");
             } else {
-                request.setAttribute("error", "Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.");
+                model.addAttribute("error", "Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.");
             }
 
             // Lấy lại danh sách sau khi tạo
-            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-            request.setAttribute("taiKhoanList", taiKhoanList);
-            request.setAttribute("currentUser", user);
-            request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
-            return;
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+            model.addAttribute("taiKhoanList", taiKhoanList);
+            model.addAttribute("currentUser", user);
+            return "admin/taiKhoanManage";
+
         }
 
         // Xử lý các hành động khác (lock, unlock, role) trên tài khoản hiện có
-        String maTkStr = request.getParameter("maTk");
+        String maTkStr = params.get("maTk");
         if (maTkStr == null || maTkStr.isBlank()) {
-            request.setAttribute("error", "Thông tin tài khoản không hợp lệ");
-            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-            request.setAttribute("taiKhoanList", taiKhoanList);
-            request.setAttribute("currentUser", user);
-            request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
-            return;
+            model.addAttribute("error", "Thông tin tài khoản không hợp lệ");
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+            model.addAttribute("taiKhoanList", taiKhoanList);
+            model.addAttribute("currentUser", user);
+            return "admin/taiKhoanManage";
+
         }
 
         int maTk = Integer.parseInt(maTkStr);
 
         // Không cho phép tự thao tác trên chính mình
         if (maTk == user.getMaTk()) {
-            request.setAttribute("error", "Không thể thực hiện hành động trên tài khoản của chính bạn");
-            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-            request.setAttribute("taiKhoanList", taiKhoanList);
-            request.setAttribute("currentUser", user);
-            request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
-            return;
+            model.addAttribute("error", "Không thể thực hiện hành động trên tài khoản của chính bạn");
+            List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+            model.addAttribute("taiKhoanList", taiKhoanList);
+            model.addAttribute("currentUser", user);
+            return "admin/taiKhoanManage";
+
         }
 
         boolean success = false;
@@ -193,35 +189,35 @@ public class AccountManagementServlet extends HttpServlet {
                 }
                 break;
             default:
-                request.setAttribute("error", "Hành động không hợp lệ");
-                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-                request.setAttribute("taiKhoanList", taiKhoanList);
-                request.setAttribute("currentUser", user);
-                request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
-                return;
+                model.addAttribute("error", "Hành động không hợp lệ");
+                List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+                model.addAttribute("taiKhoanList", taiKhoanList);
+                model.addAttribute("currentUser", user);
+                return "admin/taiKhoanManage";
+
         }
 
         if (success) {
-            request.setAttribute("success", message);
+            model.addAttribute("success", message);
         } else {
-            request.setAttribute("error", message);
+            model.addAttribute("error", message);
         }
 
         // Lấy lại danh sách sau khi thực hiện hành động
-        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(request);
-        request.setAttribute("taiKhoanList", taiKhoanList);
-        request.setAttribute("currentUser", user);
-        setFilterAttributes(request);
-        request.getRequestDispatcher("/WEB-INF/views/admin/taiKhoanManage.jsp").forward(request, response);
+        List<TaiKhoan> taiKhoanList = loadFilteredAccounts(params);
+        model.addAttribute("taiKhoanList", taiKhoanList);
+        model.addAttribute("currentUser", user);
+        setFilterAttributes(params, model);
+        return "admin/taiKhoanManage";
     }
 
-    private List<TaiKhoan> loadFilteredAccounts(HttpServletRequest request) {
-        String username = normalize(request.getParameter("tenDangNhap"));
-        String name = normalize(request.getParameter("hoTen"));
-        String email = normalize(request.getParameter("email"));
-        String phone = normalize(request.getParameter("soDienThoai"));
-        String role = normalize(request.getParameter("vaiTro"));
-        String status = normalize(request.getParameter("trangThai"));
+    private List<TaiKhoan> loadFilteredAccounts(Map<String, String> params) {
+        String username = normalize(params.get("tenDangNhap"));
+        String name = normalize(params.get("hoTen"));
+        String email = normalize(params.get("email"));
+        String phone = normalize(params.get("soDienThoai"));
+        String role = normalize(params.get("vaiTro"));
+        String status = normalize(params.get("trangThai"));
         return taiKhoanDAO.findAll().stream()
                 .filter(tk -> contains(tk.getTenDangNhap(), username))
                 .filter(tk -> contains(tk.getHoTen(), name))
@@ -233,13 +229,13 @@ public class AccountManagementServlet extends HttpServlet {
                 .collect(Collectors.toList());
     }
 
-    private void setFilterAttributes(HttpServletRequest request) {
-        request.setAttribute("filterTenDangNhap", valueOrEmpty(request.getParameter("tenDangNhap")));
-        request.setAttribute("filterHoTen", valueOrEmpty(request.getParameter("hoTen")));
-        request.setAttribute("filterEmail", valueOrEmpty(request.getParameter("email")));
-        request.setAttribute("filterSoDienThoai", valueOrEmpty(request.getParameter("soDienThoai")));
-        request.setAttribute("filterVaiTro", valueOrEmpty(request.getParameter("vaiTro")));
-        request.setAttribute("filterTrangThai", valueOrEmpty(request.getParameter("trangThai")));
+    private void setFilterAttributes(Map<String, String> params, Model model) {
+        model.addAttribute("filterTenDangNhap", valueOrEmpty(params.get("tenDangNhap")));
+        model.addAttribute("filterHoTen", valueOrEmpty(params.get("hoTen")));
+        model.addAttribute("filterEmail", valueOrEmpty(params.get("email")));
+        model.addAttribute("filterSoDienThoai", valueOrEmpty(params.get("soDienThoai")));
+        model.addAttribute("filterVaiTro", valueOrEmpty(params.get("vaiTro")));
+        model.addAttribute("filterTrangThai", valueOrEmpty(params.get("trangThai")));
     }
 
     private String normalize(String value) {

@@ -1,0 +1,70 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+
+<div class="row mt-5 mb-5">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Tra cứu thông tin</h5>
+            </div>
+            <div class="card-body">
+                <th:block th:if="${error}">
+                    <div class="alert alert-danger">[[${error}]]</div>
+                </th:block>
+                <th:block th:if="${success}">
+                    <div class="alert alert-success">[[${success}]]</div>
+                </th:block>
+
+                <form th:action="@{/tra-cuu-don}" method="post">
+                    <input type="hidden" name="action" value="search">
+                    <div class="mb-3">
+                        <label class="fw-bold">Mã tra cứu</label>
+                        <input type="text" name="maTraCuu" class="form-control text-uppercase" required th:value="${maTraCuuInput}" placeholder="VD: HTL2610A7X2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Email đặt phòng</label>
+                        <input type="email" name="email" class="form-control" required th:value="${emailInput}" placeholder="Email bạn đã dùng để đặt">
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold">Tra cứu ngay</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIỂN THỊ KẾT QUẢ TÌM KIẾM -->
+    <div class="col-md-7">
+        <th:block th:if="${donDatPhong}">
+            <div class="card shadow border-info">
+                <div class="card-body">
+                    <h4 class="text-info fw-bold">Đơn hàng: #[[${donDatPhong.maTraCuu}]]</h4>
+                    <hr>
+                    <p><strong>Khách hàng:</strong> [[${khachHang.hoTen}]]</p>
+                    <p><strong>SĐT:</strong> [[${khachHang.soDienThoai}]]</p>
+                    <p><strong>Ngày nhận:</strong> [[${donDatPhong.ngayNhanPhong}]]</p>
+                    <p><strong>Ngày trả:</strong> [[${donDatPhong.ngayTraPhong}]]</p>
+                    <p><strong>Tổng tiền:</strong> <span th:text="${#numbers.formatDecimal(donDatPhong.tienPhong, 1, 2)}"></span></p>
+                    <p><strong>Trạng thái:</strong> 
+                        <th:block>
+                            <th:block th:if="${donDatPhong.trangThai == 'CHO_XAC_NHAN'}"><span class="badge bg-warning text-dark">Chờ xác nhận</span></th:block>
+                            <th:block th:if="${donDatPhong.trangThai == 'DA_XAC_NHAN'}"><span class="badge bg-primary">Đã xác nhận</span></th:block>
+                            <th:block th:if="${donDatPhong.trangThai == 'DA_NHAN_PHONG'}"><span class="badge bg-success">Đang ở</span></th:block>
+                            <th:block th:if="${donDatPhong.trangThai == 'DA_TRA_PHONG'}"><span class="badge bg-secondary">Đã trả phòng</span></th:block>
+                            <th:block th:if="${donDatPhong.trangThai == 'DA_HUY'}"><span class="badge bg-danger">Đã hủy</span></th:block>
+                        </th:block>
+                    </p>
+
+                    <!-- Nút Hủy đơn chỉ hiện khi trạng thái là CHỜ XÁC NHẬN -->
+                    <th:block th:if="${donDatPhong.trangThai == 'CHO_XAC_NHAN'}">
+                        <hr>
+                        <form th:action="@{/tra-cuu-don}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn này không?');">
+                            <input type="hidden" name="action" value="cancel">
+                            <input type="hidden" name="maDp" th:value="${donDatPhong.maDp}">
+                            <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle"></i> Hủy đặt phòng</button>
+                        </form>
+                    </th:block>
+                </div>
+            </div>
+        </th:block>
+    </div>
+</div>
+
+<div th:replace="~{common/footer :: footer}"></div></html>

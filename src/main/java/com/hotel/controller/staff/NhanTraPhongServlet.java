@@ -1,41 +1,40 @@
 package com.hotel.controller.staff;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import com.hotel.dao.DatPhongDAO;
 import com.hotel.dao.PhongDAO;
 import com.hotel.model.PhongSoDoDTO;
 import com.hotel.model.TaiKhoan;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@WebServlet({"/staff/nhan-tra-phong", "/admin/nhan-tra-phong"})
-public class NhanTraPhongServlet extends HttpServlet {
+@Controller
+public class NhanTraPhongServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();
     private final DatPhongDAO datPhongDAO = new DatPhongDAO(); // Dùng lại Transaction đã làm đợt trước
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @GetMapping({"/staff/nhan-tra-phong", "/admin/nhan-tra-phong"})
+    public String doGet(HttpSession session, Model model) {
         // Lấy dữ liệu hiển thị Sơ đồ
         List<PhongSoDoDTO> danhSachPhong = phongDAO.getSoDoPhong();
-        request.setAttribute("danhSachPhong", danhSachPhong);
-        request.setAttribute("roomBasePath", isAdminRequest(request) ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong");
-        request.setAttribute("isAdminView", isAdminRequest(request));
-        request.getRequestDispatcher("/WEB-INF/views/staff/so-do-phong.jsp").forward(request, response);
+        model.addAttribute("danhSachPhong", danhSachPhong);
+        TaiKhoan user = (TaiKhoan) session.getAttribute("currentUser");
+        boolean admin = user != null && "ADMIN".equals(user.getVaiTro());
+        model.addAttribute("roomBasePath", admin ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong");
+        model.addAttribute("isAdminView", admin);
+        return "staff/so-do-phong";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
-        int maDp = Integer.parseInt(request.getParameter("maDp"));
+    @PostMapping({"/staff/nhan-tra-phong", "/admin/nhan-tra-phong"})
+    public String doPost(@RequestParam String action, @RequestParam int maDp, HttpSession session) {
         
-        HttpSession session = request.getSession();
         TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
 
         boolean success = false;
@@ -51,11 +50,8 @@ public class NhanTraPhongServlet extends HttpServlet {
                                  success ? "Đã Check-out trả phòng thành công!" : "Lỗi Check-out!");
         }
 
-        String basePath = isAdminRequest(request) ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong";
-        response.sendRedirect(request.getContextPath() + basePath);
-    }
-
-    private boolean isAdminRequest(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/admin/");
+        String basePath = currentUser != null && "ADMIN".equals(currentUser.getVaiTro())
+                ? "/admin/nhan-tra-phong" : "/staff/nhan-tra-phong";
+        return "redirect:" + basePath;
     }
 }

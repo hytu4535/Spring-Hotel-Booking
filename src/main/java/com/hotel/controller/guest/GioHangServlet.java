@@ -1,26 +1,25 @@
 package com.hotel.controller.guest;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.hotel.model.CartItem;
 import com.hotel.model.GioHang;
 import com.hotel.util.DateUtil;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@WebServlet("/gio-hang")
-public class GioHangServlet extends HttpServlet {
+@Controller
+public class GioHangServlet {
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
-        HttpSession session = request.getSession();
+    @GetMapping("/gio-hang")
+    public String doGet(@RequestParam(required = false) String action,
+                        @RequestParam(required = false) Integer maPhong,
+                        HttpSession session) {
         GioHang cart = (GioHang) session.getAttribute("cart");
 
         if (cart == null) {
@@ -29,17 +28,18 @@ public class GioHangServlet extends HttpServlet {
         }
 
         if ("remove".equals(action)) {
-            int maPhong = Integer.parseInt(request.getParameter("maPhong"));
             cart.removePhong(maPhong);
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/guest/gio-hang.jsp").forward(request, response);
+        return "guest/gio-hang";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @PostMapping("/gio-hang")
+    public String doPost(@RequestParam String ngayNhan, @RequestParam String ngayTra,
+                         @RequestParam int maPhong, @RequestParam String soPhong,
+                         @RequestParam String tenLoai, @RequestParam BigDecimal giaPhong,
+                         HttpSession session) {
         // Hành động thêm phòng vào giỏ (từ trang Tìm Phòng của Nguyễn Ý)
-        HttpSession session = request.getSession();
         GioHang cart = (GioHang) session.getAttribute("cart");
 
         if (cart == null) {
@@ -48,8 +48,6 @@ public class GioHangServlet extends HttpServlet {
         }
 
         // Khởi tạo ngày nhận/trả cho Giỏ nếu chưa có
-        String ngayNhan = request.getParameter("ngayNhan");
-        String ngayTra = request.getParameter("ngayTra");
         if (cart.getNgayNhan() == null) {
             cart.setNgayNhan(ngayNhan);
             cart.setNgayTra(ngayTra);
@@ -60,16 +58,16 @@ public class GioHangServlet extends HttpServlet {
 
         // Lấy thông tin phòng vừa click thêm
         CartItem item = new CartItem();
-        item.setMaPhong(Integer.parseInt(request.getParameter("maPhong")));
-        item.setSoPhong(request.getParameter("soPhong"));
-        item.setTenLoai(request.getParameter("tenLoai"));
-        item.setGiaPhong(new BigDecimal(request.getParameter("giaPhong")));
+        item.setMaPhong(maPhong);
+        item.setSoPhong(soPhong);
+        item.setTenLoai(tenLoai);
+        item.setGiaPhong(giaPhong);
         item.setSoDem(cart.getSoDem());
         item.setThanhTien(item.getGiaPhong().multiply(new BigDecimal(cart.getSoDem())));
 
         cart.addPhong(item);
 
         // Quay về trang giỏ hàng xem
-        response.sendRedirect(request.getContextPath() + "/gio-hang");
+        return "redirect:/gio-hang";
     }
 }
