@@ -23,6 +23,22 @@ public class TaiKhoanService {
         return taiKhoanRepository.findByTenDangNhapIgnoreCase(tenDangNhap).orElse(null);
     }
 
+    public Optional<TaiKhoan> findByProviderAndProviderId(String provider, String providerId) {
+        return taiKhoanRepository.findByProviderAndProviderId(provider, providerId);
+    }
+
+    public Optional<TaiKhoan> findByEmail(String email) {
+        return taiKhoanRepository.findByEmailIgnoreCase(email);
+    }
+
+    public Optional<TaiKhoan> findActiveByUsername(String username) {
+        return taiKhoanRepository.findByTenDangNhapAndTrangThai(username, 1);
+    }
+
+    public TaiKhoan save(TaiKhoan account) {
+        return taiKhoanRepository.save(account);
+    }
+
     public List<TaiKhoan> findAll() {
         return taiKhoanRepository.findAllByOrderByNgayTaoDesc();
     }

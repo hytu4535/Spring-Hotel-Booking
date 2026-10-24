@@ -16,6 +16,7 @@ public class RolePermissionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String path = request.getServletPath();
         if (!(path.startsWith("/admin/") || path.startsWith("/staff/") || path.startsWith("/customer/"))) return true;
+        if ("/admin/login".equals(path)) return true;
         TaiKhoan user = request.getSession(false) == null ? null
                 : (TaiKhoan) request.getSession(false).getAttribute("currentUser");
         if (user == null) { response.sendRedirect(request.getContextPath() + "/login"); return false; }
