@@ -25,7 +25,7 @@ public class StaffOrderController {
     // ==============
     @GetMapping("/staff/quan-ly-don")
     public String staffDashboard() {
-        return "staff/quanLyDon";
+        return "redirect:/staff/don";
     }
 
     // ============== TASK #20, #21, #36: QUẢN LÝ ĐƠN ĐẶT PHÒNG ==============

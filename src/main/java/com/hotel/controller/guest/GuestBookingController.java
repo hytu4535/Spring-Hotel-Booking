@@ -128,9 +128,16 @@ public class GuestBookingController {
     }
 
     @GetMapping("/dat-phong-thanh-cong")
-    public String bookingSuccess(HttpSession session) {
-        if (session.getAttribute("maTraCuu") == null)
+    public String bookingSuccess(HttpSession session, Model model) {
+        String maTraCuu = (String) session.getAttribute("maTraCuu");
+        if (maTraCuu == null)
             return "redirect:/";
+        DatPhong booking = datPhongService.timTheoMaTraCuu(maTraCuu);
+        if (booking == null) {
+            session.removeAttribute("maTraCuu");
+            return "redirect:/";
+        }
+        model.addAttribute("booking", booking);
         return "guest/dat-phong-thanh-cong";
     }
 

@@ -27,6 +27,8 @@ public class OrderTrackingController {
 
     @PostMapping(params = "action=search")
     public String searchBooking(@RequestParam String maTraCuu, @RequestParam String email, Model model) {
+        maTraCuu = maTraCuu == null ? "" : maTraCuu.trim();
+        email = email == null ? "" : email.trim();
         DatPhong dp = datPhongService.traCuuDon(maTraCuu, email);
         if (dp != null) {
             model.addAttribute("donDatPhong", dp);
@@ -40,9 +42,15 @@ public class OrderTrackingController {
     }
 
     @PostMapping(params = "action=cancel")
-    public String cancelBooking(@RequestParam int maDp, RedirectAttributes redirectAttributes) {
-        datPhongService.huyDonPhong(maDp);
-        redirectAttributes.addFlashAttribute("success", "Đã hủy đơn đặt phòng thành công!");
+    public String cancelBooking(@RequestParam int maDp, @RequestParam String maTraCuu,
+                                @RequestParam String email, RedirectAttributes redirectAttributes) {
+        boolean canceled = datPhongService.huyDonPhong(maDp, maTraCuu.trim(), email.trim());
+        if (canceled) {
+            redirectAttributes.addFlashAttribute("success", "Đã hủy đơn đặt phòng thành công.");
+        } else {
+            redirectAttributes.addFlashAttribute("error",
+                    "Không thể hủy đơn. Đơn có thể đã được xử lý hoặc thông tin xác thực không khớp.");
+        }
         return "redirect:/tra-cuu-don";
     }
 }
