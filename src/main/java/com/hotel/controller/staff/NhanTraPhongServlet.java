@@ -6,7 +6,6 @@ import com.hotel.model.PhongSoDoDTO;
 import com.hotel.model.TaiKhoan;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet({"/staff/nhan-tra-phong", "/admin/nhan-tra-phong"})
 public class NhanTraPhongServlet extends HttpServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();

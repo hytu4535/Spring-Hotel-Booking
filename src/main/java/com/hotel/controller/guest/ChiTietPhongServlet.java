@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/chi-tiet-phong")
 public class ChiTietPhongServlet extends HttpServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();

@@ -14,7 +14,6 @@ import java.io.IOException;
  * Servlet để hiển thị trang chính của nhân viên
  * Đây là landing page sau khi nhân viên đăng nhập
  */
-@WebServlet("/staff/quan-ly-don")
 public class QuanLyDonServlet extends HttpServlet {
 
     @Override

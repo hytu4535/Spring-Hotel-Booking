@@ -6,10 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 public interface PhongRepository extends JpaRepository<Phong, Integer> {
 
     long countByLoaiPhong_MaLoai(Integer maLoai);
+
+    @Override
+    @EntityGraph(attributePaths = "loaiPhong")
+    List<Phong> findAll();
 
     @Query(value = 
         "SELECT " +

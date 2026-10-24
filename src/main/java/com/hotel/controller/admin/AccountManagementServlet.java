@@ -1,8 +1,9 @@
 package com.hotel.controller.admin;
 
-import com.hotel.dao.TaiKhoanDAO;
 import com.hotel.model.TaiKhoan;
+import com.hotel.service.TaiKhoanService;
 import com.hotel.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,10 +20,10 @@ import java.util.stream.Collectors;
  * Servlet để quản lý tài khoản (chỉ ADMIN)
  * Cho phép xem danh sách tài khoản, khóa/mở khóa, đổi vai trò, tạo tài khoản mới
  */
-@WebServlet("/admin/tai-khoan")
 public class AccountManagementServlet extends HttpServlet {
 
-    private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
+    @Autowired
+    private TaiKhoanService taiKhoanService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -72,7 +73,7 @@ public class AccountManagementServlet extends HttpServlet {
             if (tenDangNhap == null || tenDangNhap.trim().isEmpty()) {
                 request.setAttribute("errorTenDangNhap", "Tên đăng nhập không được để trống");
                 hasError = true;
-            } else if (taiKhoanDAO.existsTenDangNhap(tenDangNhap.trim(), null)) {
+            } else if (taiKhoanService.existsTenDangNhap(tenDangNhap.trim(), null)) {
                 request.setAttribute("errorTenDangNhap", "Tên đăng nhập đã tồn tại");
                 hasError = true;
             }
@@ -93,7 +94,7 @@ public class AccountManagementServlet extends HttpServlet {
             } else if (!email.matches("^[^@]+@[^@]+\\.[^@]+$")) {
                 request.setAttribute("errorEmail", "Email không đúng định dạng");
                 hasError = true;
-            } else if (taiKhoanDAO.existsEmail(email.trim(), null)) {
+            } else if (taiKhoanService.existsEmail(email.trim(), null)) {
                 request.setAttribute("errorEmail", "Email đã tồn tại");
                 hasError = true;
             }
@@ -132,8 +133,8 @@ public class AccountManagementServlet extends HttpServlet {
             newTk.setVaiTro(vaiTro);
             newTk.setTrangThai(1); // Hoạt động
 
-            boolean success = taiKhoanDAO.insert(newTk);
-            if (success) {
+            taiKhoanService.update(newTk);
+            if (newTk.getMaTk() > 0) {
                 request.setAttribute("success", "Tạo tài khoản thành công!");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.");
@@ -175,20 +176,20 @@ public class AccountManagementServlet extends HttpServlet {
 
         switch (action) {
             case "lock":
-                success = taiKhoanDAO.updateTrangThai(maTk, 0); // 0: khóa
+                success = taiKhoanService.updateTrangThai(maTk, 0); // 0: khóa
                 message = success ? "Khóa tài khoản thành công" : "Khóa tài khoản thất bại";
                 break;
             case "unlock":
-                success = taiKhoanDAO.updateTrangThai(maTk, 1); // 1: hoạt động
+                success = taiKhoanService.updateTrangThai(maTk, 1); // 1: hoạt động
                 message = success ? "Mở khóa tài khoản thành công" : "Mở khóa tài khoản thất bại";
                 break;
             case "role":
                 // Lấy tài khoản hiện tại để xác định vai trò mới
-                TaiKhoan tk = taiKhoanDAO.findById(maTk);
+                TaiKhoan tk = taiKhoanService.findById(maTk);
                 if (tk != null) {
                     String newRole = "ADMIN".equals(tk.getVaiTro()) ? "NHANVIEN" : "ADMIN";
                     tk.setVaiTro(newRole);
-                    success = taiKhoanDAO.update(tk);
+                    success = taiKhoanService.update(tk);
                     message = success ? "Đổi vai trò thành công" : "Đổi vai trò thất bại";
                 }
                 break;
@@ -222,7 +223,7 @@ public class AccountManagementServlet extends HttpServlet {
         String phone = normalize(request.getParameter("soDienThoai"));
         String role = normalize(request.getParameter("vaiTro"));
         String status = normalize(request.getParameter("trangThai"));
-        return taiKhoanDAO.findAll().stream()
+        return taiKhoanService.findAll().stream()
                 .filter(tk -> contains(tk.getTenDangNhap(), username))
                 .filter(tk -> contains(tk.getHoTen(), name))
                 .filter(tk -> contains(tk.getEmail(), email))

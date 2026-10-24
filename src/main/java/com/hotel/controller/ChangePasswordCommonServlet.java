@@ -3,6 +3,7 @@ package com.hotel.controller;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.TaiKhoanService;
 import com.hotel.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,10 +18,10 @@ import java.util.Map;
  * Servlet chung để đổi mật khẩu
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet("/doi-mat-khau")
 public class ChangePasswordCommonServlet extends HttpServlet {
 
-    private final TaiKhoanService taiKhoanService = new TaiKhoanService();
+    @Autowired
+    private TaiKhoanService taiKhoanService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

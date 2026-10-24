@@ -1,0 +1,115 @@
+.staff-sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: #172033;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.staff-sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.staff-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.staff-brand i {
+    color: #5ea7ff;
+    font-size: 1.5rem;
+}
+
+.staff-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    color: #f8f9fa;
+    font-size: .95rem;
+}
+
+.staff-user i {
+    color: #9ec5fe;
+    font-size: 1.3rem;
+}
+
+.staff-role {
+    display: inline-block;
+    margin-top: 7px;
+    color: #9aa7bd;
+    font-size: .68rem;
+    letter-spacing: .08em;
+}
+
+.staff-sidebar-menu {
+    flex: 1;
+    padding: 18px 12px;
+}
+
+.staff-section-label {
+    padding: 0 12px 8px;
+    color: #8793a8;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.staff-section-label-spaced {
+    margin-top: 24px;
+}
+
+.staff-sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    margin: 3px 0;
+    border-radius: 8px;
+    color: #d8deea;
+    text-decoration: none;
+    font-size: .92rem;
+}
+
+.staff-sidebar-menu a i {
+    width: 18px;
+    text-align: center;
+    color: #9ec5fe;
+}
+
+.staff-sidebar-menu a:hover,
+.staff-sidebar-menu a.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.staff-sidebar-menu a.active i,
+.staff-sidebar-menu a:hover i {
+    color: #fff;
+}
+
+.staff-sidebar-footer {
+    padding: 16px 18px 20px;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+@media (max-width: 768px) {
+    .staff-sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+}

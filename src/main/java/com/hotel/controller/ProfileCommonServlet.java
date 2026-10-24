@@ -2,6 +2,7 @@ package com.hotel.controller;
 
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.TaiKhoanService;
+import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,10 +17,10 @@ import java.util.Map;
  * Servlet chung để hiển thị và cập nhật hồ sơ cá nhân
  * Truy cập được cho cả ADMIN và NHANVIEN
  */
-@WebServlet("/profile")
 public class ProfileCommonServlet extends HttpServlet {
 
-    private final TaiKhoanService taiKhoanService = new TaiKhoanService();
+    @Autowired
+    private TaiKhoanService taiKhoanService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

@@ -125,6 +125,9 @@ public class SocialLoginController {
             TaiKhoan account = taiKhoanRepository
                     .findByProviderAndProviderId(normalizedProvider, providerId)
                     .orElseGet(() -> taiKhoanRepository.findByEmailIgnoreCase(email).orElse(null));
+            if (account != null && !"CUSTOMER".equals(account.getVaiTro())) {
+                throw new IllegalStateException("Tài khoản local không thể đăng nhập bằng OAuth.");
+            }
             if (account == null) {
                 account = new TaiKhoan();
                 account.setTenDangNhap(uniqueUsername(normalizedProvider, providerId));

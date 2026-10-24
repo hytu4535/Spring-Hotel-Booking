@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@WebServlet("/gio-hang")
 public class GioHangServlet extends HttpServlet {
 
     @Override

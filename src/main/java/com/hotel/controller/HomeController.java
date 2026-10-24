@@ -8,6 +8,6 @@ public class HomeController {
 
     @GetMapping({"/", "/trang-chu"})
     public String home() {
-        return "forward:/index.jsp";
+        return "guest/trang-chu";
     }
 }

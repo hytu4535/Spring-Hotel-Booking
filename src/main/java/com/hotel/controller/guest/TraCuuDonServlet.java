@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/tra-cuu-don")
 public class TraCuuDonServlet extends HttpServlet {
 
     private final DatPhongDAO datPhongDAO = new DatPhongDAO();

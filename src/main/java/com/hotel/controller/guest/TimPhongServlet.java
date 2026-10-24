@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-@WebServlet("/tim-phong")
 public class TimPhongServlet extends HttpServlet {
 
     private final PhongDAO phongDAO = new PhongDAO();

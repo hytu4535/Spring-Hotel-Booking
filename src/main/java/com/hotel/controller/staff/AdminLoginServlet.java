@@ -2,6 +2,7 @@ package com.hotel.controller.staff;
 
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,10 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet({"/admin", "/admin/login"})
 public class AdminLoginServlet extends HttpServlet {
 
-    private final AuthService authService = new AuthService();
+    @Autowired
+    private AuthService authService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

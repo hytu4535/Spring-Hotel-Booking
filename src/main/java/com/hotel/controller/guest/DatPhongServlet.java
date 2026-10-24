@@ -6,6 +6,7 @@ import com.hotel.model.DatPhong;
 import com.hotel.model.GioHang;
 import com.hotel.model.KhachHang;
 import com.hotel.service.DatPhongService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,10 +18,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/dat-phong")
 public class DatPhongServlet extends HttpServlet {
 
-    private final DatPhongService datPhongService = new DatPhongService();
+    @Autowired
+    private DatPhongService datPhongService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

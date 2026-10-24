@@ -13,7 +13,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet({"/staff/don", "/admin/dat-phong"})
 public class DonDatPhongServlet extends HttpServlet {
 
     private final DatPhongDAO datPhongDAO = new DatPhongDAO();
