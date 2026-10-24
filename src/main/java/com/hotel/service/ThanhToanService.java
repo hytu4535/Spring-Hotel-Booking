@@ -168,11 +168,10 @@ public class ThanhToanService {
         DatPhong dp = dpOpt.get();
         result.put("datPhong", dp);
         result.put("maTraCuu", maTraCuu);
-
         if ("00".equals(responseCode)) {
             // Thanh toán thành công -> Lưu record thanh toán cọc
             BigDecimal amountPaid = new BigDecimal(amountStr).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-            
+
             // Check if already recorded for this transactionNo
             boolean exists = thanhToanRepository.findAll().stream()
                     .anyMatch(t -> transactionNo.equals(t.getMaGiaoDich()));
@@ -187,6 +186,12 @@ public class ThanhToanService {
                 tt.setMaGiaoDich(transactionNo);
                 tt.setGhiChu("Thanh toan dat coc qua VNPay Sandbox");
                 thanhToanRepository.save(tt);
+            }
+
+            // Tự động chuyển trạng thái đơn sang Đã xác nhận khi thanh toán online thành công
+            if ("CHO_XAC_NHAN".equals(dp.getTrangThai())) {
+                dp.setTrangThai("DA_XAC_NHAN");
+                datPhongRepository.save(dp);
             }
 
             result.put("status", "SUCCESS");

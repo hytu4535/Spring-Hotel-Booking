@@ -6,6 +6,7 @@ import com.hotel.util.MaTraCuuGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -22,17 +23,20 @@ public class DatPhongService {
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
     private final PhongRepository phongRepository;
     private final ThanhToanRepository thanhToanRepository;
+    private final EntityManager entityManager;
 
     public DatPhongService(DatPhongRepository datPhongRepository,
                            KhachHangRepository khachHangRepository,
                            ChiTietDatPhongRepository chiTietDatPhongRepository,
                            PhongRepository phongRepository,
-                           ThanhToanRepository thanhToanRepository) {
+                           ThanhToanRepository thanhToanRepository,
+                           EntityManager entityManager) {
         this.datPhongRepository = datPhongRepository;
         this.khachHangRepository = khachHangRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
         this.phongRepository = phongRepository;
         this.thanhToanRepository = thanhToanRepository;
+        this.entityManager = entityManager;
     }
 
     @Transactional
@@ -123,22 +127,17 @@ public class DatPhongService {
         // 5. Lưu dịch vụ phát sinh vào dat_dich_vu nếu có
         if (danhSachDichVu != null && !danhSachDichVu.isEmpty()) {
             BigDecimal tongTienDv = BigDecimal.ZERO;
-            String insertDvSql = "INSERT INTO dat_dich_vu (ma_dp, ma_dv, so_luong, don_gia, ngay_su_dung, thanh_tien) VALUES (?, ?, ?, ?, ?, ?)";
-            try (java.sql.Connection conn = com.hotel.util.DBConnection.getConnection();
-                 java.sql.PreparedStatement ps = conn.prepareStatement(insertDvSql)) {
-                for (CartServiceItem s : danhSachDichVu) {
-                    ps.setInt(1, savedDp.getMaDp());
-                    ps.setInt(2, s.getMaDv());
-                    ps.setInt(3, s.getSoLuong());
-                    ps.setBigDecimal(4, s.getGia());
-                    ps.setDate(5, dpRequest.getNgayNhanPhong());
-                    ps.setBigDecimal(6, s.getThanhTien());
-                    ps.addBatch();
-                    tongTienDv = tongTienDv.add(s.getThanhTien());
-                }
-                ps.executeBatch();
-            } catch (Exception e) {
-                e.printStackTrace();
+            for (CartServiceItem s : danhSachDichVu) {
+                entityManager.createNativeQuery(
+                        "INSERT INTO dat_dich_vu (ma_dp, ma_dv, so_luong, don_gia, ngay_su_dung, thanh_tien) VALUES (?, ?, ?, ?, ?, ?)")
+                        .setParameter(1, savedDp.getMaDp())
+                        .setParameter(2, s.getMaDv())
+                        .setParameter(3, s.getSoLuong())
+                        .setParameter(4, s.getGia())
+                        .setParameter(5, dpRequest.getNgayNhanPhong())
+                        .setParameter(6, s.getThanhTien())
+                        .executeUpdate();
+                tongTienDv = tongTienDv.add(s.getThanhTien());
             }
             if (tongTienDv.compareTo(BigDecimal.ZERO) > 0) {
                 savedDp.setTienDichVu(tongTienDv);
