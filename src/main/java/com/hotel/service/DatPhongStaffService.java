@@ -1,5 +1,6 @@
 package com.hotel.service;
 
+import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
 import com.hotel.model.DatPhongDTO;
 import com.hotel.model.Phong;
@@ -11,15 +12,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Service
 public class DatPhongStaffService {
-    
+
     private final DatPhongRepository datPhongRepository;
     private final PhongRepository phongRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
 
-    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository, ChiTietDatPhongRepository chiTietDatPhongRepository) {
+    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository) {
         this.datPhongRepository = datPhongRepository;
         this.phongRepository = phongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
@@ -39,17 +44,17 @@ public class DatPhongStaffService {
             dto.setTongTien(dp.getTongTien());
             dto.setTienPhong(dp.getTienPhong());
             dto.setTienDichVu(dp.getTienDichVu());
-            
+
             if (dp.getKhachHang() != null) {
                 dto.setTenKhachHang(dp.getKhachHang().getHoTen());
                 dto.setEmailKhachHang(dp.getKhachHang().getEmail());
                 dto.setSdtKhachHang(dp.getKhachHang().getSoDienThoai());
             }
-            
+
             if (dp.getNhanVienXuLy() != null) {
                 dto.setTenNhanVienXuLy(dp.getNhanVienXuLy().getHoTen());
             }
-            
+
             return dto;
         }).collect(Collectors.toList());
     }
@@ -60,10 +65,10 @@ public class DatPhongStaffService {
         if (dp == null) {
             return false;
         }
-        
+
         dp.setTrangThai(newTrangThai);
         dp.setMaNvXuLy(maNvXuLy);
-        
+
         String phongTrangThai = null;
         if (newTrangThai.equals("DA_XAC_NHAN")) {
             phongTrangThai = "DA_DAT";
@@ -72,13 +77,13 @@ public class DatPhongStaffService {
         } else if (newTrangThai.equals("DA_TRA_PHONG") || newTrangThai.equals("DA_HUY")) {
             phongTrangThai = "TRONG";
         }
-        
+
         if (phongTrangThai != null) {
             List<Integer> maPhongList = chiTietDatPhongRepository.findByMaDp(maDp)
                     .stream()
                     .map(ct -> ct.getMaPhong())
                     .collect(Collectors.toList());
-                    
+
             if (!maPhongList.isEmpty()) {
                 List<Phong> phongs = phongRepository.findAllById(maPhongList);
                 for (Phong p : phongs) {
@@ -87,8 +92,49 @@ public class DatPhongStaffService {
                 phongRepository.saveAll(phongs);
             }
         }
-        
+
         datPhongRepository.save(dp);
         return true;
+    }
+
+    // Lọc nâng cao (Cho Task #20 và #36)
+    @Transactional(readOnly = true)
+    public List<DatPhongDTO> searchAdvanced(String keyword, String trangThai, String tuNgay, String denNgay) {
+        Timestamp start = null;
+        Timestamp end = null;
+        try {
+            if (tuNgay != null && !tuNgay.isEmpty())
+                start = Timestamp.valueOf(LocalDate.parse(tuNgay).atStartOfDay());
+            if (denNgay != null && !denNgay.isEmpty())
+                end = Timestamp.valueOf(LocalDate.parse(denNgay).atTime(LocalTime.MAX));
+        } catch (Exception e) {
+        }
+
+        return datPhongRepository.searchAdvanced(keyword, trangThai, start, end).stream().map(dp -> {
+            DatPhongDTO dto = new DatPhongDTO();
+            dto.setMaDp(dp.getMaDp());
+            dto.setMaTraCuu(dp.getMaTraCuu());
+            dto.setNgayDat(dp.getNgayDat());
+            dto.setNgayNhanPhong(dp.getNgayNhanPhong());
+            dto.setNgayTraPhong(dp.getNgayTraPhong());
+            dto.setTrangThai(dp.getTrangThai());
+            dto.setTongTien(dp.getTongTien());
+            if (dp.getKhachHang() != null) {
+                dto.setTenKhachHang(dp.getKhachHang().getHoTen());
+                dto.setSdtKhachHang(dp.getKhachHang().getSoDienThoai());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    // Lấy chi tiết đơn (Cho Task #21)
+    @Transactional(readOnly = true)
+    public DatPhong getDatPhongDetail(int maDp) {
+        return datPhongRepository.findById(maDp).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChiTietDatPhong> getChiTiet(int maDp) {
+        return chiTietDatPhongRepository.findByMaDp(maDp);
     }
 }

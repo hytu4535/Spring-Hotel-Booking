@@ -1,5 +1,6 @@
 package com.hotel.controller.staff;
 
+import com.hotel.model.DatPhong;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.DatPhongStaffService;
 import com.hotel.service.PhongService;
@@ -31,8 +32,19 @@ public class StaffOrderController {
 
     // ============== TASK #20, #21, #36: QUẢN LÝ ĐƠN ĐẶT PHÒNG ==============
     @GetMapping({ "/staff/don", "/admin/dat-phong" })
-    public String listOrders(HttpServletRequest request, Model model) {
-        model.addAttribute("danhSachDon", datPhongStaffService.findAllWithKhachHang());
+    public String listOrders(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String trangThai,
+            @RequestParam(required = false) String tuNgay,
+            @RequestParam(required = false) String denNgay,
+            HttpServletRequest request, Model model) {
+
+        model.addAttribute("danhSachDon", datPhongStaffService.searchAdvanced(keyword, trangThai, tuNgay, denNgay));
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("trangThai", trangThai);
+        model.addAttribute("tuNgay", tuNgay);
+        model.addAttribute("denNgay", denNgay);
+
         boolean isAdmin = request.getServletPath().startsWith("/admin/");
         model.addAttribute("isAdminView", isAdmin);
         model.addAttribute("bookingBasePath", isAdmin ? "/admin/dat-phong" : "/staff/don");
@@ -56,6 +68,21 @@ public class StaffOrderController {
 
         String basePath = request.getServletPath().startsWith("/admin/") ? "/admin/dat-phong" : "/staff/don";
         return "redirect:" + basePath;
+    }
+
+    @GetMapping({ "/staff/don/{maDp}", "/admin/dat-phong/{maDp}" })
+    public String orderDetail(@PathVariable int maDp, HttpServletRequest request, Model model) {
+        DatPhong dp = datPhongStaffService.getDatPhongDetail(maDp);
+        if (dp == null)
+            return "redirect:/staff/don";
+
+        model.addAttribute("donDatPhong", dp);
+        model.addAttribute("chiTietList", datPhongStaffService.getChiTiet(maDp));
+
+        boolean isAdmin = request.getServletPath().startsWith("/admin/");
+        model.addAttribute("isAdminView", isAdmin);
+        model.addAttribute("bookingBasePath", isAdmin ? "/admin/dat-phong" : "/staff/don");
+        return "staff/chi-tiet-don";
     }
 
     // ============== TASK #22, #23, #24: SƠ ĐỒ PHÒNG & CHECK-IN / CHECK-OUT
