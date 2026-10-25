@@ -1,26 +1,70 @@
 package com.hotel.model;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "chi_tiet_dat_phong")
 public class ChiTietDatPhong {
-    private int maCtdp;
-    private int maDp;
-    private int maPhong;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_ctdp")
+    private Integer maCtdp;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_dp", nullable = false)
+    private DatPhong datPhong;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_phong", nullable = false)
+    private Phong phong;
+
+    @Column(name = "gia_phong", nullable = false, precision = 12, scale = 2)
     private BigDecimal giaPhong;
-    private int soDem;
+
+    @Column(name = "so_dem", nullable = false)
+    private Integer soDem;
+
+    @Column(name = "thanh_tien", nullable = false, precision = 12, scale = 2)
     private BigDecimal thanhTien;
 
+    // Backward compatibility helper for JDBC DAOs
+    public int getMaPhong() {
+        return phong != null ? phong.getMaPhong() : 0;
+    }
+    public void setMaPhong(int maPhong) {
+        if (this.phong == null) {
+            this.phong = new Phong();
+        }
+        this.phong.setMaPhong(maPhong);
+    }
+    public void setMaDp(Integer maDp) {
+        if (this.datPhong == null) {
+            this.datPhong = new DatPhong();
+        }
+        this.datPhong.setMaDp(maDp);
+    }
+    public Integer getMaDp() {
+        return datPhong != null ? datPhong.getMaDp() : 0;
+    }
+
     // Getters and Setters
-    public int getMaCtdp() { return maCtdp; }
-    public void setMaCtdp(int maCtdp) { this.maCtdp = maCtdp; }
-    public int getMaDp() { return maDp; }
-    public void setMaDp(int maDp) { this.maDp = maDp; }
-    public int getMaPhong() { return maPhong; }
-    public void setMaPhong(int maPhong) { this.maPhong = maPhong; }
+    public Integer getMaCtdp() { return maCtdp; }
+    public void setMaCtdp(Integer maCtdp) { this.maCtdp = maCtdp; }
+
+    public DatPhong getDatPhong() { return datPhong; }
+    public void setDatPhong(DatPhong datPhong) { this.datPhong = datPhong; }
+
+    public Phong getPhong() { return phong; }
+    public void setPhong(Phong phong) { this.phong = phong; }
+
     public BigDecimal getGiaPhong() { return giaPhong; }
     public void setGiaPhong(BigDecimal giaPhong) { this.giaPhong = giaPhong; }
-    public int getSoDem() { return soDem; }
-    public void setSoDem(int soDem) { this.soDem = soDem; }
+
+    public Integer getSoDem() { return soDem; }
+    public void setSoDem(Integer soDem) { this.soDem = soDem; }
+
     public BigDecimal getThanhTien() { return thanhTien; }
     public void setThanhTien(BigDecimal thanhTien) { this.thanhTien = thanhTien; }
 }

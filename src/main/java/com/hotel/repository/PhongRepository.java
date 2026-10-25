@@ -20,9 +20,8 @@ public interface PhongRepository extends JpaRepository<Phong, Integer> {
 
     @Query("select p from Phong p join fetch p.loaiPhong lp " +
            "where p.trangThai <> 'BAO_TRI' and not exists (" +
-           "select c.maCtdp from ChiTietDatPhong c, DatPhong d " +
-           "where c.maDp = d.maDp and c.maPhong = p.maPhong " +
-           "and d.trangThai <> 'DA_HUY' " +
+           "select c from ChiTietDatPhong c join c.datPhong d " +
+           "where c.phong = p and d.trangThai <> 'DA_HUY' " +
            "and d.ngayNhanPhong < :checkOut and d.ngayTraPhong > :checkIn) " +
            "order by lp.giaMacDinh asc, p.soPhong asc")
     List<Phong> findAvailable(@Param("checkIn") Date checkIn, @Param("checkOut") Date checkOut);
