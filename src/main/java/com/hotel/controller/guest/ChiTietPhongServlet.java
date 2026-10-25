@@ -1,10 +1,7 @@
 package com.hotel.controller.guest;
 
 import com.hotel.dao.PhongDAO;
-import com.hotel.model.DanhGia;
 import com.hotel.model.PhongTrongDTO;
-import com.hotel.service.DanhGiaService;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,7 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/chi-tiet-phong")
 public class ChiTietPhongServlet extends HttpServlet {
@@ -35,13 +31,7 @@ public class ChiTietPhongServlet extends HttpServlet {
                 return;
             }
 
-            DanhGiaService danhGiaService = WebApplicationContextUtils
-                    .getRequiredWebApplicationContext(getServletContext())
-                    .getBean(DanhGiaService.class);
-            List<DanhGia> danhGiaList = danhGiaService.getDanhGiaByLoaiPhong(phong.getMaLoai());
-
             request.setAttribute("phong", phong);
-            request.setAttribute("danhGiaList", danhGiaList);
             request.setAttribute("ngayNhan", request.getParameter("ngayNhan"));
             request.setAttribute("ngayTra", request.getParameter("ngayTra"));
             request.getRequestDispatcher("/WEB-INF/views/guest/chi-tiet-phong.jsp").forward(request, response);

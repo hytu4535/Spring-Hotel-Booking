@@ -24,9 +24,6 @@
         <a class="${activeMenu == 'reservations' ? 'active' : ''}" href="${pageContext.request.contextPath}/staff/don">
             <i class="bi bi-calendar-check"></i><span>Đặt phòng & đơn đặt</span>
         </a>
-        <a class="${activeMenu == 'payments' ? 'active' : ''}" href="${pageContext.request.contextPath}/staff/thanh-toan">
-            <i class="bi bi-wallet2"></i><span>Quản lý thanh toán</span>
-        </a>
         <a class="${activeMenu == 'frontdesk' ? 'active' : ''}" href="${pageContext.request.contextPath}/staff/nhan-tra-phong">
             <i class="bi bi-person-workspace"></i><span>Quầy lễ tân</span>
         </a>

@@ -3,6 +3,8 @@ spring:
     import:
       - optional:classpath:db.properties
       - optional:classpath:application-local.yml
+  kafka:
+    bootstrap-servers: localhost:9092
   datasource:
     url: ${DB_URL:${db.url}}
     username: ${DB_USERNAME:${db.username}}

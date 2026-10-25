@@ -55,7 +55,6 @@
                         </div>
                     </c:if>
 
-
                     <div class="text-center mt-3">
                         <a href="${pageContext.request.contextPath}/">← Về trang chủ</a>
                     </div>

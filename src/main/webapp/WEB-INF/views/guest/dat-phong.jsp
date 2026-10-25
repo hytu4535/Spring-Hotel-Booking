@@ -12,7 +12,7 @@
         <!-- Tóm tắt Đơn Đặt Phòng -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-cart-check"></i> Tóm tắt thông tin đặt phòng & dịch vụ</h5>
+                <h5 class="mb-0"><i class="bi bi-cart-check"></i> Tóm tắt thông tin đặt phòng</h5>
                 <a href="${pageContext.request.contextPath}/gio-hang" class="btn btn-sm btn-outline-light">Sửa giỏ hàng</a>
             </div>
             <div class="card-body bg-light">
@@ -21,8 +21,6 @@
                    <span class="badge bg-info text-dark">(${sessionScope.cart.soDem} đêm)</span>
                 </p>
                 <hr>
-                <!-- Phòng -->
-                <h6 class="text-primary fw-bold">Danh sách phòng:</h6>
                 <ul class="list-group mb-3">
                     <c:forEach var="item" items="${sessionScope.cart.items}">
                         <li class="list-group-item d-flex justify-content-between lh-sm">
@@ -33,34 +31,7 @@
                             <span class="text-muted fw-bold"><fmt:formatNumber value="${item.thanhTien}" type="currency" currencySymbol="VND"/></span>
                         </li>
                     </c:forEach>
-                    <li class="list-group-item d-flex justify-content-between bg-light">
-                        <span>Tiền phòng</span>
-                        <strong><fmt:formatNumber value="${sessionScope.cart.tienPhong}" type="currency" currencySymbol="VND"/></strong>
-                    </li>
-                </ul>
-
-                <!-- Dịch vụ phát sinh -->
-                <c:if test="${not empty sessionScope.cart.services}">
-                    <h6 class="text-success fw-bold">Dịch vụ phát sinh:</h6>
-                    <ul class="list-group mb-3">
-                        <c:forEach var="s" items="${sessionScope.cart.services}">
-                            <li class="list-group-item d-flex justify-content-between lh-sm">
-                                <div>
-                                    <h6 class="my-0">${s.tenDv}</h6>
-                                    <small class="text-muted"><fmt:formatNumber value="${s.gia}" type="currency" currencySymbol="VND"/> x ${s.soLuong}</small>
-                                </div>
-                                <span class="text-success fw-bold"><fmt:formatNumber value="${s.thanhTien}" type="currency" currencySymbol="VND"/></span>
-                            </li>
-                        </c:forEach>
-                        <li class="list-group-item d-flex justify-content-between bg-light">
-                            <span>Tiền dịch vụ</span>
-                            <strong><fmt:formatNumber value="${sessionScope.cart.tienDichVu}" type="currency" currencySymbol="VND"/></strong>
-                        </li>
-                    </ul>
-                </c:if>
-
-                <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between text-danger fs-5">
+                    <li class="list-group-item d-flex justify-content-between text-danger">
                         <span><strong>TỔNG CỘNG (VND)</strong></span>
                         <strong><fmt:formatNumber value="${sessionScope.cart.tongTien}" type="currency" currencySymbol="VND"/></strong>
                     </li>
@@ -81,15 +52,15 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
-                            <input type="text" name="hoTen" class="form-control" required value="${not empty currentUser ? currentUser.hoTen : ''}" placeholder="Nhập họ tên...">
+                            <input type="text" name="hoTen" class="form-control" required placeholder="Nhập họ tên...">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" required value="${not empty currentUser ? currentUser.email : ''}" placeholder="Gửi mã tra cứu về mail này">
+                            <input type="email" name="email" class="form-control" required placeholder="Gửi mã tra cứu về mail này">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
-                            <input type="text" name="soDienThoai" class="form-control" required value="${not empty currentUser ? currentUser.soDienThoai : ''}" placeholder="09xxxxxxxxx">
+                            <input type="text" name="soDienThoai" class="form-control" required placeholder="09xxxxxxxxx">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">CCCD/CMND <span class="text-muted fw-normal">(Tùy chọn)</span></label>

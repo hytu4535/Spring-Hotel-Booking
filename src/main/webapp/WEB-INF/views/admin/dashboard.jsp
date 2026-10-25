@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -38,19 +37,18 @@
 
         .stats-card h3 {
             margin: 0 0 15px 0;
-            font-size: 1.1rem;
-            color: var(--secondary);
+            font-size: 1.2rem;
         }
 
         .stats-card .value {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
             margin: 10px 0;
         }
 
         .stats-card .label {
             color: var(--secondary);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .stats-row {
@@ -83,71 +81,29 @@
 <div class="main-content">
     <div class="welcome-message">
         <h2>Chào mừng, Admin!</h2>
-        <p>Thống kê tổng quan hệ thống khách sạn HotelBooking theo thời gian thực.</p>
+        <p>Bạn đang xem bảng điều khiển quản lý hệ thống khách sạn HotelBooking.</p>
     </div>
 
     <div class="stats-row">
         <div class="stats-card">
+            <h3>Tổng số phòng</h3>
+            <div class="value">128</div>
+            <div class="label">Phòng trong khách sạn</div>
+        </div>
+        <div class="stats-card">
+            <h3>Phòng đang có khách</h3>
+            <div class="value text-danger">45</div>
+            <div class="label">Đã được đặt</div>
+        </div>
+        <div class="stats-card">
+            <h3>Phòng trống</h3>
+            <div class="value text-success">83</div>
+            <div class="label">Sẵn sàng cho đặt</div>
+        </div>
+        <div class="stats-card">
             <h3>Doanh thu hôm nay</h3>
-            <div class="value text-success">
-                <fmt:formatNumber value="${doanhThuHomNay}" type="number" groupingUsed="true"/> đ
-            </div>
-            <div class="label">Cập nhật trong ngày</div>
-        </div>
-        <div class="stats-card">
-            <h3>Doanh thu tháng này</h3>
-            <div class="value text-primary">
-                <fmt:formatNumber value="${doanhThuThangNay}" type="number" groupingUsed="true"/> đ
-            </div>
-            <div class="label">Tổng doanh thu tháng</div>
-        </div>
-        <div class="stats-card">
-            <h3>Tổng số đơn đặt</h3>
-            <div class="value text-warning">${tongSoDon}</div>
-            <div class="label">Đơn đặt phòng hợp lệ</div>
-        </div>
-        <div class="stats-card">
-            <h3>Tỷ lệ lấp đầy</h3>
-            <div class="value text-info">${thongKePhong.occupancyRate}%</div>
-            <div class="label">Đang có khách / Tổng phòng (${thongKePhong.occupiedRooms}/${thongKePhong.totalRooms})</div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-            <div class="stats-card h-100">
-                <h3><i class="fas fa-door-open me-2 text-primary"></i>Tình trạng phòng</h3>
-                <ul class="list-group list-group-flush mt-3">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Tổng số phòng
-                        <span class="badge bg-secondary rounded-pill">${thongKePhong.totalRooms}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Phòng đang có khách
-                        <span class="badge bg-danger rounded-pill">${thongKePhong.occupiedRooms}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Phòng trống sẵn sàng
-                        <span class="badge bg-success rounded-pill">${thongKePhong.availableRooms}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Phòng bảo trì
-                        <span class="badge bg-warning text-dark rounded-pill">${thongKePhong.maintenanceRooms}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="stats-card h-100">
-                <h3><i class="fas fa-chart-line me-2 text-success"></i>Chỉ số vận hành</h3>
-                <div class="p-3">
-                    <p class="mb-2"><strong>Hiệu suất khai thác phòng:</strong></p>
-                    <div class="progress mb-4" style="height: 25px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: ${thongKePhong.occupancyRate}%;" aria-valuenow="${thongKePhong.occupancyRate}" aria-valuemin="0" aria-valuemax="100">${thongKePhong.occupancyRate}%</div>
-                    </div>
-                    <p class="text-muted small">Tỷ lệ lấp đầy tính dựa trên số phòng đang có khách ở thực tế so với tổng số phòng trong hệ thống khách sạn.</p>
-                </div>
-            </div>
+            <div class="value text-info">12,500,000đ</div>
+            <div class="label">Đặt phòng và dịch vụ</div>
         </div>
     </div>
 
@@ -161,33 +117,41 @@
                     <thead>
                     <tr>
                         <th>Thời gian</th>
+                        <th>Hành động</th>
                         <th>Khách hàng</th>
                         <th>Phòng</th>
-                        <th>Trạng thái đơn</th>
+                        <th>Trạng thái</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <c:forEach var="hd" items="${hoatDongGganDay}">
-                        <tr>
-                            <td><fmt:formatDate value="${hd.ngayDat}" pattern="dd/MM/yyyy HH:mm" /></td>
-                            <td><strong>${hd.hoTen}</strong></td>
-                            <td>${hd.soPhong}</td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${hd.trangThai == 'DA_XAC_NHAN'}"><span class="badge bg-success">Đã xác nhận</span></c:when>
-                                    <c:when test="${hd.trangThai == 'DA_NHAN_PHONG'}"><span class="badge bg-info text-dark">Đã nhận phòng</span></c:when>
-                                    <c:when test="${hd.trangThai == 'DA_TRA_PHONG'}"><span class="badge bg-secondary">Đã trả phòng</span></c:when>
-                                    <c:when test="${hd.trangThai == 'CHO_XAC_NHAN'}"><span class="badge bg-warning text-dark">Chờ xác nhận</span></c:when>
-                                    <c:otherwise><span class="badge bg-danger">${hd.trangThai}</span></c:otherwise>
-                                </c:choose>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                    <c:if test="${empty hoatDongGganDay}">
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">Chưa có hoạt động nào.</td>
-                        </tr>
-                    </c:if>
+                    <tr>
+                        <td>10:30</td>
+                        <td><i class="fas fa-check-circle text-success me-1"></i> Đặt phòng</td>
+                        <td>Nguyễn Văn A</td>
+                        <td>Phòng 305</td>
+                        <td><span class="badge bg-success">Xác nhận</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:15</td>
+                        <td><i class="fas fa-exchange-alt text-warning me-1"></i> Đổi phòng</td>
+                        <td>Trần Thị B</td>
+                        <td>Phòng 210 → 215</td>
+                        <td><span class="badge bg-warning text-dark">Chờ</span></td>
+                    </tr>
+                    <tr>
+                        <td>08:45</td>
+                        <td><i class="fas fa-user-times text-danger me-1"></i> Hủy đặt</td>
+                        <td>Lê Văn C</td>
+                        <td>Phòng 108</td>
+                        <td><span class="badge bg-danger">Hủy</span></td>
+                    </tr>
+                    <tr>
+                        <td>08:30</td>
+                        <td><i class="fas fa-bed text-info me-1"></i> Nhận phòng</td>
+                        <td>Phạm Thị D</td>
+                        <td>Phòng 402</td>
+                        <td><span class="badge bg-info text-dark">Đã nhận</span></td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

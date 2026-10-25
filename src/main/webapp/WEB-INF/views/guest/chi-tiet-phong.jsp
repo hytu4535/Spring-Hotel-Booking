@@ -9,7 +9,7 @@
 <div class="container mt-4 mb-5">
     <c:choose>
         <c:when test="${not empty phong}">
-            <div class="card shadow-sm mb-4">
+            <div class="card shadow-sm">
                 <div class="card-body">
                     <h3 class="card-title text-primary mb-3">Phòng ${phong.soPhong} - ${phong.tenLoai}</h3>
                     <p><strong>Tầng:</strong> ${phong.tang}</p>
@@ -38,34 +38,6 @@
                             </form>
                         </c:if>
                     </div>
-                </div>
-            </div>
-
-            <!-- Phần hiển thị Đánh giá / Review -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="bi bi-star-fill text-warning"></i> Đánh giá từ khách hàng (${not empty danhGiaList ? danhGiaList.size() : 0})</h5>
-                </div>
-                <div class="card-body">
-                    <c:if test="{empty danhGiaList}">
-                        <p class="text-muted mb-0">Chưa có đánh giá nào cho loại phòng này.</p>
-                    </c:if>
-                    <c:if test="${not empty danhGiaList}">
-                        <div class="list-group list-group-flush">
-                            <c:forEach var="dg" items="${danhGiaList}">
-                                <div class="list-group-item px-0 py-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="mb-0 fw-bold">${dg.khachHang != null ? dg.khachHang.hoTen : 'Khách hàng'}</h6>
-                                        <small class="text-muted">${dg.ngayDanhGia}</small>
-                                    </div>
-                                    <div class="text-warning mb-2">
-                                        <c:forEach begin="1" end="${dg.soSao}">⭐</c:forEach> (${dg.soSao}/5 sao)
-                                    </div>
-                                    <p class="mb-0 text-secondary">${dg.noiDung}</p>
-                                </div>
-                            </c:forEach>
-                        </div>
-                    </c:if>
                 </div>
             </div>
         </c:when>

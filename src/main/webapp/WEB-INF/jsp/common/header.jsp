@@ -29,8 +29,6 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/customer/profile">Hồ sơ của tôi</a></li>
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/khach-hang/lich-su-don">Lịch sử đơn phòng</a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">Đăng xuất</a></li>
                         </ul>
                     </li>
