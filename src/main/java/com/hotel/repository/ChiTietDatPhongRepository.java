@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
+import java.sql.Date;
 import java.util.List;
 
 public interface ChiTietDatPhongRepository extends JpaRepository<ChiTietDatPhong, Integer> {
@@ -20,7 +20,7 @@ public interface ChiTietDatPhongRepository extends JpaRepository<ChiTietDatPhong
            "AND d.ngayTraPhong > :ngayNhan")
     long countOverlappingReservations(
             @Param("maPhong") Integer maPhong, 
-            @Param("ngayNhan") LocalDate ngayNhan, 
-            @Param("ngayTra") LocalDate ngayTra
+            @Param("ngayNhan") Date ngayNhan,
+            @Param("ngayTra") Date ngayTra
     );
 }

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
@@ -22,6 +24,7 @@ import java.util.List;
 @Controller
 public class GuestBookingController {
 
+    private static final Logger log = LoggerFactory.getLogger(GuestBookingController.class);
     private final DatPhongService datPhongService;
 
     public GuestBookingController(DatPhongService datPhongService) {
@@ -116,13 +119,25 @@ public class GuestBookingController {
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/dat-phong";
+        } catch (RuntimeException e) {
+            log.error("Không thể tạo đơn đặt phòng", e);
+            redirectAttributes.addFlashAttribute("error",
+                    "Không thể hoàn tất đặt phòng lúc này. Vui lòng kiểm tra thông tin và thử lại.");
+            return "redirect:/dat-phong";
         }
     }
 
     @GetMapping("/dat-phong-thanh-cong")
-    public String bookingSuccess(HttpSession session) {
-        if (session.getAttribute("maTraCuu") == null)
+    public String bookingSuccess(HttpSession session, Model model) {
+        String maTraCuu = (String) session.getAttribute("maTraCuu");
+        if (maTraCuu == null)
             return "redirect:/";
+        DatPhong booking = datPhongService.timTheoMaTraCuu(maTraCuu);
+        if (booking == null) {
+            session.removeAttribute("maTraCuu");
+            return "redirect:/";
+        }
+        model.addAttribute("booking", booking);
         return "guest/dat-phong-thanh-cong";
     }
 

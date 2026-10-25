@@ -3,7 +3,6 @@ package com.hotel.controller.staff;
 import com.hotel.model.DatPhong;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.DatPhongStaffService;
-import com.hotel.service.PhongService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class StaffOrderController {
     // ==============
     @GetMapping("/staff/quan-ly-don")
     public String staffDashboard() {
-        return "staff/quanLyDon";
+        return "redirect:/staff/don";
     }
 
     // ============== TASK #20, #21, #36: QUẢN LÝ ĐƠN ĐẶT PHÒNG ==============
@@ -48,7 +47,7 @@ public class StaffOrderController {
         boolean isAdmin = request.getServletPath().startsWith("/admin/");
         model.addAttribute("isAdminView", isAdmin);
         model.addAttribute("bookingBasePath", isAdmin ? "/admin/dat-phong" : "/staff/don");
-        return "staff/quan-ly-don";
+        return isAdmin ? "admin/quan-ly-don" : "staff/quan-ly-don";
     }
 
     @PostMapping({ "/staff/don", "/admin/dat-phong" })

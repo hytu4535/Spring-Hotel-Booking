@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Phòng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/admin-sidebar.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/admin.css}">
+</head>
+<body>
+<aside th:replace="~{staff/fragments :: sidebar}"></aside>
+<main class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Danh sách phòng</h1>
+            <p class="text-muted mb-0">Tra cứu trạng thái phòng trong khách sạn.</p>
+        </div>
+        <i class="fas fa-bed fs-2 text-primary"></i>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Số phòng</th><th>Tầng</th><th>Loại phòng</th><th>Trạng thái</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${phongList}">
+                    <td class="fw-semibold" th:text="${p.soPhong}"></td>
+                    <td th:text="${p.tang}"></td>
+                    <td th:text="${p.loaiPhong.tenLoai}"></td>
+                    <td><span class="badge bg-info text-dark" th:text="${p.trangThai}"></span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(phongList)}"><td colspan="4" class="text-center text-muted py-4">Không có dữ liệu.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

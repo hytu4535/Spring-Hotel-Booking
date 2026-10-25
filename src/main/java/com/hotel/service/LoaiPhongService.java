@@ -32,6 +32,17 @@ public class LoaiPhongService {
     }
 
     @Transactional(readOnly = true)
+    public List<LoaiPhong> findAllEntities() {
+        return loaiPhongRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public LoaiPhong getEntity(Integer maLoai) {
+        return loaiPhongRepository.findById(maLoai)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy loại phòng."));
+    }
+
+    @Transactional(readOnly = true)
     public List<LoaiPhongResponseDTO> search(String tenLoai) {
         String filter = tenLoai == null ? "" : tenLoai.trim().toLowerCase(Locale.ROOT);
         return getAll().stream()

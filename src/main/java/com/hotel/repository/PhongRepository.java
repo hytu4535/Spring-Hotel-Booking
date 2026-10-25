@@ -3,13 +3,29 @@ package com.hotel.repository;
 import com.hotel.model.Phong;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 public interface PhongRepository extends JpaRepository<Phong, Integer> {
 
     long countByLoaiPhong_MaLoai(Integer maLoai);
+
+    @Override
+    @EntityGraph(attributePaths = "loaiPhong")
+    List<Phong> findAll();
+
+    @Query("select p from Phong p join fetch p.loaiPhong lp " +
+           "where p.trangThai <> 'BAO_TRI' and not exists (" +
+           "select c.maCtdp from ChiTietDatPhong c, DatPhong d " +
+           "where c.maDp = d.maDp and c.maPhong = p.maPhong " +
+           "and d.trangThai <> 'DA_HUY' " +
+           "and d.ngayNhanPhong < :checkOut and d.ngayTraPhong > :checkIn) " +
+           "order by lp.giaMacDinh asc, p.soPhong asc")
+    List<Phong> findAvailable(@Param("checkIn") Date checkIn, @Param("checkOut") Date checkOut);
 
     @Query(value = 
         "SELECT " +
