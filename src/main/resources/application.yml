@@ -5,6 +5,9 @@ spring:
       - optional:classpath:application-local.yml
   kafka:
     bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
     url: ${DB_URL:${db.url}}
     username: ${DB_USERNAME:${db.username}}

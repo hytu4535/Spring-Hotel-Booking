@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử đặt phòng - Hotel Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}"><i class="bi bi-building"></i> Hotel Booking</a>
+        <div>
+            <a class="btn btn-outline-light btn-sm me-2" th:href="@{/customer/profile}">Hồ sơ</a>
+            <a class="btn btn-warning btn-sm" th:href="@{/logout}">Đăng xuất</a>
+        </div>
+    </div>
+</nav>
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="bi bi-clock-history text-primary me-2"></i>Lịch sử đặt phòng</h1>
+        <a class="btn btn-outline-primary" th:href="@{/}">Đặt phòng mới</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Ngày đặt</th>
+                    <th>Nhận - Trả phòng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="don : ${historyList}">
+                    <td class="fw-bold text-primary" th:text="${don.maTraCuu}"></td>
+                    <td th:text="${#dates.format(don.ngayDat, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                        <span th:text="${#dates.format(don.ngayNhanPhong, 'dd/MM/yyyy')}"></span><br>
+                        <span class="text-muted" th:text="${#dates.format(don.ngayTraPhong, 'dd/MM/yyyy')}"></span>
+                    </td>
+                    <td class="text-danger fw-semibold" th:text="${#numbers.formatDecimal(don.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    <td>
+                        <span class="badge" 
+                              th:classappend="${don.trangThai == 'CHO_XAC_NHAN' ? 'bg-warning text-dark' : (don.trangThai == 'DA_HUY' ? 'bg-secondary' : 'bg-success')}" 
+                              th:text="${don.trangThai == 'CHO_XAC_NHAN' ? 'Chờ xác nhận' : (don.trangThai == 'DA_HUY' ? 'Đã hủy' : don.trangThai)}">
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <form th:if="${don.trangThai == 'CHO_XAC_NHAN'}" 
+                              th:action="@{/customer/lich-su-dat-phong/huy}" method="post" 
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt phòng này?');">
+                            <input type="hidden" name="maDp" th:value="${don.maDp}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i> Hủy đơn</button>
+                        </form>
+                        <span th:unless="${don.trangThai == 'CHO_XAC_NHAN'}" class="text-muted small">Không thể hủy</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(historyList)}">
+                    <td colspan="6" class="text-center py-4 text-muted">Bạn chưa có đơn đặt phòng nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>
