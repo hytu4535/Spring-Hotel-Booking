@@ -442,7 +442,7 @@ UNLOCK TABLES;
 -- Table structure for table `khuyen_mai`
 --
 
-DROP TABLE IF EXISTS `khuyen_mai`;
+DROP TABLE IF EXISTS `khuyen_`mai`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `khuyen_mai` (
