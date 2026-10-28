@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 public interface PhongService{
+    PhongResponseDTO getSoDoPhong();
     List<PhongResponseDTO> getAllPhong();
     PhongResponseDTO getPhongById(Integer id);
     PhongResponseDTO createPhong(PhongRequestDTO requestDTO);

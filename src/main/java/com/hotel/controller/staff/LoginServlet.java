@@ -1,6 +1,5 @@
 package com.hotel.controller.staff;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,12 +7,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.AuthService;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
-@Controller
 public class LoginServlet {
 
-    private final AuthService authService = new AuthService();
+    private final AuthService authService;
+
+    public LoginServlet(AuthService authService) {
+        this.authService = authService;
+    }
 
     @GetMapping("/login")
     public String doGet(HttpSession session, Model model) {

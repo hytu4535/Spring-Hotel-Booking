@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:inline="text" lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,40 +12,35 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-
 <section class="hero-banner" style="min-height: 100vh;">
-    <div class="container">
+    <div class="container hero-content">
         <div class="row justify-content-center justify-content-lg-end">
-            <div class="col-md-8 col-lg-5">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
                 <div class="soft-card p-4 p-lg-5">
                     <h3 class="mb-4 text-center">
                         <i class="bi bi-building me-1"></i>
-                        <th:block th:if="${adminMode}">Đăng nhập nhân viên / quản trị</th:block>
-                        <th:block th:unless="${adminMode}">Đăng nhập khách hàng</th:block>
+                        <span th:text="${adminMode} ? 'Đăng nhập nhân viên / quản trị' : 'Đăng nhập khách hàng'">Đăng nhập</span>
                     </h3>
 
-                    <th:block th:if="${error != null}">
-                        <div class="alert alert-danger">[[${error}]]</div>
-                    </th:block>
-                    <th:block th:if="${param.oauthError}">
-                        <div class="alert alert-warning"><span th:text="${param.oauthError}"></span></div>
-                    </th:block>
+                    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+                    <div class="alert alert-warning" th:if="${param.oauthError != null}" th:text="${param.oauthError}"></div>
 
-                    <form method="post" th:action="${adminMode ? '/admin/login' : '/login'}">
+                    <form method="post" th:action="@{${adminMode} ? '/admin/login' : '/login'}">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Tên đăng nhập</label>
-                            <input type="text" name="tenDangNhap" class="form-control" th:value="${tenDangNhap}" required autofocus>
+                            <label class="form-label fw-semibold" for="tenDangNhap">Tên đăng nhập</label>
+                            <input id="tenDangNhap" type="text" name="tenDangNhap" class="form-control"
+                                   th:value="${tenDangNhap}" required autofocus>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Mật khẩu</label>
-                            <input type="password" name="matKhau" class="form-control" required>
+                            <label class="form-label fw-semibold" for="matKhau">Mật khẩu</label>
+                            <input id="matKhau" type="password" name="matKhau" class="form-control" required>
                         </div>
                         <button type="submit" class="btn btn-cta w-100">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
                         </button>
                     </form>
 
-                    <th:block th:if="${!adminMode}">
+                    <div th:if="${!adminMode}">
                         <div class="text-center text-muted my-3">Hoặc đăng nhập với</div>
                         <div class="d-flex gap-2">
                             <a class="btn btn-outline-danger flex-fill" th:href="@{/login/google}">
@@ -55,16 +50,15 @@
                                 <i class="bi bi-facebook"></i> Facebook
                             </a>
                         </div>
-                    </th:block>
+                    </div>
 
                     <div class="text-center mt-4">
-                        <a href="/" class="text-dark">← Về trang chủ</a>
+                        <a th:href="@{/}" class="text-dark">← Về trang chủ</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
 </body>
 </html>

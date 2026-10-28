@@ -1,25 +1,82 @@
 package com.hotel.service;
 
-import com.hotel.dao.TaiKhoanDAO;
 import com.hotel.model.TaiKhoan;
+import com.hotel.repository.TaiKhoanRepository;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
+@Service
 public class TaiKhoanService {
+    private final TaiKhoanRepository taiKhoanRepository;
 
-    private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
+    public TaiKhoanService(TaiKhoanRepository taiKhoanRepository) {
+        this.taiKhoanRepository = taiKhoanRepository;
+    }
 
     public TaiKhoan findById(int maTk) {
-        return taiKhoanDAO.findById(maTk);
+        return taiKhoanRepository.findById(maTk).orElse(null);
     }
 
     public TaiKhoan findByTenDangNhap(String tenDangNhap) {
-        return taiKhoanDAO.findByTenDangNhap(tenDangNhap);
+        return taiKhoanRepository.findByTenDangNhapIgnoreCase(tenDangNhap).orElse(null);
+    }
+
+    public Optional<TaiKhoan> findByProviderAndProviderId(String provider, String providerId) {
+        return taiKhoanRepository.findByProviderAndProviderId(provider, providerId);
+    }
+
+    public Optional<TaiKhoan> findByEmail(String email) {
+        return taiKhoanRepository.findByEmailIgnoreCase(email);
+    }
+
+    public Optional<TaiKhoan> findActiveByUsername(String username) {
+        return taiKhoanRepository.findByTenDangNhapAndTrangThai(username, 1);
+    }
+
+    public TaiKhoan save(TaiKhoan account) {
+        return taiKhoanRepository.save(account);
+    }
+
+    public List<TaiKhoan> findAll() {
+        return taiKhoanRepository.findAllByOrderByNgayTaoDesc();
     }
 
     public boolean update(TaiKhoan tk) {
-        return taiKhoanDAO.update(tk);
+        taiKhoanRepository.save(tk);
+        return true;
     }
 
     public boolean updateMatKhau(int maTk, String matKhauHash) {
-        return taiKhoanDAO.updateMatKhau(maTk, matKhauHash);
+        Optional<TaiKhoan> account = taiKhoanRepository.findById(maTk);
+        if (account.isEmpty()) {
+            return false;
+        }
+        account.get().setMatKhau(matKhauHash);
+        taiKhoanRepository.save(account.get());
+        return true;
+    }
+
+    public boolean updateTrangThai(int maTk, int trangThai) {
+        Optional<TaiKhoan> account = taiKhoanRepository.findById(maTk);
+        if (account.isEmpty()) {
+            return false;
+        }
+        account.get().setTrangThai(trangThai);
+        taiKhoanRepository.save(account.get());
+        return true;
+    }
+
+    public boolean existsTenDangNhap(String tenDangNhap, Integer excludeMaTk) {
+        return excludeMaTk == null
+                ? taiKhoanRepository.existsByTenDangNhapIgnoreCase(tenDangNhap)
+                : taiKhoanRepository.existsByTenDangNhapIgnoreCaseAndMaTkNot(tenDangNhap, excludeMaTk);
+    }
+
+    public boolean existsEmail(String email, Integer excludeMaTk) {
+        return excludeMaTk == null
+                ? taiKhoanRepository.existsByEmailIgnoreCase(email)
+                : taiKhoanRepository.existsByEmailIgnoreCaseAndMaTkNot(email, excludeMaTk);
     }
 }

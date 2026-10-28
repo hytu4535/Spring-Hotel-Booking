@@ -1,12 +1,17 @@
 package com.hotel.service;
 
-import com.hotel.dao.TaiKhoanDAO;
 import com.hotel.model.TaiKhoan;
+import com.hotel.repository.TaiKhoanRepository;
 import com.hotel.util.PasswordUtil;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AuthService {
+    private final TaiKhoanRepository taiKhoanRepository;
 
-    private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
+    public AuthService(TaiKhoanRepository taiKhoanRepository) {
+        this.taiKhoanRepository = taiKhoanRepository;
+    }
 
     public TaiKhoan login(String tenDangNhap, String matKhau) {
         if (tenDangNhap == null || matKhau == null ||
@@ -14,14 +19,11 @@ public class AuthService {
             return null;
         }
 
-        TaiKhoan tk = taiKhoanDAO.findByTenDangNhap(tenDangNhap.trim());
+        TaiKhoan tk = taiKhoanRepository
+                .findByTenDangNhapAndTrangThai(tenDangNhap.trim(), 1)
+                .orElse(null);
         if (tk == null) {
             return null;
-        }
-
-        // Kiểm tra trạng thái tài khoản
-        if (tk.getTrangThai() != 1) {
-            return null; // tài khoản bị khóa
         }
 
         // So sánh mật khẩu (BCrypt)

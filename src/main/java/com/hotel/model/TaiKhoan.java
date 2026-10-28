@@ -1,6 +1,6 @@
 package com.hotel.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity

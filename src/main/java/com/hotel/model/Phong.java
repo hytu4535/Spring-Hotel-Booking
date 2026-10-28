@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 import com.hotel.enums.TrangThaiPhong;
 import com.hotel.mapper.LoaiPhongMapper;
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,4 +38,8 @@ public class Phong {
 
     @Column(name = "da_xoa", nullable = false)
     private Boolean daXoa = false;
+
+    public LoaiPhong getLoaiPhong() {
+        return this.maLoaiPhong;
+    }
 }

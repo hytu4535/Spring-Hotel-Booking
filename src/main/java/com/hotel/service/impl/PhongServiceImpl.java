@@ -24,6 +24,12 @@ public class PhongServiceImpl implements PhongService {
     private final PhongMapper phongMapper;
     private final LoaiPhongRepository loaiPhongRepository;
 
+    @Override
+    @Transactional(readOnly = true)
+    public PhongResponseDTO getSoDoPhong() {
+        return new PhongResponseDTO(null, null, null, null, null, null, null);
+    }
+
 
     @Override
     @Transactional(readOnly = true)

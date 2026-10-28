@@ -4,7 +4,7 @@ import com.hotel.dto.PhongRequestDTO;
 import com.hotel.dto.PhongResponseDTO;
 import com.hotel.service.LoaiPhongService;
 import com.hotel.service.PhongService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

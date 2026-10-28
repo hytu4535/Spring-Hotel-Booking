@@ -1,0 +1,207 @@
+.staff-sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: #172033;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.staff-sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.staff-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.staff-brand i {
+    color: #5ea7ff;
+    font-size: 1.5rem;
+}
+
+.staff-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    color: #f8f9fa;
+    font-size: .95rem;
+}
+
+.staff-user i {
+    color: #9ec5fe;
+    font-size: 1.3rem;
+}
+
+.staff-role {
+    display: inline-block;
+    margin-top: 7px;
+    color: #9aa7bd;
+    font-size: .68rem;
+    letter-spacing: .08em;
+}
+
+.staff-sidebar-menu {
+    flex: 1;
+    padding: 18px 12px;
+}
+
+.staff-section-label {
+    padding: 0 12px 8px;
+    color: #8793a8;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.staff-section-label-spaced {
+    margin-top: 24px;
+}
+
+.staff-sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    margin: 3px 0;
+    border-radius: 8px;
+    color: #d8deea;
+    text-decoration: none;
+    font-size: .92rem;
+}
+
+.staff-sidebar-menu a i {
+    width: 18px;
+    text-align: center;
+    color: #9ec5fe;
+}
+
+.staff-sidebar-menu a:hover,
+.staff-sidebar-menu a.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.staff-sidebar-menu a.active i,
+.staff-sidebar-menu a:hover i {
+    color: #fff;
+}
+
+.staff-sidebar-footer {
+    padding: 16px 18px 20px;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+@media (max-width: 768px) {
+    .staff-sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+    }
+
+    /* The shared staff fragment uses the same semantic classes as the admin
+       fragment. Keep one layout so staff pages do not lose the fixed sidebar. */
+    .sidebar {
+        background-color: #212529;
+        color: #fff;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    .sidebar .header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+        flex-shrink: 0;
+    }
+
+    .sidebar .header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .sidebar-menu {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px 12px 12px;
+    }
+
+    .sidebar-menu::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, .25);
+        border-radius: 4px;
+    }
+
+    .menu-group {
+        margin-bottom: 8px;
+    }
+
+    .menu-group-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #dee2e6;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .menu-group-items a {
+        color: #ced4da;
+        text-decoration: none;
+        padding: 9px 12px 9px 28px;
+        margin-top: 4px;
+        border-radius: 8px;
+        display: block;
+    }
+
+    .menu-group-items a:hover,
+    .menu-group-items a.active {
+        background-color: #0d6efd;
+        color: #fff;
+    }
+
+    .sidebar-footer {
+        padding: 15px 20px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            overflow: visible;
+        }
+
+        .sidebar .header {
+            display: none;
+        }
+    }

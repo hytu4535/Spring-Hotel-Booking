@@ -3,16 +3,18 @@ package com.hotel.controller;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hotel.model.TaiKhoan;
-import com.hotel.repository.TaiKhoanRepository;
+import com.hotel.service.TaiKhoanService;
 import com.hotel.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
-import jakarta.servlet.http.HttpSession;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -22,7 +24,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.UUID;
-import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class SocialLoginController {
@@ -41,21 +42,21 @@ public class SocialLoginController {
     @Value("${app.oauth.redirect-base-url:http://localhost:8080}")
     private String redirectBaseUrl;
 
-    private final TaiKhoanRepository taiKhoanRepository;
+    private final TaiKhoanService taiKhoanService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    public SocialLoginController(TaiKhoanRepository taiKhoanRepository) {
-        this.taiKhoanRepository = taiKhoanRepository;
+    public SocialLoginController(TaiKhoanService taiKhoanService) {
+        this.taiKhoanService = taiKhoanService;
     }
 
     @GetMapping("/login/{provider}")
-    public Object login(@PathVariable String provider, HttpSession session) {
+    public String login(@PathVariable String provider, HttpServletRequest request) {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         String target = "google".equals(normalizedProvider) ? googleUrl
                 : "facebook".equals(normalizedProvider) ? facebookUrl : null;
 
         if (target == null) {
-            return "redirect:/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         if (target.isBlank()) {
@@ -65,11 +66,13 @@ public class SocialLoginController {
             String message = "Đăng nhập " + normalizedProvider
                     + " chưa được cấu hình. Vui lòng thiết lập biến môi trường "
                     + normalizedProvider.toUpperCase() + "_OAUTH_URL.";
-            return "redirect:/login?oauthError=" + encode(message);
+            return "redirect:/login?oauthError="
+                    + java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
         }
 
+        HttpSession session = request.getSession(true);
         session.setAttribute("oauthProvider", normalizedProvider);
-        return new RedirectView(target);
+        return "redirect:" + target;
     }
 
     private String authorizationUrl(String provider) {
@@ -95,10 +98,10 @@ public class SocialLoginController {
     public String callback(@PathVariable String provider,
                          @RequestParam(required = false) String code,
                          @RequestParam(required = false) String error,
-                         HttpSession session) {
+                         HttpServletRequest request) throws IOException {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         if (!"google".equals(normalizedProvider) && !"facebook".equals(normalizedProvider)) {
-            return "redirect:/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         if (error != null || code == null || code.isBlank()) {
             return redirectWithError("Đăng nhập " + normalizedProvider + " đã bị hủy hoặc thất bại.");
@@ -113,9 +116,12 @@ public class SocialLoginController {
                 throw new IllegalStateException("Nhà cung cấp không trả về email hoặc mã người dùng.");
             }
 
-            TaiKhoan account = taiKhoanRepository
+            TaiKhoan account = taiKhoanService
                     .findByProviderAndProviderId(normalizedProvider, providerId)
-                    .orElseGet(() -> taiKhoanRepository.findByEmailIgnoreCase(email).orElse(null));
+                    .orElseGet(() -> taiKhoanService.findByEmail(email).orElse(null));
+            if (account != null && !"CUSTOMER".equals(account.getVaiTro())) {
+                throw new IllegalStateException("Tài khoản local không thể đăng nhập bằng OAuth.");
+            }
             if (account == null) {
                 account = new TaiKhoan();
                 account.setTenDangNhap(uniqueUsername(normalizedProvider, providerId));
@@ -129,9 +135,13 @@ public class SocialLoginController {
             account.setProvider(normalizedProvider);
             account.setProviderId(providerId);
             account.setAnhDaiDien(safeAvatarUrl(profileImageUrl(profile)));
-            account = taiKhoanRepository.save(account);
+            account = taiKhoanService.save(account);
 
-            session.setAttribute("currentUser", account);
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
+            request.getSession(true).setAttribute("currentUser", account);
             return "redirect:/customer/profile";
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -179,7 +189,7 @@ public class SocialLoginController {
 
     private String uniqueUsername(String provider, String providerId) {
         String base = provider + "_" + providerId;
-        return taiKhoanRepository.findByTenDangNhapAndTrangThai(base, 1).isEmpty()
+        return taiKhoanService.findActiveByUsername(base).isEmpty()
                 ? base : base + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 

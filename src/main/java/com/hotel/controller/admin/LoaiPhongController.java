@@ -3,7 +3,7 @@ package com.hotel.controller.admin;
 import com.hotel.dto.LoaiPhongRequestDTO;
 import com.hotel.dto.LoaiPhongResponseDTO;
 import com.hotel.service.LoaiPhongService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

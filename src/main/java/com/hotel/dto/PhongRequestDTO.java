@@ -3,9 +3,9 @@ package com.hotel.dto;
 import com.hotel.enums.TrangThaiPhong;
 
 import com.hotel.model.LoaiPhong;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 public record PhongRequestDTO (
   @NotBlank(message = "Số phòng không được để trống")

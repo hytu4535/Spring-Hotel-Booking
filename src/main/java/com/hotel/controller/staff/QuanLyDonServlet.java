@@ -1,8 +1,7 @@
 package com.hotel.controller.staff;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
 import com.hotel.model.TaiKhoan;
 
@@ -10,7 +9,6 @@ import com.hotel.model.TaiKhoan;
  * Servlet để hiển thị trang chính của nhân viên
  * Đây là landing page sau khi nhân viên đăng nhập
  */
-@Controller
 public class QuanLyDonServlet {
 
     @GetMapping("/staff/quan-ly-don")

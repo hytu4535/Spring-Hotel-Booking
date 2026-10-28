@@ -1,10 +1,8 @@
 package com.hotel.controller.staff;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
-@Controller
 public class LogoutServlet {
 
     @GetMapping("/logout")
