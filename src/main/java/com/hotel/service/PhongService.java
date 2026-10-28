@@ -2,6 +2,7 @@ package com.hotel.service;
 
 import com.hotel.dto.PhongRequestDTO;
 import com.hotel.dto.PhongResponseDTO;
+import com.hotel.model.Phong;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface PhongService{
     PhongResponseDTO createPhong(PhongRequestDTO requestDTO);
     PhongResponseDTO updatePhong(Integer id, PhongRequestDTO requestDTO);
     void deletePhong(Integer id);
+
+    List<PhongResponseDTO> searchPhong(String soPhong);
 }

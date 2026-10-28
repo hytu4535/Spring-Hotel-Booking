@@ -2,6 +2,7 @@ package com.hotel.dto;
 
 import com.hotel.enums.TrangThaiPhong;
 
+import com.hotel.model.LoaiPhong;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -19,4 +19,5 @@ public interface LoaiPhongService {
     LoaiPhongResponseDTO createLoaiPhong(LoaiPhongRequestDTO requestDTO);
     LoaiPhongResponseDTO updateLoaiPhong(Integer id, LoaiPhongRequestDTO requestDTO);
     void deleteLoaiPhong(Integer id);
+    List<LoaiPhongResponseDTO> searchLoaiPhong(String tenLoai);
 }

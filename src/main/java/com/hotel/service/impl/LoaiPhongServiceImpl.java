@@ -2,8 +2,10 @@ package com.hotel.service.impl;
 
 import com.hotel.dto.LoaiPhongRequestDTO;
 import com.hotel.dto.LoaiPhongResponseDTO;
+import com.hotel.dto.PhongResponseDTO;
 import com.hotel.mapper.LoaiPhongMapper;
 import com.hotel.model.LoaiPhong;
+import com.hotel.model.Phong;
 import com.hotel.repository.LoaiPhongRepository;
 import com.hotel.service.LoaiPhongService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +49,20 @@ public class LoaiPhongServiceImpl implements LoaiPhongService {
         LoaiPhong model = loaiPhongMapper.toModel(requestDTO);
         LoaiPhong savedModel = loaiPhongRepository.save(model);
         return loaiPhongMapper.toResponse(savedModel);
+    }
+
+    @Override
+    @Transactional
+    public List<LoaiPhongResponseDTO> searchLoaiPhong(String tenLoai) {
+        List<LoaiPhong> dsLoaiPhong;
+        if (tenLoai != null && !tenLoai.trim().isEmpty()) {
+            dsLoaiPhong = loaiPhongRepository.findByTenLoaiIgnoreCase(tenLoai.trim());
+        } else {
+            dsLoaiPhong = loaiPhongRepository.findAll();
+        }
+        return dsLoaiPhong.stream()
+                .map(loaiPhongMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override

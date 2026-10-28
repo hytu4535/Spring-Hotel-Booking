@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface PhongRepository extends JpaRepository<Phong, Integer> {
     List<Phong> findAllByDaXoaFalse();
 
+    List<Phong> findBySoPhongContainingIgnoreCase(String soPhong);
+
     Optional<Phong> findByMaPhongAndDaXoaFalse(Integer maPhong);
 
     boolean existsBySoPhongIgnoreCaseAndDaXoaFalse(String soPhong);

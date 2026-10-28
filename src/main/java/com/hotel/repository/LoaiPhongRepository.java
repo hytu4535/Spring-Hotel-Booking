@@ -14,6 +14,8 @@ public interface LoaiPhongRepository extends JpaRepository<LoaiPhong, Integer> {
 
     Optional<LoaiPhong> findByTenLoai(String tenLoai);
 
+    List<LoaiPhong> findByTenLoaiIgnoreCase(String tenLoai);
+
     List<LoaiPhong> findAllByDaXoaFalse();
 
     Optional<LoaiPhong> findByMaLoaiAndDaXoaFalse(Integer id);

@@ -8,11 +8,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <!-- 1. Bổ sung File CSS của Admin Sidebar -->
+    <!-- Bổ sung File CSS của Admin Sidebar -->
     <link rel="stylesheet" th:href="@{/css/admin-sidebar.css}">
 
     <style>
-        /* 2. Đẩy nội dung trang sang bên phải 250px để nhường chỗ cho Sidebar */
+        /* Đẩy nội dung trang sang bên phải 250px để nhường chỗ cho Sidebar */
         .main-content {
             margin-left: 250px;
             padding: 20px;
@@ -28,10 +28,10 @@
 </head>
 <body class="bg-light">
 
-<!-- 3. Nhúng Sidebar Admin vào đây -->
+<!-- Nhúng Sidebar Admin -->
 <div th:replace="~{common/sidebar-admin :: sidebar}"></div>
 
-<!-- 4. Bọc toàn bộ nội dung trang trong div.main-content -->
+<!-- Bọc toàn bộ nội dung trang trong div.main-content -->
 <div class="main-content">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0 text-primary fw-bold">
@@ -67,9 +67,10 @@
                     </form>
                 </div>
                 <div class="col-md-auto text-end">
-                    <a th:href="@{/admin/loai-phong/create}" class="btn btn-success fw-semibold">
+                    <!-- Nút Thêm Mới: Mở Modal Pop-up -->
+                    <button type="button" class="btn btn-success fw-semibold" onclick="openCreateModal()">
                         <i class="fas fa-plus me-1"></i> Thêm loại phòng
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -95,40 +96,46 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- Lặp danh sách Loại phòng từ Controller -->
+                    <!-- Vòng lặp danh sách loại phòng từ Controller -->
                     <tr th:each="item : ${dsLoaiPhong}">
-                        <td class="text-center fw-bold" th:text="${item.maLoai}">1</td>
+                        <td class="text-center fw-bold" th:text="${item.maLoai != null ? item.maLoai : item.maLoai()}">1</td>
                         <td>
-                            <div class="fw-bold text-dark" th:text="${item.tenLoai}">Phòng Deluxe</div>
-                            <div class="text-muted small text-truncate" style="max-width: 300px;" th:text="${item.moTa}">Mô tả loại phòng...</div>
+                            <div class="fw-bold text-dark" th:text="${item.tenLoai != null ? item.tenLoai : item.tenLoai()}">Phòng Deluxe</div>
+                            <div class="text-muted small text-truncate" style="max-width: 250px;" th:text="${item.moTa != null ? item.moTa : item.moTa()}">Mô tả loại phòng...</div>
                         </td>
-                        <!-- Định dạng tiền tệ VND tự động -->
                         <td class="fw-semibold text-success"
-                            th:text="${item.giaMacDinh != null ? #numbers.formatDecimal(item.giaMacDinh, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">
+                            th:text="${(item.giaMacDinh != null ? item.giaMacDinh : item.giaMacDinh()) != null ? #numbers.formatDecimal(item.giaMacDinh != null ? item.giaMacDinh : item.giaMacDinh(), 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">
                             1.000.000 VNĐ
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-info text-dark" th:text="${item.sucChua + ' người'}">2 người</span>
+                            <span class="badge bg-info text-dark" th:text="${(item.sucChua != null ? item.sucChua : item.sucChua()) + ' người'}">2 người</span>
                         </td>
-                        <td class="text-center" th:text="${item.dienTich != null ? item.dienTich + ' m²' : '-'}">35 m²</td>
+                        <td class="text-center" th:text="${(item.dienTich != null ? item.dienTich : item.dienTich()) != null ? (item.dienTich != null ? item.dienTich : item.dienTich()) + ' m²' : '-'}">35 m²</td>
                         <td class="text-center">
-                            <img th:if="${item.hinhAnh != null and !item.hinhAnh.isBlank()}"
-                                 th:src="${item.hinhAnh}"
-                                 alt="Ảnh phòng" class="rounded border" style="width: 60px; height: 40px; object-fit: cover;">
-                            <span th:unless="${item.hinhAnh != null and !item.hinhAnh.isBlank()}" class="text-muted small">Chưa có ảnh</span>
+                            <img th:if="${(item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()) != null and !(item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()).isBlank()}"
+                                 th:src="${item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()}"
+                                 alt="Ảnh phòng" class="rounded border" style="width: 50px; height: 35px; object-fit: cover;">
+                            <span th:unless="${(item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()) != null and !(item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()).isBlank()}" class="text-muted small">Chưa có</span>
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
-                                <!-- Nút Sửa -->
-                                <a class="btn btn-sm btn-outline-primary"
-                                   th:href="@{/admin/loai-phong/edit/{id}(id=${item.maLoai})}"
-                                   title="Chỉnh sửa">
+                                <!-- Nút Sửa Pop-up: Lấy dữ liệu an toàn từ data-* attributes -->
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        th:data-id="${item.maLoai != null ? item.maLoai : item.maLoai()}"
+                                        th:data-ten-loai="${item.tenLoai != null ? item.tenLoai : item.tenLoai()}"
+                                        th:data-gia="${item.giaMacDinh != null ? item.giaMacDinh : item.giaMacDinh()}"
+                                        th:data-suc-chua="${item.sucChua != null ? item.sucChua : item.sucChua()}"
+                                        th:data-dien-tich="${item.dienTich != null ? item.dienTich : item.dienTich()}"
+                                        th:data-hinh-anh="${item.hinhAnh != null ? item.hinhAnh : item.hinhAnh()}"
+                                        th:data-mo-ta="${item.moTa != null ? item.moTa : item.moTa()}"
+                                        onclick="openEditModalFromBtn(this)"
+                                        title="Chỉnh sửa">
                                     <i class="fas fa-pen"></i>
-                                </a>
+                                </button>
                                 <!-- Form Xóa Mềm -->
-                                <form th:action="@{/admin/loai-phong/delete/{id}(id=${item.maLoai})}"
+                                <form th:action="@{/admin/loai-phong/delete/{id}(id=${item.maLoai != null ? item.maLoai : item.maLoai()})}"
                                       method="post"
-                                      th:onsubmit="return confirm('Bạn có chắc chắn muốn xóa loại phòng [[${item.tenLoai}]] không?');">
+                                      th:onsubmit="return confirm('Bạn có chắc chắn muốn xóa loại phòng [[${item.tenLoai != null ? item.tenLoai : item.tenLoai()}]] không?');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa loại phòng">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -151,7 +158,113 @@
     </div>
 </div>
 
+<!-- ==================== POP-UP MODAL FORM (THÊM / SỬA LOẠI PHÒNG) ==================== -->
+<div class="modal fade" id="loaiPhongModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle">THÊM MỚI LOẠI PHÒNG</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="loaiPhongForm" method="post">
+                <div class="modal-body p-4 row g-3">
+
+                    <!-- Tên Loại Phòng -->
+                    <div class="col-12">
+                        <label for="tenLoai" class="form-label fw-semibold">Tên Loại Phòng <span class="text-danger">*</span></label>
+                        <input type="text" id="tenLoai" name="tenLoai" class="form-control" placeholder="Ví dụ: Phòng Deluxe, Phòng VIP..." required>
+                    </div>
+
+                    <!-- Giá Mặc Định -->
+                    <div class="col-md-6">
+                        <label for="giaMacDinh" class="form-label fw-semibold">Giá Mặc Định (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" step="1000" id="giaMacDinh" name="giaMacDinh" class="form-control" placeholder="Ví dụ: 500000" required>
+                    </div>
+
+                    <!-- Sức Chứa -->
+                    <div class="col-md-6">
+                        <label for="sucChua" class="form-label fw-semibold">Sức Chứa (Người) <span class="text-danger">*</span></label>
+                        <input type="number" id="sucChua" name="sucChua" class="form-control" placeholder="Ví dụ: 2" required>
+                    </div>
+
+                    <!-- Diện Tích -->
+                    <div class="col-md-6">
+                        <label for="dienTich" class="form-label fw-semibold">Diện Tích (m²)</label>
+                        <input type="number" step="0.1" id="dienTich" name="dienTich" class="form-control" placeholder="Ví dụ: 35.5">
+                    </div>
+
+                    <!-- Đường Dẫn Hình Ảnh -->
+                    <div class="col-md-6">
+                        <label for="hinhAnh" class="form-label fw-semibold">Đường Dẫn Hình Ảnh (URL)</label>
+                        <input type="text" id="hinhAnh" name="hinhAnh" class="form-control" placeholder="/images/deluxe.jpg">
+                    </div>
+
+                    <!-- Mô Tả Chi Tiết -->
+                    <div class="col-12">
+                        <label for="moTa" class="form-label fw-semibold">Mô Tả Chi Tiết</label>
+                        <textarea id="moTa" name="moTa" rows="3" class="form-control" placeholder="Nhập thông tin mô tả chi tiết tiện nghi phòng..."></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="fas fa-save me-1"></i> Lưu thông tin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script xử lý Pop-up Modal -->
+<script>
+    let modalInstance;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        modalInstance = new bootstrap.Modal(document.getElementById('loaiPhongModal'));
+    });
+
+    // Mở Modal Thêm mới
+    function openCreateModal() {
+        document.getElementById('modalTitle').innerText = "THÊM MỚI LOẠI PHÒNG";
+        document.getElementById('loaiPhongForm').action = "/admin/loai-phong/create";
+
+        document.getElementById('tenLoai').value = '';
+        document.getElementById('giaMacDinh').value = '';
+        document.getElementById('sucChua').value = '';
+        document.getElementById('dienTich').value = '';
+        document.getElementById('hinhAnh').value = '';
+        document.getElementById('moTa').value = '';
+
+        modalInstance.show();
+    }
+
+    // Mở Modal Chỉnh sửa (lấy an toàn từ data-* attributes)
+    function openEditModalFromBtn(btn) {
+        const id = btn.getAttribute('data-id');
+        const tenLoai = btn.getAttribute('data-ten-loai');
+        const gia = btn.getAttribute('data-gia');
+        const sucChua = btn.getAttribute('data-suc-chua');
+        const dienTich = btn.getAttribute('data-dien-tich');
+        const hinhAnh = btn.getAttribute('data-hinh-anh');
+        const moTa = btn.getAttribute('data-mo-ta');
+
+        document.getElementById('modalTitle').innerText = "CẬP NHẬT LOẠI PHÒNG #" + id;
+        document.getElementById('loaiPhongForm').action = "/admin/loai-phong/edit/" + id;
+
+        document.getElementById('tenLoai').value = tenLoai || '';
+        document.getElementById('giaMacDinh').value = gia || '';
+        document.getElementById('sucChua').value = sucChua || '';
+        document.getElementById('dienTich').value = dienTich || '';
+        document.getElementById('hinhAnh').value = hinhAnh || '';
+        document.getElementById('moTa').value = moTa || '';
+
+        modalInstance.show();
+    }
+</script>
 </body>
 </html>

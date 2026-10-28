@@ -1,45 +1,76 @@
-<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text">
+<div th:replace="~{common/header :: header}"></div>
 
-<div class="container mt-4 mb-5">
-    <th:block>
-        <th:block th:if="${phong}">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title text-primary mb-3">Phòng [[${phong.soPhong}]] - [[${phong.tenLoai}]]</h3>
-                    <p><strong>Tầng:</strong> [[${phong.tang}]]</p>
-                    <p><strong>Sức chứa:</strong> [[${phong.sucChua}]] người</p>
-                    <p><strong>Diện tích:</strong> [[${phong.dienTich}]] m²</p>
-                    <p><strong>Mô tả:</strong> [[${phong.moTa}]]</p>
-                    <p class="text-danger fs-5 fw-bold">
-                        <span th:text="${#numbers.formatDecimal(phong.giaPhong, 1, 2)}"></span> / đêm
-                    </p>
+<section class="page-hero">
+    <div class="container">
+        <h1>Chi tiết phòng lưu trú</h1>
+        <p class="mb-0">Xem đầy đủ thông tin không gian, tiện nghi và giá phòng trước khi đặt.</p>
+    </div>
+</section>
 
-                    <div class="d-flex gap-2">
-                        <a class="btn btn-outline-secondary"
-                           th:href="@{/tim-phong(ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">
-                            Quay lại tìm phòng
-                        </a>
+<section class="container pb-5">
+    <th:block th:if="${phong != null}">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="detail-card p-3 p-lg-4">
+                    <img class="detail-image-main mb-3"
+                         th:src="${phong.hinhAnh != null and !phong.hinhAnh.isBlank() ? phong.hinhAnh : '/images/rooms/FamilyPremiumSuites/Room_2%20%2810%29a_612902bc62e8d.jpeg'}"
+                         alt="Ảnh phòng">
+                    <div class="row g-2">
+                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/BlossomSuite/Room_6 (1)a_6129022b42612.jpeg}" alt="Không gian 1"></div>
+                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/SignatureSuites/Room_3 (5)a_6129005564f1a.jpeg}" alt="Không gian 2"></div>
+                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/SkyCornerSuites/Room_1 (11)a_612901bc90d8e.jpeg}" alt="Không gian 3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <aside class="detail-card p-4 h-100">
+                    <p class="text-uppercase text-muted mb-2">Room information</p>
+                    <h2 class="mb-2">Phòng [[${phong.soPhong}]] - [[${phong.tenLoai}]]</h2>
+                    <p class="text-muted mb-4" th:text="${phong.moTa != null and !phong.moTa.isBlank() ? phong.moTa : 'Phòng được thiết kế tối ưu công năng, mang lại cảm giác thoải mái và riêng tư cho suốt thời gian lưu trú.'}"></p>
 
-                        <th:block th:if="${ngayNhan and ngayTra}">
-                            <form th:action="@{/gio-hang}" method="post" class="ms-auto">
+                    <div class="d-flex justify-content-between border-top border-bottom py-2 mb-2">
+                        <span>Tầng</span>
+                        <strong>[[${phong.tang}]]</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom py-2 mb-2">
+                        <span>Sức chứa</span>
+                        <strong>[[${phong.sucChua}]] khách</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom py-2 mb-3">
+                        <span>Diện tích</span>
+                        <strong>[[${phong.dienTich}]] m²</strong>
+                    </div>
+
+                    <p class="mb-4"><span class="price-tag" th:text="${#numbers.formatDecimal(phong.giaPhong, 1, 2)}"></span> <span class="price-unit">/ đêm</span></p>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a class="btn btn-outline-dark"
+                           th:href="@{/tim-phong(ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">Quay lại danh sách</a>
+
+                        <th:block th:if="${ngayNhan != null and ngayTra != null}">
+                            <form th:action="@{/gio-hang}" method="post">
                                 <input type="hidden" name="maPhong" th:value="${phong.maPhong}">
                                 <input type="hidden" name="soPhong" th:value="${phong.soPhong}">
                                 <input type="hidden" name="tenLoai" th:value="${phong.tenLoai}">
                                 <input type="hidden" name="giaPhong" th:value="${phong.giaPhong}">
                                 <input type="hidden" name="ngayNhan" th:value="${ngayNhan}">
                                 <input type="hidden" name="ngayTra" th:value="${ngayTra}">
-                                <button type="submit" class="btn btn-primary">Thêm vào giỏ</button>
+                                <button type="submit" class="btn btn-cta w-100">Thêm vào giỏ đặt phòng</button>
                             </form>
                         </th:block>
                     </div>
                 </div>
             </div>
-        </th:block>
-        <th:block th:unless="${true}">
-            <div class="alert alert-warning">Không tìm thấy thông tin phòng.</div>
-            <a class="btn btn-outline-secondary" th:href="@{/tim-phong}">Quay lại</a>
-        </th:block>
+        </div>
     </th:block>
-</div>
 
-<div th:replace="~{common/footer :: footer}"></div></html>
+    <th:block th:if="${phong == null}">
+        <div class="alert alert-warning">Không tìm thấy thông tin phòng.</div>
+        <a class="btn btn-outline-dark" th:href="@{/tim-phong}">Quay lại</a>
+    </th:block>
+</section>
+
+<div th:replace="~{common/footer :: footer}"></div>
+</html>

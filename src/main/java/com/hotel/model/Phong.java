@@ -3,6 +3,7 @@ package com.hotel.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 import com.hotel.enums.TrangThaiPhong;
+import com.hotel.mapper.LoaiPhongMapper;
 import jakarta.persistence.*;
 
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class Phong {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai")
-    private TrangThaiPhong trangThai;
+    private TrangThaiPhong trangThaiPhong;
 
     @Column(name = "ghi_chu", length = 255)
     private String ghiChu;

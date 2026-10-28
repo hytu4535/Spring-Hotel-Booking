@@ -21,85 +21,48 @@ public class LoaiPhongController {
     private final LoaiPhongService loaiPhongService;
 
     @GetMapping
-    public String showListPage(Model model) {
-        List<LoaiPhongResponseDTO> dsLoaiPhong = loaiPhongService.getAllLoaiPhong();
+    public String showListPage(@RequestParam(name = "tenLoai", required = false) String tenLoai, Model model) {
+        List<LoaiPhongResponseDTO> dsLoaiPhong = loaiPhongService.searchLoaiPhong(tenLoai);
         model.addAttribute("dsLoaiPhong", dsLoaiPhong);
         return "admin/loai-phong/list";
     }
 
-    @GetMapping("/create")
-    public String showCreateForm(Model model) {
-        model.addAttribute("loaiPhongForm", new LoaiPhongRequestDTO("", "", null, 1, null, ""));
-        return "admin/loai-phong/form";
-    }
-
     @PostMapping("/create")
     public String handleCreate(
-            @Valid @ModelAttribute("loaiPhongForm") LoaiPhongRequestDTO request,
+            @Valid @ModelAttribute LoaiPhongRequestDTO request,
             BindingResult bindingResult,
-            Model model,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            return "admin/loai-phong/form";
+            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu nhập vào không hợp lệ!");
+            return "redirect:admin/loai-phong";
         }
 
         try {
             loaiPhongService.createLoaiPhong(request);
             redirectAttributes.addFlashAttribute("successMessage", "Thêm mới loại phòng thành công!");
-            return "redirect:/admin/loai-phong";
-        } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            return "admin/loai-phong/form";
-        }
-    }
-
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            LoaiPhongResponseDTO response = loaiPhongService.getLoaiPhongById(id);
-
-            LoaiPhongRequestDTO form = new LoaiPhongRequestDTO(
-                    response.tenLoai(),
-                    response.moTa(),
-                    response.giaMacDinh(),
-                    response.sucChua(),
-                    response.dienTich(),
-                    response.hinhAnh()
-            );
-
-            model.addAttribute("loaiPhongForm", form);
-            model.addAttribute("loaiPhongId", id);
-            return "admin/loai-phong/form";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/loai-phong";
         }
+        return "redirect:/admin/loai-phong";
     }
 
-
     @PostMapping("/edit/{id}")
-    public String handleUpdate(
-            @PathVariable("id") Integer id,
-            @Valid @ModelAttribute("loaiPhongForm") LoaiPhongRequestDTO requestDTO,
-            BindingResult bindingResult,
-            Model model,
-            RedirectAttributes redirectAttributes
-    ) {
+    public String handleUpdate(@PathVariable("id") Integer id,
+                               @Valid @ModelAttribute LoaiPhongRequestDTO loaiPhongRequestDTO,
+                               BindingResult bindingResult ,
+                               RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("loaiPhongId", id);
-            return "admin/loai-phong/form";
-        }
-
-        try {
-            loaiPhongService.updateLoaiPhong(id, requestDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật loại phòng thành công!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu cập nhật không hợp lệ!");
             return "redirect:/admin/loai-phong";
-        } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("loaiPhongId", id);
-            return "admin/loai-phong/form";
         }
+        try {
+            loaiPhongService.updateLoaiPhong(id, loaiPhongRequestDTO);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật loại phòng thành công!");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/loai-phong";
     }
 
     @PostMapping("/delete/{id}")

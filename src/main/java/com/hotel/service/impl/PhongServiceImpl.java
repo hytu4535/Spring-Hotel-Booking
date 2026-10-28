@@ -9,12 +9,12 @@ import com.hotel.model.Phong;
 import com.hotel.repository.LoaiPhongRepository;
 import com.hotel.repository.PhongRepository;
 import com.hotel.service.PhongService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +52,8 @@ public class PhongServiceImpl implements PhongService {
                 .orElseThrow(() -> new RuntimeException("Loại phòng không tồn tại!"));
 
         Phong model = phongMapper.toModel(requestDTO);
+        model.setMaLoaiPhong(loaiPhong);
+        model.setDaXoa(false);
         Phong savedModel = phongRepository.save(model);
         return phongMapper.toResponse(savedModel);
     }
@@ -73,7 +75,7 @@ public class PhongServiceImpl implements PhongService {
         exist.setSoPhong(requestDTO.soPhong());
         exist.setMaLoaiPhong(loaiPhong);
         exist.setTang(requestDTO.tang());
-        exist.setTrangThai(requestDTO.trangThaiPhong());
+        exist.setTrangThaiPhong(requestDTO.trangThaiPhong());
         exist.setGhiChu(requestDTO.ghiChu());
 
         Phong updatedModel = phongRepository.save(exist);
@@ -87,6 +89,21 @@ public class PhongServiceImpl implements PhongService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng có ID: " + id));
         phong.setDaXoa(true);
         phongRepository.save(phong);
+    }
+
+
+    @Override
+    @Transactional
+    public List<PhongResponseDTO> searchPhong(String soPhong) {
+        List<Phong> dsPhong;
+        if (soPhong != null && !soPhong.trim().isEmpty()) {
+            dsPhong = phongRepository.findBySoPhongContainingIgnoreCase(soPhong.trim());
+        } else {
+            dsPhong = phongRepository.findAll();
+        }
+        return dsPhong.stream()
+                .map(phongMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
 }

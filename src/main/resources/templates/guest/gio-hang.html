@@ -1,72 +1,89 @@
-<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:inline="text"><div th:replace="~{common/header :: header}"></div>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text">
+<div th:replace="~{common/header :: header}"></div>
 
-<div class="container mt-4 mb-5">
-    <h2 class="fw-bold text-primary mb-4"><i class="bi bi-cart-check"></i> Các phòng bạn đã chọn</h2>
+<section class="page-hero">
+    <div class="container">
+        <h1>Giỏ đặt phòng của bạn</h1>
+        <p class="mb-0">Kiểm tra lại phòng đã chọn trước khi chuyển sang bước xác nhận đặt phòng.</p>
+    </div>
+</section>
 
-    <th:block th:if="${session.cart || session.cart.items}">
-        <div class="alert alert-warning text-center p-5">
-            <h4>Giỏ hàng của bạn đang trống!</h4>
-            <a th:href="@{/tim-phong}" class="btn btn-primary mt-3">Tìm phòng ngay</a>
+<section class="container pb-5">
+    <th:block th:if="${session.cart == null or #lists.isEmpty(session.cart.items)}">
+        <div class="soft-card text-center p-5">
+            <h4 class="mb-2">Giỏ hàng của bạn đang trống</h4>
+            <p class="text-muted mb-3">Hãy chọn ngày lưu trú để bắt đầu tìm phòng phù hợp.</p>
+            <a th:href="@{/tim-phong}" class="btn btn-cta px-4">Tìm phòng ngay</a>
         </div>
     </th:block>
 
-    <th:block th:if="${session.cart && session.cart.items}">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Thời gian lưu trú: 
-                            <span class="text-success">[[${session.cart.ngayNhan}]]</span> đến 
-                            <span class="text-danger">[[${session.cart.ngayTra}]]</span> 
-                            ([[${session.cart.soDem}]] đêm)
+    <th:block th:if="${session.cart != null and !#lists.isEmpty(session.cart.items)}">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="booking-card p-0 overflow-hidden">
+                    <div class="p-4 border-bottom">
+                        <h5 class="mb-0">
+                            Lịch lưu trú:
+                            <span class="text-success">[[${session.cart.ngayNhan}]]</span> →
+                            <span class="text-danger">[[${session.cart.ngayTra}]]</span>
+                            (<strong>[[${session.cart.soDem}]] đêm</strong>)
                         </h5>
                     </div>
-                    <div class="card-body p-0">
-                        <table class="table mb-0 align-middle">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
                             <thead class="table-light">
-                                <tr>
-                                    <th>Phòng</th>
-                                    <th>Loại phòng</th>
-                                    <th>Giá / Đêm</th>
-                                    <th>Thành tiền</th>
-                                    <th></th>
-                                </tr>
+                            <tr>
+                                <th>Phòng</th>
+                                <th>Loại phòng</th>
+                                <th>Giá / Đêm</th>
+                                <th>Thành tiền</th>
+                                <th class="text-end">Tùy chọn</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <th:block th:each="item : ${session.cart.items}">
-                                    <tr>
-                                        <td><strong>P.[[${item.soPhong}]]</strong></td>
-                                        <td>[[${item.tenLoai}]]</td>
-                                        <td><span th:text="${#numbers.formatDecimal(item.giaPhong, 1, 2)}"></span></td>
-                                        <td class="text-primary fw-bold"><span th:text="${#numbers.formatDecimal(item.thanhTien, 1, 2)}"></span></td>
-                                        <td>
-                                            <a th:href="@{/gio-hang(action='remove',maPhong=${item.maPhong})}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
-                                        </td>
-                                    </tr>
-                                </th:block>
+                            <th:block th:each="item : ${session.cart.items}">
+                                <tr>
+                                    <td><strong>P.[[${item.soPhong}]]</strong></td>
+                                    <td>[[${item.tenLoai}]]</td>
+                                    <td><span th:text="${#numbers.formatDecimal(item.giaPhong, 1, 2)}"></span></td>
+                                    <td class="fw-semibold"><span th:text="${#numbers.formatDecimal(item.thanhTien, 1, 2)}"></span></td>
+                                    <td class="text-end">
+                                        <a th:href="@{/gio-hang(action='remove',maPhong=${item.maPhong})}" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash3"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </th:block>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <a th:href="@{/tim-phong}" class="btn btn-outline-primary"><i class="bi bi-plus-circle"></i> Chọn thêm phòng khác</a>
+                <a th:href="@{/tim-phong}" class="btn btn-outline-dark mt-3"><i class="bi bi-plus-circle me-1"></i> Chọn thêm phòng</a>
             </div>
 
-            <!-- Tổng kết tiền -->
-            <div class="col-md-4">
-                <div class="card shadow-sm border-primary">
-                    <div class="card-body bg-light">
-                        <h5 class="card-title fw-bold">Tổng Thanh Toán</h5>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
-                            <span>Tiền phòng:</span>
-                            <span class="fs-5 fw-bold text-danger"><span th:text="${#numbers.formatDecimal(session.cart.tongTien, 1, 2)}"></span></span>
-                        </div>
-                        <a th:href="@{/dat-phong}" class="btn btn-primary w-100 btn-lg fw-bold">Tiến hành Đặt Phòng</a>
+            <div class="col-lg-4">
+                <div class="booking-card p-4 position-sticky" style="top: 96px;">
+                    <h5 class="mb-3">Tổng thanh toán</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Số phòng</span>
+                        <strong>[[${#lists.size(session.cart.items)}]]</strong>
                     </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Số đêm</span>
+                        <strong>[[${session.cart.soDem}]]</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Tổng cộng</span>
+                        <span class="price-tag" th:text="${#numbers.formatDecimal(session.cart.tongTien, 1, 2)}"></span>
+                    </div>
+                    <a th:href="@{/dat-phong}" class="btn btn-cta w-100">Tiếp tục đặt phòng</a>
                 </div>
             </div>
         </div>
     </th:block>
-</div>
+</section>
 
-<div th:replace="~{common/footer :: footer}"></div></html>
+<div th:replace="~{common/footer :: footer}"></div>
+</html>

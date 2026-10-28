@@ -212,7 +212,7 @@ CREATE TABLE `loai_phong` (
 
 LOCK TABLES `loai_phong` WRITE;
 /*!40000 ALTER TABLE `loai_phong` DISABLE KEYS */;
-INSERT INTO `loai_phong` VALUES (1,'Standard','Phong tieu chuan, 1 giuong doi, may lanh, TV',500000.00,2,20.00,'standard.jpg'),(2,'Deluxe','Phong cao cap, view thanh pho, minibar',800000.00,2,28.00,'deluxe.jpg'),(3,'Suite','Phong hang sang, co phong khach rieng',1500000.00,4,45.00,'suite.jpg'),(4,'zzzz','rr',5656.00,6565,75.00,'aaa');
+INSERT INTO `loai_phong` VALUES (1,'Blossom Suite','Phong am cung, khong gian yen tinh, phu hop cho cap doi va khach cong tac ngan ngay',1450000.00,2,32.00,'/images/rooms/BlossomSuite/Room_6%20%287%29a_6129022bde6a6.jpeg'),(2,'Signature Suites','Phong cao cap, noi that go hien dai, bo cuc rong rai voi khu tiep khach rieng',1850000.00,2,38.00,'/images/rooms/SignatureSuites/Room_3%20%285%29a_6129005564f1a.jpeg'),(3,'Sky Corner Suites','Phong goc cao cap, nhieu anh sang tu nhien va tam nhin thoang',2150000.00,3,42.00,'/images/rooms/SkyCornerSuites/Room_1%20%2814%29a_612901bc99234.jpeg'),(4,'Family Premium Suites','Phong danh cho gia dinh, dien tich lon, day du tien nghi luu tru dai ngay',2650000.00,4,55.00,'/images/rooms/FamilyPremiumSuites/Room_2%20%2816%29a_612902bdd57f2.jpeg');
 /*!40000 ALTER TABLE `loai_phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -244,7 +244,7 @@ CREATE TABLE `phong` (
 
 LOCK TABLES `phong` WRITE;
 /*!40000 ALTER TABLE `phong` DISABLE KEYS */;
-INSERT INTO `phong` VALUES (1,'101',1,1,'TRONG',NULL),(2,'102',1,1,'TRONG',NULL),(3,'103',1,1,'TRONG',NULL),(4,'201',2,2,'TRONG',NULL),(5,'202',2,2,'DA_DAT',NULL),(6,'203',2,2,'DANG_O',NULL),(7,'301',3,3,'TRONG',NULL),(8,'302',3,3,'BAO_TRI',NULL);
+INSERT INTO `phong` VALUES (1,'101',1,1,'TRONG',NULL),(2,'102',1,1,'TRONG',NULL),(3,'103',1,1,'TRONG',NULL),(4,'201',2,2,'TRONG',NULL),(5,'202',2,2,'DA_DAT',NULL),(6,'203',2,2,'DANG_O',NULL),(7,'301',3,3,'TRONG',NULL),(8,'401',4,4,'BAO_TRI',NULL);
 /*!40000 ALTER TABLE `phong` ENABLE KEYS */;
 UNLOCK TABLES;
 

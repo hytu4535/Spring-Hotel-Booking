@@ -23,10 +23,9 @@ public class PhongController {
     private final LoaiPhongService loaiPhongService;
 
     @GetMapping
-    public String showListPage(Model model) {
-        List<PhongResponseDTO> dsPhong = phongService.getAllPhong();
+    public String showListPage(@RequestParam(name = "soPhong", required = false) String soPhong, Model model) {
+        List<PhongResponseDTO> dsPhong = phongService.searchPhong(soPhong);
         model.addAttribute("dsPhong", dsPhong);
-        // Lấy danh sách loại phòng để render dropdown select
         model.addAttribute("dsLoaiPhong", loaiPhongService.getAllLoaiPhong());
         return "admin/phong/list";
     }

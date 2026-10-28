@@ -86,7 +86,7 @@
                 <table class="table table-striped table-hover align-middle mb-0">
                     <thead class="table-dark">
                     <tr>
-                        <th class="text-center" style="width: 80px;">STT</th>
+                        <th class="text-center" style="width: 80px;">Mã</th>
                         <th>Số phòng</th>
                         <th>Loại phòng</th>
                         <th class="text-center">Tầng</th>
@@ -98,13 +98,12 @@
                     <tbody>
                     <!-- Vòng lặp danh sách phòng -->
                     <tr th:each="item, iterStat : ${dsPhong}">
-                        <td class="text-center fw-bold" th:text="${iterStat.count}">1</td>
+                        <td class="text-center fw-bold" th:text="${item.maPhong()}">1</td>
                         <td class="fw-bold text-dark" th:text="${item.soPhong != null ? item.soPhong : item.soPhong()}">101</td>
                         <td>
                             <span class="badge bg-info text-dark"
-                                  th:text="${(item.maLoaiPhong != null ? item.maLoaiPhong : item.maLoaiPhong()) != null ? 'Mã loại: ' + (item.maLoaiPhong != null ? item.maLoaiPhong : item.maLoaiPhong()) : 'Chưa xếp'}">
-                                Loại 1
-                            </span>
+                                  th:text="${(item.tenLoaiPhong != null ? item.tenLoaiPhong : (item.tenLoaiPhong != null ? item.tenLoaiPhong() : null)) != null ? (item.tenLoaiPhong != null ? item.tenLoaiPhong : item.tenLoaiPhong()) : 'Chưa xếp'}">
+</span>
                         </td>
                         <td class="text-center" th:text="${(item.tang != null ? item.tang : item.tang()) != null ? 'Tầng ' + (item.tang != null ? item.tang : item.tang()) : '-'}">Tầng 1</td>
                         <td class="text-center">
