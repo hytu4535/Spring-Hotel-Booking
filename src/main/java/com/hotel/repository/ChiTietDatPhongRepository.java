@@ -10,12 +10,15 @@ import java.util.List;
 
 public interface ChiTietDatPhongRepository extends JpaRepository<ChiTietDatPhong, Integer> {
     
-    List<ChiTietDatPhong> findByMaDp(Integer maDp);
+    @Query("SELECT c FROM ChiTietDatPhong c WHERE c.datPhong.maDp = :maDp")
+    List<ChiTietDatPhong> findByMaDp(@Param("maDp") Integer maDp);
 
-    @Query("SELECT COUNT(c) FROM ChiTietDatPhong c, DatPhong d " +
-           "WHERE c.maDp = d.maDp " +
-           "AND d.trangThai <> 'DA_HUY' " +
-           "AND c.maPhong = :maPhong " +
+    @Query("SELECT c FROM ChiTietDatPhong c WHERE c.datPhong.maDp = :maDp")
+    List<ChiTietDatPhong> findByDatPhong_MaDp(@Param("maDp") Integer maDp);
+
+    @Query("SELECT COUNT(c) FROM ChiTietDatPhong c JOIN c.datPhong d " +
+           "WHERE d.trangThai <> 'DA_HUY' " +
+           "AND c.phong.maPhong = :maPhong " +
            "AND d.ngayNhanPhong < :ngayTra " +
            "AND d.ngayTraPhong > :ngayNhan")
     long countOverlappingReservations(

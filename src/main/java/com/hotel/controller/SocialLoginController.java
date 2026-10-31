@@ -3,17 +3,16 @@ package com.hotel.controller;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hotel.model.TaiKhoan;
-import com.hotel.service.TaiKhoanService;
+import com.hotel.repository.TaiKhoanRepository;
 import com.hotel.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
@@ -42,37 +41,41 @@ public class SocialLoginController {
     @Value("${app.oauth.redirect-base-url:http://localhost:8080}")
     private String redirectBaseUrl;
 
-    private final TaiKhoanService taiKhoanService;
+    private final TaiKhoanRepository taiKhoanRepository;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    public SocialLoginController(TaiKhoanService taiKhoanService) {
-        this.taiKhoanService = taiKhoanService;
+    public SocialLoginController(TaiKhoanRepository taiKhoanRepository) {
+        this.taiKhoanRepository = taiKhoanRepository;
     }
 
     @GetMapping("/login/{provider}")
-    public String login(@PathVariable String provider, HttpServletRequest request) {
+    public void login(@PathVariable String provider, HttpServletResponse response,
+                      HttpServletRequest request) throws IOException {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         String target = "google".equals(normalizedProvider) ? googleUrl
                 : "facebook".equals(normalizedProvider) ? facebookUrl : null;
 
         if (target == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
         }
 
         if (target.isBlank()) {
             target = authorizationUrl(normalizedProvider);
         }
         if (target.isBlank()) {
+            String contextPath = request.getContextPath();
             String message = "Đăng nhập " + normalizedProvider
                     + " chưa được cấu hình. Vui lòng thiết lập biến môi trường "
                     + normalizedProvider.toUpperCase() + "_OAUTH_URL.";
-            return "redirect:/login?oauthError="
-                    + java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
+            response.sendRedirect(contextPath + "/login?oauthError="
+                    + java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8));
+            return;
         }
 
         HttpSession session = request.getSession(true);
         session.setAttribute("oauthProvider", normalizedProvider);
-        return "redirect:" + target;
+        response.sendRedirect(target);
     }
 
     private String authorizationUrl(String provider) {
@@ -95,16 +98,19 @@ public class SocialLoginController {
     }
 
     @GetMapping("/oauth2/callback/{provider}")
-    public String callback(@PathVariable String provider,
+    public void callback(@PathVariable String provider,
                          @RequestParam(required = false) String code,
                          @RequestParam(required = false) String error,
-                         HttpServletRequest request) throws IOException {
+                         HttpServletRequest request,
+                         HttpServletResponse response) throws IOException {
         String normalizedProvider = provider == null ? "" : provider.trim().toLowerCase();
         if (!"google".equals(normalizedProvider) && !"facebook".equals(normalizedProvider)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
         }
         if (error != null || code == null || code.isBlank()) {
-            return redirectWithError("Đăng nhập " + normalizedProvider + " đã bị hủy hoặc thất bại.");
+            redirectWithError(request, response, "Đăng nhập " + normalizedProvider + " đã bị hủy hoặc thất bại.");
+            return;
         }
 
         try {
@@ -116,12 +122,9 @@ public class SocialLoginController {
                 throw new IllegalStateException("Nhà cung cấp không trả về email hoặc mã người dùng.");
             }
 
-            TaiKhoan account = taiKhoanService
+            TaiKhoan account = taiKhoanRepository
                     .findByProviderAndProviderId(normalizedProvider, providerId)
-                    .orElseGet(() -> taiKhoanService.findByEmail(email).orElse(null));
-            if (account != null && !"CUSTOMER".equals(account.getVaiTro())) {
-                throw new IllegalStateException("Tài khoản local không thể đăng nhập bằng OAuth.");
-            }
+                    .orElseGet(() -> taiKhoanRepository.findByEmailIgnoreCase(email).orElse(null));
             if (account == null) {
                 account = new TaiKhoan();
                 account.setTenDangNhap(uniqueUsername(normalizedProvider, providerId));
@@ -135,19 +138,19 @@ public class SocialLoginController {
             account.setProvider(normalizedProvider);
             account.setProviderId(providerId);
             account.setAnhDaiDien(safeAvatarUrl(profileImageUrl(profile)));
-            account = taiKhoanService.save(account);
+            account = taiKhoanRepository.save(account);
 
             HttpSession oldSession = request.getSession(false);
             if (oldSession != null) {
                 oldSession.invalidate();
             }
             request.getSession(true).setAttribute("currentUser", account);
-            return "redirect:/customer/profile";
+            response.sendRedirect(request.getContextPath() + "/customer/profile");
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return redirectWithError("Không thể hoàn tất đăng nhập mạng xã hội.");
+            redirectWithError(request, response, "Không thể hoàn tất đăng nhập mạng xã hội.");
         } catch (Exception ex) {
-            return redirectWithError("Đăng nhập mạng xã hội thất bại: " + ex.getMessage());
+            redirectWithError(request, response, "Đăng nhập mạng xã hội thất bại: " + ex.getMessage());
         }
     }
 
@@ -189,7 +192,7 @@ public class SocialLoginController {
 
     private String uniqueUsername(String provider, String providerId) {
         String base = provider + "_" + providerId;
-        return taiKhoanService.findActiveByUsername(base).isEmpty()
+        return taiKhoanRepository.findByTenDangNhapAndTrangThai(base, 1).isEmpty()
                 ? base : base + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
@@ -238,7 +241,8 @@ public class SocialLoginController {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    private String redirectWithError(String message) {
-        return "redirect:/login?oauthError=" + encode(message);
+    private void redirectWithError(HttpServletRequest request, HttpServletResponse response,
+                                   String message) throws IOException {
+        response.sendRedirect(request.getContextPath() + "/login?oauthError=" + encode(message));
     }
 }

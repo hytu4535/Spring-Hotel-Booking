@@ -48,8 +48,8 @@ app:
   oauth:
     google-url: ${GOOGLE_OAUTH_URL:}
     facebook-url: ${FACEBOOK_OAUTH_URL:}
-    google-client-id: ${GOOGLE_CLIENT_ID:}
-    google-client-secret: ${GOOGLE_CLIENT_SECRET:}
-    facebook-client-id: ${FACEBOOK_CLIENT_ID:}
-    facebook-client-secret: ${FACEBOOK_CLIENT_SECRET:}
+    google-client-id: ${GOOGLE_CLIENT_ID:mock_google_client_id}
+    google-client-secret: ${GOOGLE_CLIENT_SECRET:mock_google_client_secret}
+    facebook-client-id: ${FACEBOOK_CLIENT_ID:mock_facebook_client_id}
+    facebook-client-secret: ${FACEBOOK_CLIENT_SECRET:mock_facebook_client_secret}
     redirect-base-url: ${OAUTH_REDIRECT_BASE_URL:http://localhost:8080}
