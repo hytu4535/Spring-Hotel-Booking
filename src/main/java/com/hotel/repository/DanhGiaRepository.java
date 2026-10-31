@@ -13,6 +13,6 @@ public interface DanhGiaRepository extends JpaRepository<DanhGia, Integer> {
 
     List<DanhGia> findByKhachHang_MaKh(Integer maKh);
 
-    @Query("SELECT DISTINCT dg FROM DanhGia dg JOIN dg.datPhong dp JOIN dp.chiTietDatPhongs ctdp JOIN ctdp.phong p JOIN p.loaiPhong lp WHERE lp.maLoai = :maLoai")
+    @Query("SELECT DISTINCT dg FROM DanhGia dg JOIN dg.datPhong dp JOIN dp.chiTietDatPhongs ctdp JOIN ctdp.phong p JOIN p.maLoaiPhong lp WHERE lp.maLoai = :maLoai")
     List<DanhGia> findByLoaiPhong(@Param("maLoai") Integer maLoai);
 }

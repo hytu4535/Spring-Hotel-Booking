@@ -1,6 +1,7 @@
 package com.hotel.service;
 
 import com.hotel.enums.TrangThaiPhong;
+import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
 import com.hotel.model.DatPhongDTO;
 import com.hotel.model.Phong;
@@ -10,6 +11,7 @@ import com.hotel.repository.PhongRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,23 @@ public class DatPhongStaffService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<DatPhong> searchAdvanced(String keyword, String trangThai, String tuNgay, String denNgay) {
+        Timestamp tuNgayTimestamp = parseStartOfDay(tuNgay);
+        Timestamp denNgayTimestamp = parseEndOfDay(denNgay);
+        return datPhongRepository.searchAdvanced(keyword, trangThai, tuNgayTimestamp, denNgayTimestamp);
+    }
+
+    @Transactional(readOnly = true)
+    public DatPhong getDatPhongDetail(int maDp) {
+        return datPhongRepository.findById(maDp).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChiTietDatPhong> getChiTiet(int maDp) {
+        return chiTietDatPhongRepository.findByMaDp(maDp);
+    }
+
     @Transactional
     public boolean updateTrangThaiTransaction(int maDp, String newTrangThai, Integer maNvXuLy) {
         DatPhong dp = datPhongRepository.findById(maDp).orElse(null);
@@ -91,5 +110,19 @@ public class DatPhongStaffService {
 
         datPhongRepository.save(dp);
         return true;
+    }
+
+    private Timestamp parseStartOfDay(String date) {
+        if (date == null || date.trim().isEmpty()) {
+            return null;
+        }
+        return Timestamp.valueOf(date.trim() + " 00:00:00");
+    }
+
+    private Timestamp parseEndOfDay(String date) {
+        if (date == null || date.trim().isEmpty()) {
+            return null;
+        }
+        return Timestamp.valueOf(date.trim() + " 23:59:59");
     }
 }
