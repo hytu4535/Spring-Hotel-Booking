@@ -1,0 +1,438 @@
+:root {
+    --brand-dark: #1d1a17;
+    --brand-deep: #2c2621;
+    --brand-gold: #b79a63;
+    --brand-gold-strong: #a0834f;
+    --brand-light: #f7f4ef;
+    --text-main: #262626;
+    --text-muted: #6e6b66;
+    --line-soft: rgba(183, 154, 99, 0.22);
+    --shadow-soft: 0 18px 45px rgba(20, 16, 12, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--text-main);
+    background: #ffffff;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-title {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.site-main {
+    flex: 1;
+}
+
+.section-space {
+    padding: 4rem 0;
+}
+
+.section-title {
+    font-size: clamp(1.85rem, 2.6vw, 2.8rem);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+    color: #1f1b18;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.top-bar {
+    background: rgba(20, 16, 12, 0.84);
+    color: #f2ece2;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+}
+
+.top-bar .container {
+    min-height: 44px;
+}
+
+.top-bar a {
+    color: #f7f1e4;
+    text-decoration: none;
+}
+
+.top-bar a:hover {
+    color: #ffffff;
+}
+
+.site-nav {
+    background: rgba(28, 24, 20, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.site-nav .navbar-brand {
+    color: #ffffff;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.site-nav .navbar-brand span {
+    color: var(--brand-gold);
+}
+
+.site-nav .nav-link {
+    color: #f6efe5 !important;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    padding: 0.9rem 0.9rem !important;
+    position: relative;
+}
+
+.site-nav .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.55rem;
+    height: 1px;
+    background: var(--brand-gold);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.22s ease;
+}
+
+.site-nav .nav-link:hover::after,
+.site-nav .nav-link.active::after {
+    transform: scaleX(1);
+}
+
+.site-nav .dropdown-menu {
+    border: 1px solid rgba(183, 154, 99, 0.28);
+    box-shadow: var(--shadow-soft);
+    border-radius: 0.65rem;
+}
+
+.site-nav .dropdown-item:active {
+    background-color: var(--brand-gold);
+}
+
+.btn-brand {
+    border: 1px solid var(--brand-gold);
+    color: #ffffff;
+    background: transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.78rem;
+    padding: 0.65rem 1rem;
+}
+
+.btn-brand:hover {
+    background: var(--brand-gold);
+    color: #ffffff;
+}
+
+.hero-banner {
+    position: relative;
+    min-height: clamp(520px, 72vh, 760px);
+    background: linear-gradient(rgba(29, 24, 18, 0.42), rgba(29, 24, 18, 0.55)),
+    url("/images/rooms/SkyCornerSuites/Room_1%20%2818%29a_612901be9301c.jpeg") center/cover no-repeat;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(95deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.08));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-kicker {
+    letter-spacing: 0.44em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    margin-bottom: 1rem;
+    color: #f4e4c5;
+}
+
+.hero-heading {
+    font-size: clamp(2.1rem, 5vw, 4.5rem);
+    line-height: 1.05;
+    margin-bottom: 1rem;
+}
+
+.hero-summary {
+    max-width: 640px;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.search-panel {
+    background: #ffffff;
+    border-radius: 0.95rem;
+    box-shadow: var(--shadow-soft);
+    padding: 1.4rem;
+    margin-top: -68px;
+    position: relative;
+    z-index: 5;
+    border: 1px solid rgba(183, 154, 99, 0.18);
+}
+
+.search-panel .form-label {
+    font-weight: 600;
+    color: #3a332d;
+    font-size: 0.9rem;
+}
+
+.search-panel .form-control {
+    border-radius: 0.5rem;
+    border-color: rgba(43, 39, 34, 0.16);
+    min-height: 46px;
+}
+
+.btn-cta {
+    min-height: 46px;
+    border-radius: 0.55rem;
+    border: 0;
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-strong));
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.btn-cta:hover {
+    color: #fff;
+    filter: brightness(0.96);
+}
+
+.about-panel,
+.feature-card,
+.booking-card,
+.room-card,
+.detail-card,
+.soft-card {
+    border: 1px solid var(--line-soft);
+    border-radius: 0.9rem;
+    box-shadow: var(--shadow-soft);
+    background: #fff;
+}
+
+.about-panel {
+    overflow: hidden;
+}
+
+.about-image {
+    min-height: 100%;
+    background: url("/images/rooms/DHTS%20Suites/dsc07644_612de72920f89.jpeg") center/cover no-repeat;
+}
+
+.feature-card {
+    padding: 1.65rem 1.4rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card i {
+    color: var(--brand-gold);
+    font-size: 1.65rem;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+}
+
+.room-card {
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 100%;
+}
+
+.room-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 22px 40px rgba(17, 13, 10, 0.14);
+}
+
+.room-card-image {
+    width: 100%;
+    height: 228px;
+    object-fit: cover;
+}
+
+.room-meta {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.price-tag {
+    color: #17120d;
+    font-weight: 700;
+    font-size: 1.55rem;
+}
+
+.price-unit {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+}
+
+.gallery-tile {
+    overflow: hidden;
+    border-radius: 0.8rem;
+    min-height: 220px;
+}
+
+.gallery-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+
+.gallery-tile:hover img {
+    transform: scale(1.06);
+}
+
+.page-hero {
+    background: linear-gradient(rgba(24, 20, 16, 0.62), rgba(24, 20, 16, 0.52)),
+    url("/images/rooms/FamilyPremiumSuites/Room_2%20%2819%29a_612902be37e08.jpeg") center/cover no-repeat;
+    color: #fff;
+    padding: 4.2rem 0 3rem;
+    margin-bottom: 2rem;
+}
+
+.page-hero h1 {
+    font-size: clamp(1.8rem, 3.7vw, 3rem);
+    margin-bottom: 0.7rem;
+}
+
+.detail-image-main {
+    width: 100%;
+    height: 460px;
+    border-radius: 0.9rem;
+    object-fit: cover;
+}
+
+.detail-thumb {
+    height: 132px;
+    width: 100%;
+    border-radius: 0.7rem;
+    object-fit: cover;
+}
+
+.booking-summary-list .list-group-item {
+    border-color: rgba(183, 154, 99, 0.2);
+}
+
+.site-footer {
+    margin-top: 4rem;
+    background: #181410;
+    color: #e8e2d8;
+    padding-top: 3rem;
+}
+
+.site-footer h6 {
+    color: #fff;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.site-footer a {
+    color: #d6c8b1;
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    color: #fff;
+}
+
+.footer-note {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1.8rem;
+    padding: 1rem 0 1.4rem;
+    color: #b5aa98;
+    font-size: 0.92rem;
+}
+
+.reveal {
+    animation: riseIn 0.6s ease both;
+}
+
+@keyframes riseIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .site-nav .navbar-collapse {
+        margin-top: 0.75rem;
+        background: rgba(24, 20, 16, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 0.75rem;
+        padding: 0.4rem 0.4rem 0.8rem;
+    }
+
+    .site-nav .nav-link {
+        padding: 0.7rem 0.95rem !important;
+    }
+
+    .search-panel {
+        margin-top: -38px;
+    }
+
+    .detail-image-main {
+        height: 320px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .hero-banner {
+        min-height: 500px;
+    }
+
+    .hero-summary {
+        font-size: 0.98rem;
+    }
+
+    .section-space {
+        padding: 3rem 0;
+    }
+
+    .room-card-image {
+        height: 210px;
+    }
+
+    .detail-thumb {
+        height: 92px;
+    }
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="sidebar" th:fragment="sidebar">
+    <div class="header">
+        <h3><i class="fas fa-hotel"></i> HotelBooking</h3>
+        <p class="mb-0 small" th:if="${session.currentUser != null}">
+            <span th:text="${session.currentUser.hoTen}">Tên người dùng</span> -
+            <span th:text="${session.currentUser.vaiTro == 'ADMIN' ? 'Quản trị' : 'Nhân viên'}">Vai trò</span>
+        </p>
+    </div>
+
+    <div class="sidebar-menu">
+        <th:block th:if="${session.currentUser != null and session.currentUser.vaiTro == 'ADMIN'}">
+
+            <!-- Nhóm 1: Tổng quan hệ thống -->
+            <details class="menu-group" th:open="${param.active != null and (param.active[0] == 'dashboard' or param.active[0] == 'taikhoan')}">
+                <summary class="menu-group-toggle">
+                    <span><i class="fas fa-sliders-h me-2"></i> Tổng quan hệ thống</span>
+                    <i class="fas fa-chevron-right caret"></i>
+                </summary>
+                <div class="menu-group-items">
+                    <a th:classappend="${param.active != null and param.active[0] == 'dashboard' ? 'active' : ''}"
+                       th:href="@{/admin/dashboard}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Bảng điều khiển
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'taikhoan' ? 'active' : ''}"
+                       th:href="@{/admin/tai-khoan}">
+                        <i class="fas fa-user-cog me-2"></i> Quản lý tài khoản
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'khachhang' ? 'active' : ''}"
+                       th:href="@{/admin/khach-hang}">
+                        <i class="fas fa-users me-2"></i> Quản lý khách hàng
+                    </a>
+                </div>
+            </details>
+
+            <!-- Nhóm 2: Vận hành khách sạn -->
+            <details class="menu-group" th:open="${param.active != null and (param.active[0] == 'loaiphong' or param.active[0] == 'phong' or param.active[0] == 'dichvu' or param.active[0] == 'datphong' or param.active[0] == 'nhantraphong' or param.active[0] == 'doanhthu' or param.active[0] == 'thongke')}">
+                <summary class="menu-group-toggle">
+                    <span><i class="fas fa-layer-group me-2"></i> Vận hành khách sạn</span>
+                    <i class="fas fa-chevron-right caret"></i>
+                </summary>
+                <div class="menu-group-items">
+                    <a th:classappend="${param.active != null and param.active[0] == 'loaiphong' ? 'active' : ''}"
+                       th:href="@{/admin/loai-phong}">
+                        <i class="fas fa-tags me-2"></i> Quản lý loại phòng
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'phong' ? 'active' : ''}"
+                       th:href="@{/admin/phong}">
+                        <i class="fas fa-bed me-2"></i> Quản lý phòng
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'dichvu' ? 'active' : ''}"
+                       th:href="@{/admin/dich-vu}">
+                        <i class="fas fa-concierge-bell me-2"></i> Quản lý dịch vụ
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'datphong' ? 'active' : ''}"
+                       th:href="@{/admin/dat-phong}">
+                        <i class="fas fa-clipboard-list me-2"></i> Quản lý đặt phòng
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'nhantraphong' ? 'active' : ''}"
+                       th:href="@{/admin/nhan-tra-phong}">
+                        <i class="fas fa-concierge-bell me-2"></i> Nhận / Trả phòng
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'doanhthu' ? 'active' : ''}"
+                       th:href="@{/admin/doanh-thu}">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Doanh thu
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'thongke' ? 'active' : ''}"
+                       th:href="@{/admin/thong-ke}">
+                        <i class="fas fa-chart-bar me-2"></i> Thống kê
+                    </a>
+                </div>
+            </details>
+
+            <!-- Nhóm 3: Tài khoản cá nhân -->
+            <details class="menu-group" th:open="${param.active != null and (param.active[0] == 'profile' or param.active[0] == 'password')}">
+                <summary class="menu-group-toggle">
+                    <span><i class="fas fa-user-circle me-2"></i> Tài khoản cá nhân</span>
+                    <i class="fas fa-chevron-right caret"></i>
+                </summary>
+                <div class="menu-group-items">
+                    <a th:classappend="${param.active != null and param.active[0] == 'profile' ? 'active' : ''}"
+                       th:href="@{/admin/profile}">
+                        <i class="fas fa-id-card me-2"></i> Hồ sơ cá nhân
+                    </a>
+                    <a th:classappend="${param.active != null and param.active[0] == 'password' ? 'active' : ''}"
+                       th:href="@{/admin/doi-mat-khau}">
+                        <i class="fas fa-key me-2"></i> Đổi mật khẩu
+                    </a>
+                </div>
+            </details>
+
+        </th:block>
+    </div>
+
+    <div class="sidebar-footer">
+        <a th:href="@{/logout}" class="btn btn-danger btn-sm w-100">
+            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

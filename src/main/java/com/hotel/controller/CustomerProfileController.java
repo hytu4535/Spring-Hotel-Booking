@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -25,55 +24,42 @@ public class CustomerProfileController {
     }
 
     @GetMapping("/customer/profile")
-    public String profile(HttpServletRequest request, Model model) {
-        TaiKhoan account = currentCustomer(request);
+    public String profile(HttpSession session, Model model) {
+        TaiKhoan account = currentCustomer(session);
         if (account == null) return "redirect:/login";
-        
-        // If profile is already in model (from flash attributes on error), don't overwrite it
-        if (!model.containsAttribute("profile")) {
-            KhachHang customer = khachHangService.getForAccount(account.getMaTk());
-            if (customer == null) {
-                customer = new KhachHang();
-                customer.setHoTen(account.getHoTen());
-                customer.setEmail(account.getEmail());
-                customer.setSoDienThoai(account.getSoDienThoai());
-            }
-            model.addAttribute("profile", toDto(customer));
+        KhachHang customer = khachHangService.getForAccount(account.getMaTk());
+        if (customer == null) {
+            customer = new KhachHang();
+            customer.setHoTen(account.getHoTen());
+            customer.setEmail(account.getEmail());
+            customer.setSoDienThoai(account.getSoDienThoai());
         }
+        model.addAttribute("profile", toDto(customer));
         return "customer/profile";
     }
 
     @PostMapping("/customer/profile")
     public String update(@Valid @ModelAttribute("profile") KhachHangProfileDTO profile,
-                         BindingResult result, HttpServletRequest request,
+                         BindingResult result, HttpSession session, Model model,
                          RedirectAttributes redirectAttributes) {
-        TaiKhoan account = currentCustomer(request);
+        TaiKhoan account = currentCustomer(session);
         if (account == null) return "redirect:/login";
-
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.profile", result);
-            redirectAttributes.addFlashAttribute("profile", profile);
-            redirectAttributes.addFlashAttribute("globalError", "Vui lòng kiểm tra lại thông tin nhập vào.");
-            return "redirect:/customer/profile";
-        }
-
+        if (result.hasErrors()) return "customer/profile";
         try {
             KhachHang customer = khachHangService.updateProfile(account.getMaTk(), profile);
             account.setHoTen(customer.getHoTen());
             account.setEmail(customer.getEmail());
             account.setSoDienThoai(customer.getSoDienThoai());
-            request.getSession(false).setAttribute("currentUser", account);
+            session.setAttribute("currentUser", account);
             redirectAttributes.addFlashAttribute("success", "Cập nhật hồ sơ thành công.");
             return "redirect:/customer/profile";
         } catch (IllegalArgumentException ex) {
-            redirectAttributes.addFlashAttribute("globalError", ex.getMessage());
-            redirectAttributes.addFlashAttribute("profile", profile);
-            return "redirect:/customer/profile";
+            model.addAttribute("globalError", ex.getMessage());
+            return "customer/profile";
         }
     }
 
-    private TaiKhoan currentCustomer(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
+    private TaiKhoan currentCustomer(HttpSession session) {
         TaiKhoan account = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
         return account != null && "CUSTOMER".equals(account.getVaiTro()) ? account : null;
     }

@@ -1,15 +1,16 @@
 package com.hotel.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "loai_phong")
+@Getter
+@Setter
 public class LoaiPhong {
 
     @Id
@@ -20,7 +21,7 @@ public class LoaiPhong {
     @Column(name = "ten_loai", nullable = false, length = 100)
     private String tenLoai;
 
-    @Column(name = "mo_ta")
+    @Column(name = "mo_ta", columnDefinition = "TEXT")
     private String moTa;
 
     @Column(name = "gia_mac_dinh", nullable = false, precision = 12, scale = 2)
@@ -32,62 +33,12 @@ public class LoaiPhong {
     @Column(name = "dien_tich", precision = 6, scale = 2)
     private BigDecimal dienTich;
 
-    @Column(name = "hinh_anh")
+    @Column(name = "hinh_anh", length = 255)
     private String hinhAnh;
 
-    public Integer getMaLoai() {
-        return maLoai;
-    }
+    @Column(name = "da_xoa", nullable = false)
+    private Boolean daXoa = false;
 
-    public void setMaLoai(Integer maLoai) {
-        this.maLoai = maLoai;
-    }
-
-    public String getTenLoai() {
-        return tenLoai;
-    }
-
-    public void setTenLoai(String tenLoai) {
-        this.tenLoai = tenLoai;
-    }
-
-    public String getMoTa() {
-        return moTa;
-    }
-
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
-    }
-
-    public BigDecimal getGiaMacDinh() {
-        return giaMacDinh;
-    }
-
-    public void setGiaMacDinh(BigDecimal giaMacDinh) {
-        this.giaMacDinh = giaMacDinh;
-    }
-
-    public Integer getSucChua() {
-        return sucChua;
-    }
-
-    public void setSucChua(Integer sucChua) {
-        this.sucChua = sucChua;
-    }
-
-    public BigDecimal getDienTich() {
-        return dienTich;
-    }
-
-    public void setDienTich(BigDecimal dienTich) {
-        this.dienTich = dienTich;
-    }
-
-    public String getHinhAnh() {
-        return hinhAnh;
-    }
-
-    public void setHinhAnh(String hinhAnh) {
-        this.hinhAnh = hinhAnh;
-    }
+    @OneToMany(mappedBy = "maLoaiPhong", fetch = FetchType.LAZY)
+    private List<Phong> dsPhong;
 }

@@ -212,14 +212,14 @@ public class ThanhToanService {
     @Transactional(readOnly = true)
     public List<ThanhToan> searchTransactions(String loaiThanhToan, String phuongThuc, String keyword) {
         if ((loaiThanhToan == null || loaiThanhToan.isEmpty()) &&
-            (phuongThuc == null || phuongThuc.isEmpty()) &&
-            (keyword == null || keyword.isEmpty())) {
+                (phuongThuc == null || phuongThuc.isEmpty()) &&
+                (keyword == null || keyword.isEmpty())) {
             return thanhToanRepository.findAll();
         }
         return thanhToanRepository.searchTransactions(
-            loaiThanhToan != null && loaiThanhToan.isEmpty() ? null : loaiThanhToan,
-            phuongThuc != null && phuongThuc.isEmpty() ? null : phuongThuc,
-            keyword
+                loaiThanhToan != null && loaiThanhToan.isEmpty() ? null : loaiThanhToan,
+                phuongThuc != null && phuongThuc.isEmpty() ? null : phuongThuc,
+                keyword
         );
     }
 

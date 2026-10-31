@@ -1,6 +1,6 @@
 package com.hotel.service;
 
-import com.hotel.model.ChiTietDatPhong;
+import com.hotel.enums.TrangThaiPhong;
 import com.hotel.model.DatPhong;
 import com.hotel.model.DatPhongDTO;
 import com.hotel.model.Phong;
@@ -12,9 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Service
 public class DatPhongStaffService {
@@ -23,8 +20,7 @@ public class DatPhongStaffService {
     private final PhongRepository phongRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
 
-    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
-            ChiTietDatPhongRepository chiTietDatPhongRepository) {
+    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository, ChiTietDatPhongRepository chiTietDatPhongRepository) {
         this.datPhongRepository = datPhongRepository;
         this.phongRepository = phongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
@@ -69,13 +65,13 @@ public class DatPhongStaffService {
         dp.setTrangThai(newTrangThai);
         dp.setMaNvXuLy(maNvXuLy);
 
-        String phongTrangThai = null;
+        TrangThaiPhong phongTrangThai = null;
         if (newTrangThai.equals("DA_XAC_NHAN")) {
-            phongTrangThai = "DA_DAT";
+            phongTrangThai = TrangThaiPhong.DA_DAT;
         } else if (newTrangThai.equals("DA_NHAN_PHONG")) {
-            phongTrangThai = "DANG_O";
+            phongTrangThai = TrangThaiPhong.DANG_O;
         } else if (newTrangThai.equals("DA_TRA_PHONG") || newTrangThai.equals("DA_HUY")) {
-            phongTrangThai = "TRONG";
+            phongTrangThai = TrangThaiPhong.TRONG;
         }
 
         if (phongTrangThai != null) {
@@ -87,7 +83,7 @@ public class DatPhongStaffService {
             if (!maPhongList.isEmpty()) {
                 List<Phong> phongs = phongRepository.findAllById(maPhongList);
                 for (Phong p : phongs) {
-                    p.setTrangThai(phongTrangThai);
+                    p.setTrangThaiPhong(phongTrangThai);
                 }
                 phongRepository.saveAll(phongs);
             }
@@ -95,46 +91,5 @@ public class DatPhongStaffService {
 
         datPhongRepository.save(dp);
         return true;
-    }
-
-    // Lọc nâng cao (Cho Task #20 và #36)
-    @Transactional(readOnly = true)
-    public List<DatPhongDTO> searchAdvanced(String keyword, String trangThai, String tuNgay, String denNgay) {
-        Timestamp start = null;
-        Timestamp end = null;
-        try {
-            if (tuNgay != null && !tuNgay.isEmpty())
-                start = Timestamp.valueOf(LocalDate.parse(tuNgay).atStartOfDay());
-            if (denNgay != null && !denNgay.isEmpty())
-                end = Timestamp.valueOf(LocalDate.parse(denNgay).atTime(LocalTime.MAX));
-        } catch (Exception e) {
-        }
-
-        return datPhongRepository.searchAdvanced(keyword, trangThai, start, end).stream().map(dp -> {
-            DatPhongDTO dto = new DatPhongDTO();
-            dto.setMaDp(dp.getMaDp());
-            dto.setMaTraCuu(dp.getMaTraCuu());
-            dto.setNgayDat(dp.getNgayDat());
-            dto.setNgayNhanPhong(dp.getNgayNhanPhong());
-            dto.setNgayTraPhong(dp.getNgayTraPhong());
-            dto.setTrangThai(dp.getTrangThai());
-            dto.setTongTien(dp.getTongTien());
-            if (dp.getKhachHang() != null) {
-                dto.setTenKhachHang(dp.getKhachHang().getHoTen());
-                dto.setSdtKhachHang(dp.getKhachHang().getSoDienThoai());
-            }
-            return dto;
-        }).collect(Collectors.toList());
-    }
-
-    // Lấy chi tiết đơn (Cho Task #21)
-    @Transactional(readOnly = true)
-    public DatPhong getDatPhongDetail(int maDp) {
-        return datPhongRepository.findById(maDp).orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ChiTietDatPhong> getChiTiet(int maDp) {
-        return chiTietDatPhongRepository.findByMaDp(maDp);
     }
 }

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - Hệ Thống Đặt Phòng</title>
+</head>
+<body>
+
+<div th:replace="~{common/header :: header}"></div>
+
+<section class="hero-banner">
+    <div class="container hero-content reveal">
+        <p class="hero-kicker">Hotel Booking Experience</p>
+        <h1 class="hero-heading">Không gian nghỉ dưỡng tinh tế giữa lòng thành phố</h1>
+        <p class="hero-summary mb-4">
+            Tận hưởng hệ thống phòng nghỉ tiện nghi, sang trọng với quy trình đặt phòng đơn giản và minh bạch.
+        </p>
+        <a th:href="@{/tim-phong}" class="btn btn-outline-light px-4 py-2 text-uppercase">Khám phá phòng ngay</a>
+    </div>
+</section>
+
+<section class="container">
+    <div class="search-panel reveal">
+        <form th:action="@{/tim-phong}" method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Ngày nhận phòng</label>
+                <input type="date" name="ngayNhan" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ngày trả phòng</label>
+                <input type="date" name="ngayTra" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-cta w-100">
+                    <i class="bi bi-search me-1"></i> Tìm phòng trống
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="section-space">
+    <div class="container">
+        <div class="about-panel">
+            <div class="row g-0">
+                <div class="col-lg-6 order-2 order-lg-1 p-4 p-xl-5">
+                    <h2 class="section-title">Về không gian lưu trú</h2>
+                    <p class="text-muted mb-3">
+                        Mỗi phòng được thiết kế theo phong cách hiện đại, sử dụng tông màu ấm áp và bố cục thoáng,
+                        mang lại cảm giác thư giãn như đang ở nhà.
+                    </p>
+                    <p class="text-muted mb-4">
+                        Hệ thống đặt phòng trực tuyến giúp bạn kiểm tra phòng trống, xem chi tiết tiện ích và hoàn tất đặt phòng chỉ trong vài bước.
+                    </p>
+                    <a th:href="@{/tim-phong}" class="btn btn-outline-dark px-4">Xem danh sách phòng</a>
+                </div>
+                <div class="col-lg-6 order-1 order-lg-2">
+                    <div class="about-image h-100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Tiện ích nổi bật</h2>
+            <p class="section-subtitle">Trải nghiệm lưu trú đầy đủ tiện nghi, phục vụ cả công tác lẫn nghỉ dưỡng.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 reveal">
+                    <i class="bi bi-door-open"></i>
+                    <h5 class="mb-2">Check-in linh hoạt</h5>
+                    <p class="mb-0 text-muted">Hỗ trợ nhận phòng thuận tiện theo khung giờ phù hợp.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 reveal">
+                    <i class="bi bi-wifi"></i>
+                    <h5 class="mb-2">Wifi tốc độ cao</h5>
+                    <p class="mb-0 text-muted">Kết nối ổn định cho công việc và giải trí trong suốt kỳ nghỉ.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 reveal">
+                    <i class="bi bi-shield-check"></i>
+                    <h5 class="mb-2">An toàn & riêng tư</h5>
+                    <p class="mb-0 text-muted">Hệ thống kiểm soát ra vào và không gian lưu trú yên tĩnh.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 reveal">
+                    <i class="bi bi-stars"></i>
+                    <h5 class="mb-2">Dịch vụ chuyên nghiệp</h5>
+                    <p class="mb-0 text-muted">Đội ngũ hỗ trợ nhanh chóng trong toàn bộ hành trình lưu trú.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space pt-0">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Phòng nổi bật</h2>
+            <p class="section-subtitle">4 loại phòng chủ đạo được đồng bộ theo bộ ảnh thực tế trong thư mục phòng.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-3">
+                <article class="room-card reveal">
+                    <img class="room-card-image" th:src="@{/images/rooms/BlossomSuite/Room_6 (7)a_6129022bde6a6.jpeg}" alt="Blossom Suite">
+                    <div class="p-4">
+                        <h4 class="mb-1">Blossom Suite</h4>
+                        <p class="room-meta mb-2">Không gian ấm cúng, phù hợp nghỉ dưỡng cặp đôi</p>
+                        <p class="mb-3"><span class="price-tag">1.450.000đ</span> <span class="price-unit">/ đêm</span></p>
+                        <a th:href="@{/tim-phong}" class="btn btn-outline-dark w-100">Xem phòng trống</a>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="room-card reveal">
+                    <img class="room-card-image" th:src="@{/images/rooms/SignatureSuites/Room_3(6)a_61290056d69d0.jpeg}" alt="Phòng cao cấp">
+                    <div class="p-4">
+                        <h4 class="mb-1">Signature Suites</h4>
+                        <p class="room-meta mb-2">Không gian rộng rãi, nội thất gỗ hiện đại</p>
+                        <p class="mb-3"><span class="price-tag">1.850.000đ</span> <span class="price-unit">/ đêm</span></p>
+                        <a th:href="@{/tim-phong}" class="btn btn-outline-dark w-100">Xem phòng trống</a>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="room-card reveal">
+                    <img class="room-card-image" th:src="@{/images/rooms/SkyCornerSuites/Room_1 (14)a_612901bc99234.jpeg}" alt="Phòng góc cao cấp">
+                    <div class="p-4">
+                        <h4 class="mb-1">Sky Corner Suites</h4>
+                        <p class="room-meta mb-2">Ánh sáng tự nhiên, tầm nhìn thành phố thoáng đãng</p>
+                        <p class="mb-3"><span class="price-tag">2.150.000đ</span> <span class="price-unit">/ đêm</span></p>
+                        <a th:href="@{/tim-phong}" class="btn btn-outline-dark w-100">Xem phòng trống</a>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="room-card reveal">
+                    <img class="room-card-image" th:src="@{/images/rooms/FamilyPremiumSuites/Room_2 (16)a_612902bdd57f2.jpeg}" alt="Phòng gia đình cao cấp">
+                    <div class="p-4">
+                        <h4 class="mb-1">Family Premium Suites</h4>
+                        <p class="room-meta mb-2">Bố cục tiện nghi cho gia đình hoặc nhóm nhỏ</p>
+                        <p class="mb-3"><span class="price-tag">2.650.000đ</span> <span class="price-unit">/ đêm</span></p>
+                        <a th:href="@{/tim-phong}" class="btn btn-outline-dark w-100">Xem phòng trống</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Không gian lưu trú</h2>
+            <p class="section-subtitle">Thiết kế tối giản nhưng tinh xảo, tôn vinh sự thoải mái trong từng chi tiết.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="gallery-tile"><img th:src="@{/images/rooms/Room_1 (11)a_61290bcb33d40.jpeg}" alt="Không gian phòng 1"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="gallery-tile"><img th:src="@{/images/rooms/Room_1 (14)a_61290bcb097f1.jpeg}" alt="Không gian phòng 2"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="gallery-tile"><img th:src="@{/images/rooms/Room_1 (15)a_61290bcbbdbd5.jpeg}" alt="Không gian phòng 3"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="gallery-tile"><img th:src="@{/images/rooms/Room_2 (20)a_612b3a01bc992.jpeg}" alt="Không gian phòng 4"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="gallery-tile"><img th:src="@{/images/rooms/Room_5 (17)a_612b39d946b44.jpeg}" alt="Không gian phòng 5"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{common/footer :: footer}"></div>
+
+</body>
+</html>
