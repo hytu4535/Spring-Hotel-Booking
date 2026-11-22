@@ -75,9 +75,10 @@ public class AdminAccountController {
         if ("role".equals(action) && maTk != null) {
             TaiKhoan user = service.findById(maTk);
             if (user != null) {
-                user.setVaiTro("ADMIN".equals(user.getVaiTro()) ? "NHANVIEN" : "ADMIN");
+                user.setVaiTro(nextRole(user.getVaiTro()));
                 service.update(user);
-                redirectAttributes.addFlashAttribute("success", "Đã cập nhật vai trò tài khoản.");
+                redirectAttributes.addFlashAttribute("success",
+                        "Đã chuyển vai trò tài khoản sang " + user.getVaiTro() + ".");
             }
         }
         return "redirect:" + request.getRequestURI();
@@ -126,5 +127,15 @@ public class AdminAccountController {
         HttpSession session = request.getSession(false);
         TaiKhoan user = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
         return user != null && "ADMIN".equals(user.getVaiTro());
+    }
+
+    private String nextRole(String currentRole) {
+        if ("ADMIN".equalsIgnoreCase(currentRole)) return "NHANVIEN";
+        if ("NHANVIEN".equalsIgnoreCase(currentRole)
+                || "STAFF".equalsIgnoreCase(currentRole)
+                || "EMPLOYEE".equalsIgnoreCase(currentRole)) {
+            return "CUSTOMER";
+        }
+        return "ADMIN";
     }
 }
