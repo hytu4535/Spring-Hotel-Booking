@@ -59,7 +59,7 @@ public class DatPhong {
     @OneToMany(mappedBy = "datPhong", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ThanhToan> thanhToans;
 
-    // Backward compatibility helper for JDBC DAOs
+
     public int getMaKh() {
         return khachHang != null ? khachHang.getMaKh() : 0;
     }

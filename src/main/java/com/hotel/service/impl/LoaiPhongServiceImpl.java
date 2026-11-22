@@ -3,6 +3,7 @@ package com.hotel.service.impl;
 import com.hotel.dto.LoaiPhongRequestDTO;
 import com.hotel.dto.LoaiPhongResponseDTO;
 import com.hotel.dto.PhongResponseDTO;
+import com.hotel.exception.ResourceNotFoundException;
 import com.hotel.mapper.LoaiPhongMapper;
 import com.hotel.model.LoaiPhong;
 import com.hotel.model.Phong;
@@ -35,7 +36,7 @@ public class LoaiPhongServiceImpl implements LoaiPhongService {
     @Transactional(readOnly = true)
     public LoaiPhongResponseDTO getLoaiPhongById(Integer id) {
         LoaiPhong loaiPhong = loaiPhongRepository.findByMaLoaiAndDaXoaFalse(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy loại phòng có ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy loại phòng có ID: " + id));
         return loaiPhongMapper.toResponse(loaiPhong);
     }
 
@@ -69,7 +70,7 @@ public class LoaiPhongServiceImpl implements LoaiPhongService {
     @Transactional
     public LoaiPhongResponseDTO updateLoaiPhong(Integer id, LoaiPhongRequestDTO requestDTO){
         LoaiPhong existLoaiPhong = loaiPhongRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy loại phòng có ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy loại phòng có ID: " + id));
 
         if (loaiPhongRepository.existsByTenLoaiIgnoreCaseAndMaLoaiNot(requestDTO.tenLoai(), id)) {
             throw new RuntimeException("Tên loại phòng đã được sử dụng bởi loại phòng khác!");
