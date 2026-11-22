@@ -41,6 +41,21 @@ public class GioHang {
     // Nút xóa phòng
     public void removePhong(int maPhong) {
         items.removeIf(item -> item.getMaPhong() == maPhong);
+        if (items.isEmpty()) {
+            ngayNhan = null;
+            ngayTra = null;
+            soDem = 0;
+        }
+    }
+
+    public void updateDates(String ngayNhan, String ngayTra, int soDem) {
+        this.ngayNhan = ngayNhan;
+        this.ngayTra = ngayTra;
+        this.soDem = soDem;
+        for (CartItem item : items) {
+            item.setSoDem(soDem);
+            item.setThanhTien(item.getGiaPhong().multiply(BigDecimal.valueOf(soDem)));
+        }
     }
 
     // Thêm dịch vụ phát sinh vào giỏ

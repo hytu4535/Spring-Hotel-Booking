@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Locale;
 
 @Controller
 public class AuthController {
@@ -59,13 +60,16 @@ public class AuthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
+        if (session != null) {
+            session.invalidate();
+        }
+        return "redirect:/admin";
     }
 
     private String destination(TaiKhoan user) {
-        if ("ADMIN".equals(user.getVaiTro())) return "/admin/dashboard";
-        if ("CUSTOMER".equals(user.getVaiTro())) return "/";
-        return "/staff/quan-ly-don";
+        String role = user.getVaiTro() == null ? "" : user.getVaiTro().trim().toUpperCase(Locale.ROOT);
+        if ("ADMIN".equals(role)) return "/admin/dashboard";
+        if ("CUSTOMER".equals(role)) return "/";
+        return "/staff/dashboard";
     }
 }

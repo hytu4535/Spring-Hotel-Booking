@@ -10,6 +10,6 @@ public class LogoutServlet {
         if (session != null) {
             session.invalidate();
         }
-        return "redirect:/login";
+        return "redirect:/admin";
     }
 }

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.Locale;
 
 @WebFilter("/staff/*")
 public class StaffFilter implements Filter {
@@ -23,8 +24,11 @@ public class StaffFilter implements Filter {
         TaiKhoan user = (session != null) ? (TaiKhoan) session.getAttribute("currentUser") : null;
 
         // Cho phép cả ADMIN và NHANVIEN vào khu vực staff
-        if (user == null ||
-                (!"ADMIN".equals(user.getVaiTro()) && !"NHANVIEN".equals(user.getVaiTro()))) {
+        String role = user == null || user.getVaiTro() == null
+                ? ""
+                : user.getVaiTro().trim().toUpperCase(Locale.ROOT);
+        boolean staffRole = "NHANVIEN".equals(role) || "STAFF".equals(role) || "EMPLOYEE".equals(role);
+        if (user == null || (!"ADMIN".equals(role) && !staffRole)) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }

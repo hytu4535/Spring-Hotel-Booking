@@ -20,8 +20,14 @@ public interface PhongRepository extends JpaRepository<Phong, Integer> {
 
     boolean existsBySoPhongIgnoreCaseAndMaPhongNot(String soPhong, Integer maPhong);
 
-    @Query("SELECT p FROM Phong p WHERE p.trangThaiPhong = 'TRONG' AND p.daXoa = false")
+    @Query("SELECT p FROM Phong p " +
+           "WHERE p.trangThaiPhong = 'TRONG' AND p.daXoa = false " +
+           "AND NOT EXISTS (" +
+           "SELECT c FROM ChiTietDatPhong c JOIN c.datPhong d " +
+           "WHERE c.phong = p " +
+           "AND d.trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN', 'DA_NHAN_PHONG') " +
+           "AND d.ngayNhanPhong < :checkOut " +
+           "AND d.ngayTraPhong > :checkIn)")
     List<Phong> findAvailable(@Param("checkIn") Date checkIn, @Param("checkOut") Date checkOut);
 }
-
 

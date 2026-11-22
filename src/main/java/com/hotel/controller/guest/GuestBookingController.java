@@ -66,6 +66,20 @@ public class GuestBookingController {
         return "redirect:/gio-hang";
     }
 
+    @PostMapping(value = "/gio-hang", params = "action=update-dates")
+    public String updateCartDates(HttpSession session, @RequestParam String ngayNhan,
+            @RequestParam String ngayTra, RedirectAttributes redirectAttributes) {
+        GioHang cart = getCart(session);
+        LocalDate checkIn = DateUtil.parse(ngayNhan);
+        LocalDate checkOut = DateUtil.parse(ngayTra);
+        if (!DateUtil.isValidRange(checkIn, checkOut)) {
+            redirectAttributes.addFlashAttribute("error", "Ngày nhận phòng phải trước ngày trả phòng.");
+            return "redirect:/gio-hang";
+        }
+        cart.updateDates(ngayNhan, ngayTra, DateUtil.soDem(checkIn, checkOut));
+        return "redirect:/gio-hang";
+    }
+
     // ================= XỬ LÝ ĐẶT PHÒNG =================
     @GetMapping("/dat-phong")
     public String showCheckoutForm(HttpSession session, Model model) {
@@ -87,16 +101,21 @@ public class GuestBookingController {
     @PostMapping("/dat-phong")
     public String submitBooking(HttpSession session,
             @ModelAttribute KhachHang khachHang,
+            @RequestParam(required = false) String ghiChu,
             RedirectAttributes redirectAttributes) {
         GioHang cart = getCart(session);
         if (cart.getItems().isEmpty())
             return "redirect:/tim-phong";
 
         try {
+            if (ghiChu != null && ghiChu.length() > 255) {
+                throw new IllegalArgumentException("Ghi chú không được vượt quá 255 ký tự.");
+            }
             DatPhong dp = new DatPhong();
             dp.setNgayNhanPhong(java.sql.Date.valueOf(cart.getNgayNhan()));
             dp.setNgayTraPhong(java.sql.Date.valueOf(cart.getNgayTra()));
             dp.setTienPhong(cart.getTongTien());
+            dp.setGhiChu(ghiChu == null ? null : ghiChu.trim());
 
             List<ChiTietDatPhong> ctList = new ArrayList<>();
             for (CartItem item : cart.getItems()) {
@@ -117,6 +136,9 @@ public class GuestBookingController {
 
             return "redirect:/dat-phong-thanh-cong";
         } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/dat-phong";
+        } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/dat-phong";
         } catch (RuntimeException e) {

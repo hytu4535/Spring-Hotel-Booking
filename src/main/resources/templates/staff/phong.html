@@ -27,8 +27,8 @@
                 <tr th:each="p : ${phongList}">
                     <td class="fw-semibold" th:text="${p.soPhong}"></td>
                     <td th:text="${p.tang}"></td>
-                    <td th:text="${p.loaiPhong.tenLoai}"></td>
-                    <td><span class="badge bg-info text-dark" th:text="${p.trangThai}"></span></td>
+                    <td th:text="${p.tenLoaiPhong}"></td>
+                    <td><span class="badge bg-info text-dark" th:text="${p.trangThaiPhong}"></span></td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(phongList)}"><td colspan="4" class="text-center text-muted py-4">Không có dữ liệu.</td></tr>
                 </tbody>

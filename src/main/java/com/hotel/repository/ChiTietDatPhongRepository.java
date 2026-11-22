@@ -17,7 +17,7 @@ public interface ChiTietDatPhongRepository extends JpaRepository<ChiTietDatPhong
     List<ChiTietDatPhong> findByDatPhong_MaDp(@Param("maDp") Integer maDp);
 
     @Query("SELECT COUNT(c) FROM ChiTietDatPhong c JOIN c.datPhong d " +
-           "WHERE d.trangThai <> 'DA_HUY' " +
+           "WHERE d.trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN', 'DA_NHAN_PHONG') " +
            "AND c.phong.maPhong = :maPhong " +
            "AND d.ngayNhanPhong < :ngayTra " +
            "AND d.ngayTraPhong > :ngayNhan")

@@ -22,11 +22,10 @@ public class StaffOrderController {
         this.datPhongStaffService = datPhongStaffService;
     }
 
-    // ============== TASK #19 (B): DASHBOARD NHÂN VIÊN (Dữ liệu giả lập giao diện)
-    // ==============
-    @GetMapping("/staff/quan-ly-don")
+    // Legacy staff entry points now converge on the database-backed dashboard.
+    @GetMapping({"/staff", "/staff/", "/staff/quan-ly-don"})
     public String staffDashboard() {
-        return "redirect:/staff/don";
+        return "redirect:/staff/dashboard";
     }
 
     // ============== TASK #20, #21, #36: QUẢN LÝ ĐƠN ĐẶT PHÒNG ==============

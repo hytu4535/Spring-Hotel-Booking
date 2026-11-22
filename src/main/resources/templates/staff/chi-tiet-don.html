@@ -27,10 +27,10 @@
 
 <!-- Thống nhất Sidebar theo chuẩn mới -->
 <th:block th:if="${isAdminView}">
-    <div th:replace="~{common/sidebar-admin :: sidebar}"></div>
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
 </th:block>
 <th:block th:unless="${isAdminView}">
-    <div th:replace="~{common/sidebar-staff :: sidebar}"></div>
+    <aside th:replace="~{staff/fragments :: sidebar}"></aside>
 </th:block>
 
 <div class="main-content">
@@ -142,6 +142,10 @@
                             <span class="text-success fw-bold">[[${#dates.format(donDatPhong.ngayNhanPhong, 'dd/MM/yyyy')}]]</span> 
                             <i class="bi bi-arrow-right mx-1"></i> 
                             <span class="text-danger fw-bold">[[${#dates.format(donDatPhong.ngayTraPhong, 'dd/MM/yyyy')}]]</span>
+                        </li>
+                        <li class="list-group-item px-0" th:if="${donDatPhong.ghiChu != null and !#strings.isEmpty(donDatPhong.ghiChu)}">
+                            <i class="bi bi-chat-left-text me-2 text-muted"></i>
+                            <strong>Ghi chú:</strong> [[${donDatPhong.ghiChu}]]
                         </li>
                     </ul>
                 </div>

@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Locale;
 
 @Controller
 public class StaffAccountController {
@@ -66,8 +67,10 @@ public class StaffAccountController {
     private TaiKhoan staffUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         TaiKhoan user = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
-        return user != null && ("ADMIN".equals(user.getVaiTro()) || "NHANVIEN".equals(user.getVaiTro()))
-                ? user : null;
+        if (user == null || user.getVaiTro() == null) return null;
+        String role = user.getVaiTro().trim().toUpperCase(Locale.ROOT);
+        return ("ADMIN".equals(role) || "NHANVIEN".equals(role)
+                || "STAFF".equals(role) || "EMPLOYEE".equals(role)) ? user : null;
     }
 
     private boolean isAdminPath(HttpServletRequest request) {

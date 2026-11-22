@@ -47,10 +47,10 @@
 
 <!-- Thống nhất Sidebar theo chuẩn mới -->
 <th:block th:if="${isAdminView}">
-    <div th:replace="~{common/sidebar-admin :: sidebar}"></div>
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
 </th:block>
 <th:block th:unless="${isAdminView}">
-    <div th:replace="~{common/sidebar-staff :: sidebar}"></div>
+    <aside th:replace="~{staff/fragments :: sidebar}"></aside>
 </th:block>
 
 <div class="main-content">

@@ -53,7 +53,11 @@ public class RolePermissionService {
         ensurePermission("ROLE_MANAGE", "Quản lý vai trò", "Thiết lập quyền truy cập chức năng");
 
         for (String code : BUSINESS_CODES) assignIfMissing("ADMIN", code);
-        for (String code : Arrays.asList("DASHBOARD", "BOOKING_MANAGE", "CHECKIN_OUT", "SERVICE_PAYMENT")) assignIfMissing("NHANVIEN", code);
+        for (String code : Arrays.asList(
+                "DASHBOARD", "BOOKING_MANAGE", "CHECKIN_OUT", "SERVICE_PAYMENT",
+                "ROOM_TYPE_MANAGE", "ROOM_MANAGE", "SERVICE_MANAGE", "CUSTOMER_MANAGE")) {
+            assignIfMissing("NHANVIEN", code);
+        }
         rolePermissionRepository.deleteByRoleCode("CUSTOMER");
     }
 
@@ -89,10 +93,12 @@ public class RolePermissionService {
     @Transactional(readOnly = true) public List<SystemRole> findRoles() { return roleRepository.findAll(); }
     @Transactional(readOnly = true) public List<SystemPermission> findPermissions() { return permissionRepository.findAllByOrderByCodeAsc(); }
     @Transactional(readOnly = true) public Set<String> permissionCodes(String roleCode) {
-        return rolePermissionRepository.findByRoleCode(roleCode).stream().map(x -> x.getPermission().getCode()).collect(Collectors.toSet());
+        return rolePermissionRepository.findByRoleCode(normalizeRole(roleCode)).stream()
+                .map(x -> x.getPermission().getCode()).collect(Collectors.toSet());
     }
     @Transactional(readOnly = true) public boolean hasPermission(String roleCode, String code) {
-        return "ADMIN".equals(roleCode) ? BUSINESS_CODES.contains(code) : permissionCodes(roleCode).contains(code);
+        String normalizedRole = normalizeRole(roleCode);
+        return "ADMIN".equals(normalizedRole) ? BUSINESS_CODES.contains(code) : permissionCodes(normalizedRole).contains(code);
     }
     public boolean hasPermission(String code) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -104,12 +110,20 @@ public class RolePermissionService {
 
     @Transactional(readOnly = true)
     public boolean canAccess(String roleCode, String path) {
-        SystemRole role = roleRepository.findByCode(roleCode).orElse(null);
+        String normalizedRole = normalizeRole(roleCode);
+        SystemRole role = roleRepository.findByCode(normalizedRole).orElse(null);
         if (role == null || !role.isActive()) return false;
         if (path.endsWith("/profile") || path.endsWith("/doi-mat-khau")) return true;
-        if ("CUSTOMER".equals(roleCode)) return path.startsWith("/customer/");
+        if ("CUSTOMER".equals(normalizedRole)) return path.startsWith("/customer/");
         String code = featureForPath(path);
-        return code != null && hasPermission(roleCode, code);
+        return code != null && hasPermission(normalizedRole, code);
+    }
+
+    private String normalizeRole(String roleCode) {
+        if (roleCode == null) return "";
+        String normalized = roleCode.trim().toUpperCase(Locale.ROOT);
+        if ("STAFF".equals(normalized) || "EMPLOYEE".equals(normalized)) return "NHANVIEN";
+        return normalized;
     }
 
     private String featureForPath(String path) {
@@ -122,7 +136,13 @@ public class RolePermissionService {
         if (path.startsWith("/admin/dich-vu") || path.startsWith("/staff/dich-vu")) return "SERVICE_MANAGE";
         if (path.startsWith("/admin/dat-phong") || path.startsWith("/staff/don")) return "BOOKING_MANAGE";
         if (path.startsWith("/admin/nhan-tra-phong") || path.startsWith("/staff/nhan-tra-phong")) return "CHECKIN_OUT";
-        if (path.equals("/admin/dashboard") || path.equals("/staff/quan-ly-don")) return "DASHBOARD";
+        if (path.equals("/admin/dashboard")
+                || path.equals("/staff")
+                || path.equals("/staff/")
+                || path.equals("/staff/dashboard")
+                || path.equals("/staff/quan-ly-don")) {
+            return "DASHBOARD";
+        }
         return null;
     }
 
