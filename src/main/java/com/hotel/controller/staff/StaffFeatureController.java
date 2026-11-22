@@ -64,8 +64,4 @@ public class StaffFeatureController {
         return "staff/khach-hang";
     }
 
-    @GetMapping("/staff/dich-vu-thanh-toan")
-    public String servicePayment() {
-        return "staff/dich-vu-thanh-toan";
-    }
 }

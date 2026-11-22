@@ -133,6 +133,7 @@ public class RolePermissionService {
         if (path.startsWith("/admin/loai-phong") || path.startsWith("/staff/loai-phong")) return "ROOM_TYPE_MANAGE";
         if (path.startsWith("/admin/phong") || path.startsWith("/staff/phong")) return "ROOM_MANAGE";
         if (path.startsWith("/staff/dich-vu-thanh-toan")) return "SERVICE_PAYMENT";
+        if (path.startsWith("/admin/thanh-toan")) return "SERVICE_PAYMENT";
         if (path.startsWith("/admin/dich-vu") || path.startsWith("/staff/dich-vu")) return "SERVICE_MANAGE";
         if (path.startsWith("/admin/dat-phong") || path.startsWith("/staff/don")) return "BOOKING_MANAGE";
         if (path.startsWith("/admin/nhan-tra-phong") || path.startsWith("/staff/nhan-tra-phong")) return "CHECKIN_OUT";

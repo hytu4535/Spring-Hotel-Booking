@@ -1,12 +1,16 @@
 package com.hotel.controller.guest;
 
 import com.hotel.model.CartItem;
+import com.hotel.model.CartServiceItem;
 import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
+import com.hotel.model.DichVu;
 import com.hotel.model.GioHang;
 import com.hotel.model.KhachHang;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.DatPhongService;
+import com.hotel.service.DichVuService;
+import com.hotel.service.ThanhToanService;
 import com.hotel.util.DateUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,20 +30,37 @@ public class GuestBookingController {
 
     private static final Logger log = LoggerFactory.getLogger(GuestBookingController.class);
     private final DatPhongService datPhongService;
+    private final DichVuService dichVuService;
+    private final ThanhToanService thanhToanService;
 
-    public GuestBookingController(DatPhongService datPhongService) {
+    public GuestBookingController(DatPhongService datPhongService, DichVuService dichVuService,
+                                  ThanhToanService thanhToanService) {
         this.datPhongService = datPhongService;
+        this.dichVuService = dichVuService;
+        this.thanhToanService = thanhToanService;
     }
 
     // ================= XỬ LÝ GIỎ HÀNG =================
     @GetMapping("/gio-hang")
     public String viewCart(HttpSession session, @RequestParam(required = false) String action,
-            @RequestParam(required = false) Integer maPhong) {
+            @RequestParam(required = false) Integer maPhong, Model model) {
         GioHang cart = getCart(session);
         if ("remove".equals(action) && maPhong != null) {
             cart.removePhong(maPhong);
         }
+        if ("remove-service".equals(action) && maPhong != null) {
+            cart.removeService(maPhong);
+        }
+        model.addAttribute("tongTien", cart.getTongTien());
+        model.addAttribute("tienCoc", thanhToanService.calculateDepositAmount(cart.getTongTien()));
         return "guest/gio-hang";
+    }
+
+    @ModelAttribute("dichVuList")
+    public List<DichVu> activeServices() {
+        return dichVuService.search(null).stream()
+                .filter(dichVu -> dichVu.getTrangThai() == 1)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @PostMapping("/gio-hang")
@@ -63,6 +84,25 @@ public class GuestBookingController {
         item.setThanhTien(giaPhong.multiply(new BigDecimal(cart.getSoDem())));
 
         cart.addPhong(item);
+        return "redirect:/gio-hang";
+    }
+
+    @PostMapping(value = "/gio-hang", params = "action=add-service")
+    public String addServiceToCart(HttpSession session, @RequestParam int maDv,
+                                   @RequestParam int soLuong, RedirectAttributes redirectAttributes) {
+        try {
+            if (soLuong < 1 || soLuong > 100) {
+                throw new IllegalArgumentException("Số lượng dịch vụ phải từ 1 đến 100.");
+            }
+            DichVu dichVu = dichVuService.get(maDv);
+            if (dichVu.getTrangThai() != 1) {
+                throw new IllegalArgumentException("Dịch vụ đã ngừng cung cấp.");
+            }
+            getCart(session).addService(new CartServiceItem(
+                    dichVu.getMaDv(), dichVu.getTenDv(), dichVu.getDonGia(), soLuong));
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/gio-hang";
     }
 
@@ -128,7 +168,7 @@ public class GuestBookingController {
             }
 
             // Transaction + Kafka
-            String maTraCuu = datPhongService.taoDonDatPhong(khachHang, dp, ctList);
+            String maTraCuu = datPhongService.taoDonDatPhong(khachHang, dp, ctList, cart.getServices());
 
             session.removeAttribute("cart");
             session.setAttribute("maTraCuu", maTraCuu);

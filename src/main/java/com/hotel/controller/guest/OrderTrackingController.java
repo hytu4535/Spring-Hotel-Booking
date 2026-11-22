@@ -2,6 +2,7 @@ package com.hotel.controller.guest;
 
 import com.hotel.model.DatPhong;
 import com.hotel.service.DatPhongService;
+import com.hotel.service.DatDichVuService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +16,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class OrderTrackingController {
 
     private final DatPhongService datPhongService;
+    private final DatDichVuService datDichVuService;
 
-    public OrderTrackingController(DatPhongService datPhongService) {
+    public OrderTrackingController(DatPhongService datPhongService, DatDichVuService datDichVuService) {
         this.datPhongService = datPhongService;
+        this.datDichVuService = datDichVuService;
     }
 
     @GetMapping
@@ -33,6 +36,7 @@ public class OrderTrackingController {
         if (dp != null) {
             model.addAttribute("donDatPhong", dp);
             model.addAttribute("khachHang", dp.getKhachHang());
+            model.addAttribute("danhSachDichVu", datDichVuService.findByBooking(dp.getMaDp()));
         } else {
             model.addAttribute("error", "Không tìm thấy đơn hàng hoặc Email không khớp!");
         }

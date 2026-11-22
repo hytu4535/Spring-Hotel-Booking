@@ -6,6 +6,8 @@ import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.ThanhToanRepository;
 import com.hotel.util.VNPayUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import java.util.*;
 
 @Service
 public class ThanhToanService {
+
+    private static final Logger log = LoggerFactory.getLogger(ThanhToanService.class);
 
     private final ThanhToanRepository thanhToanRepository;
     private final DatPhongRepository datPhongRepository;
@@ -122,8 +126,18 @@ public class ThanhToanService {
                 VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
 
         // Dùng cùng chuỗi tham số để tạo URL thanh toán
-        return vnp_PayUrl + "?" + hashData
+        String separator = vnp_PayUrl.contains("?") ? "&" : "?";
+        String paymentUrl = vnp_PayUrl + separator + hashData
                 + "&vnp_SecureHash=" + vnp_SecureHash;
+        log.info("VNPay payment URL created: {}", sanitizePaymentUrlForLog(paymentUrl));
+        return paymentUrl;
+    }
+
+    private String sanitizePaymentUrlForLog(String paymentUrl) {
+        return paymentUrl.replaceAll(
+                "([?&]vnp_(SecureHash|TxnRef|Amount|IpAddr))=[^&]*",
+                "$1=[REDACTED]"
+        );
     }
 
     // Xử lý kết quả trả về từ VNPay
@@ -210,6 +224,25 @@ public class ThanhToanService {
     }
 
     @Transactional(readOnly = true)
+    public ThanhToan getById(Integer maTt) {
+        return thanhToanRepository.findById(maTt).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal calculatePaidAmount(Integer maDp) {
+        return getThanhToanByMaDp(maDp).stream()
+                .map(payment -> {
+                    BigDecimal amount = payment.getSoTien() == null
+                            ? BigDecimal.ZERO
+                            : payment.getSoTien();
+                    return "HOAN_TIEN".equalsIgnoreCase(payment.getLoaiThanhToan())
+                            ? amount.negate()
+                            : amount;
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Transactional(readOnly = true)
     public List<ThanhToan> searchTransactions(String loaiThanhToan, String phuongThuc, String keyword) {
         if ((loaiThanhToan == null || loaiThanhToan.isEmpty()) &&
                 (phuongThuc == null || phuongThuc.isEmpty()) &&
@@ -264,5 +297,34 @@ public class ThanhToanService {
         result.put("success", true);
         result.put("message", "Ghi nhận thanh toán thủ công thành công!");
         return result;
+    }
+
+    @Transactional
+    public void updateManualPayment(Integer maTt, BigDecimal soTien, String loaiThanhToan,
+                                    String phuongThuc, String maGiaoDich, String ghiChu,
+                                    com.hotel.model.TaiKhoan currentUser) {
+        if (soTien == null || soTien.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Số tiền thanh toán phải lớn hơn 0.");
+        }
+        ThanhToan thanhToan = thanhToanRepository.findById(maTt)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán."));
+        if ("VNPAY".equalsIgnoreCase(thanhToan.getPhuongThuc())) {
+            throw new IllegalArgumentException("Không được sửa giao dịch VNPay.");
+        }
+        if (!Arrays.asList("DAT_COC", "THANH_TOAN_DU", "HOAN_TIEN").contains(loaiThanhToan)) {
+            throw new IllegalArgumentException("Loại thanh toán không hợp lệ.");
+        }
+        if (!Arrays.asList("TIEN_MAT", "CHUYEN_KHOAN", "MOMO").contains(phuongThuc)) {
+            throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ.");
+        }
+
+        thanhToan.setSoTien(soTien);
+        thanhToan.setLoaiThanhToan(loaiThanhToan);
+        thanhToan.setPhuongThuc(phuongThuc);
+        thanhToan.setMaGiaoDich(maGiaoDich == null || maGiaoDich.trim().isEmpty()
+                ? thanhToan.getMaGiaoDich() : maGiaoDich.trim());
+        thanhToan.setGhiChu(ghiChu == null ? "" : ghiChu.trim());
+        thanhToan.setMaNvThu(currentUser == null ? thanhToan.getMaNvThu() : currentUser.getMaTk());
+        thanhToanRepository.save(thanhToan);
     }
 }

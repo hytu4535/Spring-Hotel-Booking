@@ -81,6 +81,11 @@ public class DatPhongStaffService {
             return false;
         }
 
+        List<ChiTietDatPhong> chiTiet = chiTietDatPhongRepository.findByMaDp(maDp);
+        if (!isValidStatusTransition(dp, newTrangThai, chiTiet)) {
+            return false;
+        }
+
         dp.setTrangThai(newTrangThai);
         dp.setMaNvXuLy(maNvXuLy);
 
@@ -94,7 +99,7 @@ public class DatPhongStaffService {
         }
 
         if (phongTrangThai != null) {
-            List<Integer> maPhongList = chiTietDatPhongRepository.findByMaDp(maDp)
+            List<Integer> maPhongList = chiTiet
                     .stream()
                     .map(ct -> ct.getMaPhong())
                     .collect(Collectors.toList());
@@ -110,6 +115,42 @@ public class DatPhongStaffService {
 
         datPhongRepository.save(dp);
         return true;
+    }
+
+    private boolean isValidStatusTransition(DatPhong dp, String newTrangThai,
+                                            List<ChiTietDatPhong> chiTiet) {
+        if (newTrangThai == null || chiTiet.isEmpty()) {
+            return false;
+        }
+        List<Integer> maPhongList = chiTiet.stream()
+                .map(ChiTietDatPhong::getMaPhong)
+                .collect(Collectors.toList());
+        List<Phong> phongs = phongRepository.findAllById(maPhongList);
+        if (phongs.size() != maPhongList.size()) {
+            return false;
+        }
+
+        if ("DA_XAC_NHAN".equals(newTrangThai)) {
+            return "CHO_XAC_NHAN".equals(dp.getTrangThai())
+                    && phongs.stream().allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.TRONG);
+        }
+        if ("DA_NHAN_PHONG".equals(newTrangThai)) {
+            return "DA_XAC_NHAN".equals(dp.getTrangThai())
+                    && phongs.stream().allMatch(phong ->
+                    phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.BAO_TRI
+                            && phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.DANG_O);
+        }
+        if ("DA_TRA_PHONG".equals(newTrangThai)) {
+            return "DA_NHAN_PHONG".equals(dp.getTrangThai())
+                    && phongs.stream().allMatch(phong ->
+                    phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+        }
+        if ("DA_HUY".equals(newTrangThai)) {
+            return ("CHO_XAC_NHAN".equals(dp.getTrangThai()) || "DA_XAC_NHAN".equals(dp.getTrangThai()))
+                    && phongs.stream().noneMatch(phong ->
+                    phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+        }
+        return false;
     }
 
     private Timestamp parseStartOfDay(String date) {

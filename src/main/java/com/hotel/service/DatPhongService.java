@@ -1,6 +1,7 @@
 package com.hotel.service;
 
 import com.hotel.model.ChiTietDatPhong;
+import com.hotel.model.CartServiceItem;
 import com.hotel.model.DatPhong;
 import com.hotel.model.KhachHang;
 import com.hotel.repository.ChiTietDatPhongRepository;
@@ -26,19 +27,30 @@ public class DatPhongService {
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
     private final KhachHangRepository khachHangRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final DatDichVuService datDichVuService;
 
     public DatPhongService(DatPhongRepository datPhongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository,
             KhachHangRepository khachHangRepository,
-            KafkaTemplate<String, String> kafkaTemplate) {
+            KafkaTemplate<String, String> kafkaTemplate,
+            DatDichVuService datDichVuService) {
         this.datPhongRepository = datPhongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
         this.khachHangRepository = khachHangRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.datDichVuService = datDichVuService;
+    }
+
+    @Transactional
+    public String taoDonDatPhong(KhachHang khachHang, DatPhong datPhong,
+                                 List<ChiTietDatPhong> danhSachChiTiet) {
+        return taoDonDatPhong(khachHang, datPhong, danhSachChiTiet, java.util.Collections.emptyList());
     }
 
     @Transactional // Đảm bảo All-or-Nothing
-    public String taoDonDatPhong(KhachHang khachHang, DatPhong datPhong, List<ChiTietDatPhong> danhSachChiTiet) {
+    public String taoDonDatPhong(KhachHang khachHang, DatPhong datPhong,
+                                 List<ChiTietDatPhong> danhSachChiTiet,
+                                 List<CartServiceItem> danhSachDichVu) {
         // 1. Lưu khách hàng
         int maKh = -1;
         Optional<KhachHang> existingKh = khachHangRepository.findByEmailIgnoreCase(khachHang.getEmail());
@@ -70,6 +82,9 @@ public class DatPhongService {
             ct.setMaDp(savedDp.getMaDp());
             chiTietDatPhongRepository.save(ct);
         }
+
+        datDichVuService.addCartServices(savedDp.getMaDp(), danhSachDichVu,
+                savedDp.getNgayNhanPhong());
 
         // 4. KAFKA INTEGRATION: Bắn event thông báo tạo đơn thành công (Huyy sẽ dùng để
         // gửi mail)

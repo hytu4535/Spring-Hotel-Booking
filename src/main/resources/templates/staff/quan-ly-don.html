@@ -139,6 +139,10 @@
                                 <a th:href="${bookingBasePath + '/' + dp.maDp}" class="btn btn-sm btn-outline-info ms-1" title="Xem chi tiết">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <a th:href="${isAdminView ? '/admin/thanh-toan/tao?maDp=' + dp.maDp : '/staff/dich-vu-thanh-toan/tao?maDp=' + dp.maDp}"
+                                   class="btn btn-sm btn-outline-primary ms-1" title="Thu tiền tại quầy">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(danhSachDon)}">

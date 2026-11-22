@@ -35,6 +35,7 @@ public class AuthController {
                         HttpServletRequest request, Model model) {
         TaiKhoan user = authService.login(tenDangNhap, matKhau);
         if (user == null) {
+            model.addAttribute("adminMode", false);
             model.addAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng.");
             model.addAttribute("tenDangNhap", tenDangNhap);
             return "staff/login";
