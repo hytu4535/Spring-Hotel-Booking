@@ -241,6 +241,25 @@ h6,
     background: #fff;
 }
 
+.soft-card .form-label {
+    color: var(--text-main);
+}
+
+.soft-card h1,
+.soft-card h2,
+.soft-card h3,
+.soft-card h4,
+.soft-card h5,
+.soft-card h6 {
+    color: var(--text-main);
+}
+
+.soft-card .auth-account-prompt,
+.soft-card .auth-account-prompt a {
+    color: var(--text-main) !important;
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
 .about-panel {
     overflow: hidden;
 }

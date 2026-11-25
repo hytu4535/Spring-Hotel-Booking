@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<h2>Chào mừng bạn đến với Hotel Booking</h2>
+<p>Xin chào <strong th:text="${customerName}">bạn</strong>,</p>
+<p>Tài khoản của bạn đã được đăng ký thành công.</p>
+<p>Tên đăng nhập: <strong th:text="${username}">username</strong></p>
+<p>Bạn có thể bắt đầu tìm phòng và đặt phòng tại
+    <a th:href="${frontendUrl}" th:text="${frontendUrl}">Hotel Booking</a>.</p>
+<p>Trân trọng,<br>Hotel Booking</p>
+</body>
+</html>

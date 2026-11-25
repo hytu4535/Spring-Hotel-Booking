@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<h2>Đặt phòng thành công</h2>
+<p>Xin chào <strong th:text="${customerName}">bạn</strong>,</p>
+<p>Đơn đặt phòng của bạn đã được ghi nhận với thông tin:</p>
+<ul>
+    <li>Mã tra cứu: <strong th:text="${bookingCode}">HB000000</strong></li>
+    <li>Ngày nhận phòng: <strong th:text="${checkIn}">01/01/2026</strong></li>
+    <li>Ngày trả phòng: <strong th:text="${checkOut}">02/01/2026</strong></li>
+    <li>Tổng tiền dự kiến: <strong th:text="${totalAmount}">0 VNĐ</strong></li>
+</ul>
+<p>Tra cứu đơn tại <a th:href="${frontendUrl + '/tra-cuu-don'}">Hotel Booking</a>.</p>
+<p>Trân trọng,<br>Hotel Booking</p>
+</body>
+</html>

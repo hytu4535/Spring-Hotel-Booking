@@ -31,4 +31,8 @@ public class DateUtil {
     public static boolean isValidRange(LocalDate nhan, LocalDate tra) {
         return nhan != null && tra != null && tra.isAfter(nhan);
     }
+
+    public static boolean isValidBookingRange(LocalDate nhan, LocalDate tra) {
+        return isValidRange(nhan, tra) && !nhan.isBefore(LocalDate.now());
+    }
 }

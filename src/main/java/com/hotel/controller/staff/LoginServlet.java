@@ -47,7 +47,7 @@ public class LoginServlet {
         if ("ADMIN".equals(user.getVaiTro())) {
             return "redirect:/admin/dashboard";
         } else if ("CUSTOMER".equals(user.getVaiTro())) {
-            return "redirect:/customer/profile";
+            return "redirect:/";
         } else {
             return "redirect:/staff/quan-ly-don";
         }

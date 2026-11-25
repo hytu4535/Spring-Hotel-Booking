@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<h2>Cập nhật trạng thái đơn đặt phòng</h2>
+<p>Xin chào <strong th:text="${customerName}">bạn</strong>,</p>
+<p>Đơn <strong th:text="${bookingCode}">HB000000</strong> hiện có trạng thái:
+    <strong th:text="${statusLabel}">Đã cập nhật</strong>.</p>
+<p>Bạn có thể tra cứu chi tiết đơn tại
+    <a th:href="${frontendUrl + '/tra-cuu-don'}">Hotel Booking</a>.</p>
+<p>Trân trọng,<br>Hotel Booking</p>
+</body>
+</html>

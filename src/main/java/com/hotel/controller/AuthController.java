@@ -1,15 +1,17 @@
 package com.hotel.controller;
 
+import com.hotel.dto.RegisterRequest;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.AuthService;
 import com.hotel.service.TaiKhoanService;
-import com.hotel.util.PasswordUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.Locale;
 
 @Controller
@@ -46,6 +48,36 @@ public class AuthController {
         return "redirect:" + destination(user);
     }
 
+    @GetMapping("/register")
+    public String registerForm(Model model) {
+        if (!model.containsAttribute("registerRequest")) {
+            model.addAttribute("registerRequest", new RegisterRequest());
+        }
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest request,
+                           BindingResult result, Model model) {
+        if (request.getMatKhau() != null
+                && !request.getMatKhau().equals(request.getXacNhanMatKhau())) {
+            result.rejectValue("xacNhanMatKhau", "password.mismatch", "Mật khẩu xác nhận không khớp.");
+        }
+        if (result.hasErrors()) {
+            return "register";
+        }
+        try {
+            authService.register(request);
+            model.addAttribute("adminMode", false);
+            model.addAttribute("success", "Đăng ký thành công. Vui lòng đăng nhập.");
+            model.addAttribute("tenDangNhap", request.getTenDangNhap());
+            return "staff/login";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "register";
+        }
+    }
+
     @PostMapping({"/admin", "/admin/login"})
     public String adminLogin(@RequestParam String tenDangNhap, @RequestParam String matKhau,
                              HttpSession session, Model model) {
@@ -64,7 +96,7 @@ public class AuthController {
         if (session != null) {
             session.invalidate();
         }
-        return "redirect:/admin";
+        return "redirect:/login";
     }
 
     private String destination(TaiKhoan user) {

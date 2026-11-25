@@ -14,11 +14,13 @@
         <form method="get" th:action="@{/tim-phong}" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">Ngày nhận phòng</label>
-                <input type="date" name="ngayNhan" class="form-control" th:value="${ngayNhan}" required>
+                <input type="date" name="ngayNhan" class="form-control" th:value="${ngayNhan}"
+                       th:min="${today}" required>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Ngày trả phòng</label>
-                <input type="date" name="ngayTra" class="form-control" th:value="${ngayTra}" required>
+                <input type="date" name="ngayTra" class="form-control" th:value="${ngayTra}"
+                       th:min="${today}" required>
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-cta w-100">Tìm phòng trống</button>

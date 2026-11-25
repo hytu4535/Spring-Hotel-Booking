@@ -69,8 +69,16 @@ public class GuestBookingController {
     @PostMapping("/gio-hang")
     public String addToCart(HttpSession session, @RequestParam int maPhong, @RequestParam String soPhong,
             @RequestParam String tenLoai, @RequestParam BigDecimal giaPhong,
-            @RequestParam String ngayNhan, @RequestParam String ngayTra) {
+            @RequestParam String ngayNhan, @RequestParam String ngayTra,
+            RedirectAttributes redirectAttributes) {
         GioHang cart = getCart(session);
+        LocalDate checkIn = DateUtil.parse(ngayNhan);
+        LocalDate checkOut = DateUtil.parse(ngayTra);
+        if (!DateUtil.isValidBookingRange(checkIn, checkOut)) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ngày nhận phòng không được ở quá khứ và phải trước ngày trả phòng.");
+            return "redirect:/tim-phong";
+        }
 
         if (cart.getNgayNhan() == null) {
             cart.setNgayNhan(ngayNhan);
@@ -115,8 +123,9 @@ public class GuestBookingController {
         GioHang cart = getCart(session);
         LocalDate checkIn = DateUtil.parse(ngayNhan);
         LocalDate checkOut = DateUtil.parse(ngayTra);
-        if (!DateUtil.isValidRange(checkIn, checkOut)) {
-            redirectAttributes.addFlashAttribute("error", "Ngày nhận phòng phải trước ngày trả phòng.");
+        if (!DateUtil.isValidBookingRange(checkIn, checkOut)) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ngày nhận phòng không được ở quá khứ và phải trước ngày trả phòng.");
             return "redirect:/gio-hang";
         }
         cart.updateDates(ngayNhan, ngayTra, DateUtil.soDem(checkIn, checkOut));

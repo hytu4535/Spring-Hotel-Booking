@@ -5,9 +5,12 @@ import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
 import com.hotel.model.DatPhongDTO;
 import com.hotel.model.Phong;
+import com.hotel.event.BookingStatusEmailEvent;
 import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.PhongRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +24,21 @@ public class DatPhongStaffService {
     private final DatPhongRepository datPhongRepository;
     private final PhongRepository phongRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository) {
+        this(datPhongRepository, phongRepository, chiTietDatPhongRepository, null);
+    }
+
+    @Autowired
+    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.datPhongRepository = datPhongRepository;
         this.phongRepository = phongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +138,22 @@ public class DatPhongStaffService {
         }
 
         datPhongRepository.save(dp);
+        publishStatusEmail(dp, newTrangThai);
         return true;
+    }
+
+    private void publishStatusEmail(DatPhong booking, String status) {
+        if (eventPublisher == null
+                || booking.getKhachHang() == null
+                || (!"DA_XAC_NHAN".equals(status) && !"DA_HUY".equals(status))) {
+            return;
+        }
+        eventPublisher.publishEvent(new BookingStatusEmailEvent(
+                booking.getKhachHang().getEmail(),
+                booking.getKhachHang().getHoTen(),
+                booking.getMaTraCuu(),
+                status,
+                "DA_XAC_NHAN".equals(status) ? "Đã xác nhận" : "Đã hủy"));
     }
 
     private boolean isValidStatusTransition(DatPhong dp, String newTrangThai,

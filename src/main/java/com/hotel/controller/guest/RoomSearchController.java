@@ -23,13 +23,14 @@ public class RoomSearchController {
                          @RequestParam(required = false) String ngayTra, Model model) {
         model.addAttribute("ngayNhan", ngayNhan);
         model.addAttribute("ngayTra", ngayTra);
+        model.addAttribute("today", LocalDate.now());
         if (ngayNhan == null || ngayTra == null) {
             model.addAttribute("danhSachPhong", Collections.emptyList());
             return "guest/tim-phong";
         }
         try {
             LocalDate checkIn = DateUtil.parse(ngayNhan), checkOut = DateUtil.parse(ngayTra);
-            if (!DateUtil.isValidRange(checkIn, checkOut)) throw new IllegalArgumentException();
+            if (!DateUtil.isValidBookingRange(checkIn, checkOut)) throw new IllegalArgumentException();
             model.addAttribute("soDem", DateUtil.soDem(checkIn, checkOut));
             model.addAttribute("danhSachPhong",
                     roomSearchService.findAvailable(Date.valueOf(checkIn), Date.valueOf(checkOut)));

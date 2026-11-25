@@ -8,6 +8,10 @@ import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.KhachHangRepository;
 import com.hotel.util.MaTraCuuGenerator;
+import com.hotel.event.BookingConfirmationEmailEvent;
+import com.hotel.event.BookingStatusEmailEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class DatPhongService {
@@ -29,17 +34,30 @@ public class DatPhongService {
     private final KhachHangRepository khachHangRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final DatDichVuService datDichVuService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public DatPhongService(DatPhongRepository datPhongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository,
             KhachHangRepository khachHangRepository,
             KafkaTemplate<String, String> kafkaTemplate,
             DatDichVuService datDichVuService) {
+        this(datPhongRepository, chiTietDatPhongRepository, khachHangRepository,
+                kafkaTemplate, datDichVuService, null);
+    }
+
+    @Autowired
+    public DatPhongService(DatPhongRepository datPhongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository,
+            KhachHangRepository khachHangRepository,
+            KafkaTemplate<String, String> kafkaTemplate,
+            DatDichVuService datDichVuService,
+            ApplicationEventPublisher eventPublisher) {
         this.datPhongRepository = datPhongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
         this.khachHangRepository = khachHangRepository;
         this.kafkaTemplate = kafkaTemplate;
         this.datDichVuService = datDichVuService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -131,6 +149,7 @@ public class DatPhongService {
         String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CREATED\"}", maTraCuu,
                 khachHang.getEmail());
         publishEventAsync(message);
+        publishBookingConfirmationEmail(datPhong, khachHang);
 
         return maTraCuu;
     }
@@ -164,6 +183,7 @@ public class DatPhongService {
                             "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                             dp.getMaTraCuu(), dp.getKhachHang().getEmail());
                     publishEventAsync(message);
+                    publishBookingStatusEmail(dp, "DA_HUY");
                     return true;
                 }).orElse(false);
     }
@@ -187,6 +207,7 @@ public class DatPhongService {
         String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                 dp.getMaTraCuu(), dp.getKhachHang().getEmail());
         publishEventAsync(message);
+        publishBookingStatusEmail(dp, "DA_HUY");
         return true;
     }
 
@@ -201,8 +222,53 @@ public class DatPhongService {
                 String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                         dp.getMaTraCuu(), dp.getKhachHang().getEmail());
                 publishEventAsync(message);
+                publishBookingStatusEmail(dp, "DA_HUY");
             }
         });
+    }
+
+    private void publishBookingConfirmationEmail(DatPhong booking, KhachHang customer) {
+        if (eventPublisher == null || customer == null) {
+            return;
+        }
+        eventPublisher.publishEvent(new BookingConfirmationEmailEvent(
+                customer.getEmail(),
+                customer.getHoTen(),
+                booking.getMaTraCuu(),
+                formatDate(booking.getNgayNhanPhong()),
+                formatDate(booking.getNgayTraPhong()),
+                formatAmount(booking.getTongTien())));
+    }
+
+    private void publishBookingStatusEmail(DatPhong booking, String status) {
+        if (eventPublisher == null || booking == null || booking.getKhachHang() == null) {
+            return;
+        }
+        KhachHang customer = booking.getKhachHang();
+        eventPublisher.publishEvent(new BookingStatusEmailEvent(
+                customer.getEmail(),
+                customer.getHoTen(),
+                booking.getMaTraCuu(),
+                status,
+                statusLabel(status)));
+    }
+
+    private String formatDate(java.sql.Date date) {
+        return date == null ? "" : date.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    private String formatAmount(java.math.BigDecimal amount) {
+        return amount == null ? "0 VNĐ" : amount.toPlainString() + " VNĐ";
+    }
+
+    private String statusLabel(String status) {
+        if ("DA_HUY".equals(status)) {
+            return "Đã hủy";
+        }
+        if ("DA_XAC_NHAN".equals(status)) {
+            return "Đã xác nhận";
+        }
+        return status;
     }
 
     private void publishEventAsync(String message) {
