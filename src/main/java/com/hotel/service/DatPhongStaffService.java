@@ -22,7 +22,8 @@ public class DatPhongStaffService {
     private final PhongRepository phongRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
 
-    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository, ChiTietDatPhongRepository chiTietDatPhongRepository) {
+    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository) {
         this.datPhongRepository = datPhongRepository;
         this.phongRepository = phongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
@@ -94,7 +95,7 @@ public class DatPhongStaffService {
             phongTrangThai = TrangThaiPhong.DA_DAT;
         } else if (newTrangThai.equals("DA_NHAN_PHONG")) {
             phongTrangThai = TrangThaiPhong.DANG_O;
-        } else if (newTrangThai.equals("DA_TRA_PHONG") || newTrangThai.equals("DA_HUY")) {
+        } else if (newTrangThai.equals("DA_TRA_PHONG")) {
             phongTrangThai = TrangThaiPhong.TRONG;
         }
 
@@ -111,6 +112,17 @@ public class DatPhongStaffService {
                 }
                 phongRepository.saveAll(phongs);
             }
+        } else if ("DA_HUY".equals(newTrangThai)) {
+            List<Phong> bookedRooms = phongRepository.findAllById(chiTiet.stream()
+                    .map(ChiTietDatPhong::getMaPhong)
+                    .collect(Collectors.toList()));
+            List<Phong> roomsToRelease = bookedRooms.stream()
+                    .filter(room -> room.getTrangThaiPhong() == TrangThaiPhong.DA_DAT)
+                    .collect(Collectors.toList());
+            roomsToRelease.forEach(room -> room.setTrangThaiPhong(TrangThaiPhong.TRONG));
+            if (!roomsToRelease.isEmpty()) {
+                phongRepository.saveAll(roomsToRelease);
+            }
         }
 
         datPhongRepository.save(dp);
@@ -118,7 +130,7 @@ public class DatPhongStaffService {
     }
 
     private boolean isValidStatusTransition(DatPhong dp, String newTrangThai,
-                                            List<ChiTietDatPhong> chiTiet) {
+            List<ChiTietDatPhong> chiTiet) {
         if (newTrangThai == null || chiTiet.isEmpty()) {
             return false;
         }
@@ -132,23 +144,24 @@ public class DatPhongStaffService {
 
         if ("DA_XAC_NHAN".equals(newTrangThai)) {
             return "CHO_XAC_NHAN".equals(dp.getTrangThai())
-                    && phongs.stream().allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.TRONG);
+                    && phongs.stream()
+                            .allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.TRONG);
         }
         if ("DA_NHAN_PHONG".equals(newTrangThai)) {
             return "DA_XAC_NHAN".equals(dp.getTrangThai())
-                    && phongs.stream().allMatch(phong ->
-                    phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.BAO_TRI
-                            && phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.DANG_O);
+                    && phongs.stream()
+                            .allMatch(phong -> phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.BAO_TRI
+                                    && phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.DANG_O);
         }
         if ("DA_TRA_PHONG".equals(newTrangThai)) {
             return "DA_NHAN_PHONG".equals(dp.getTrangThai())
-                    && phongs.stream().allMatch(phong ->
-                    phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+                    && phongs.stream()
+                            .allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
         }
         if ("DA_HUY".equals(newTrangThai)) {
             return ("CHO_XAC_NHAN".equals(dp.getTrangThai()) || "DA_XAC_NHAN".equals(dp.getTrangThai()))
-                    && phongs.stream().noneMatch(phong ->
-                    phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+                    && phongs.stream()
+                            .noneMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
         }
         return false;
     }

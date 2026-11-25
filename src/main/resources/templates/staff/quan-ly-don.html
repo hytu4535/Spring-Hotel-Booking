@@ -59,6 +59,41 @@
         </div>
     </th:block>
 
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form th:action="${bookingBasePath}" method="get" class="row g-2 align-items-end">
+                <div class="col-lg-3">
+                    <label class="form-label">Từ khóa</label>
+                    <input class="form-control" type="text" name="keyword" th:value="${keyword}"
+                           placeholder="Mã tra cứu, tên, số điện thoại">
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="trangThai">
+                        <option value="">Tất cả</option>
+                        <option value="CHO_XAC_NHAN" th:selected="${trangThai == 'CHO_XAC_NHAN'}">Chờ xác nhận</option>
+                        <option value="DA_XAC_NHAN" th:selected="${trangThai == 'DA_XAC_NHAN'}">Đã xác nhận</option>
+                        <option value="DA_NHAN_PHONG" th:selected="${trangThai == 'DA_NHAN_PHONG'}">Đã nhận phòng</option>
+                        <option value="DA_TRA_PHONG" th:selected="${trangThai == 'DA_TRA_PHONG'}">Đã trả phòng</option>
+                        <option value="DA_HUY" th:selected="${trangThai == 'DA_HUY'}">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Từ ngày</label>
+                    <input class="form-control" type="date" name="tuNgay" th:value="${tuNgay}">
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label">Đến ngày</label>
+                    <input class="form-control" type="date" name="denNgay" th:value="${denNgay}">
+                </div>
+                <div class="col-lg-3">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Lọc</button>
+                    <a class="btn btn-outline-secondary" th:href="${bookingBasePath}">Bỏ lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">

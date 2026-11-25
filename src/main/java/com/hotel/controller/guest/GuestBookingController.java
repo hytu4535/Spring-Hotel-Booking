@@ -10,6 +10,7 @@ import com.hotel.model.KhachHang;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.DatPhongService;
 import com.hotel.service.DichVuService;
+import com.hotel.service.KhachHangService;
 import com.hotel.service.ThanhToanService;
 import com.hotel.util.DateUtil;
 import org.springframework.stereotype.Controller;
@@ -32,12 +33,14 @@ public class GuestBookingController {
     private final DatPhongService datPhongService;
     private final DichVuService dichVuService;
     private final ThanhToanService thanhToanService;
+    private final KhachHangService khachHangService;
 
     public GuestBookingController(DatPhongService datPhongService, DichVuService dichVuService,
-                                  ThanhToanService thanhToanService) {
+            ThanhToanService thanhToanService, KhachHangService khachHangService) {
         this.datPhongService = datPhongService;
         this.dichVuService = dichVuService;
         this.thanhToanService = thanhToanService;
+        this.khachHangService = khachHangService;
     }
 
     // ================= XỬ LÝ GIỎ HÀNG =================
@@ -89,7 +92,7 @@ public class GuestBookingController {
 
     @PostMapping(value = "/gio-hang", params = "action=add-service")
     public String addServiceToCart(HttpSession session, @RequestParam int maDv,
-                                   @RequestParam int soLuong, RedirectAttributes redirectAttributes) {
+            @RequestParam int soLuong, RedirectAttributes redirectAttributes) {
         try {
             if (soLuong < 1 || soLuong > 100) {
                 throw new IllegalArgumentException("Số lượng dịch vụ phải từ 1 đến 100.");
@@ -134,6 +137,11 @@ public class GuestBookingController {
             model.addAttribute("hoTen", currentUser.getHoTen());
             model.addAttribute("email", currentUser.getEmail());
             model.addAttribute("soDienThoai", currentUser.getSoDienThoai());
+            KhachHang profile = khachHangService.getForAccount(currentUser.getMaTk());
+            if (profile != null) {
+                model.addAttribute("cccd", profile.getCccd());
+                model.addAttribute("diaChi", profile.getDiaChi());
+            }
         }
         return "guest/dat-phong";
     }
@@ -148,6 +156,16 @@ public class GuestBookingController {
             return "redirect:/tim-phong";
 
         try {
+            TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
+            if (currentUser != null && "CUSTOMER".equals(currentUser.getVaiTro())) {
+                khachHang.setMaTk(currentUser.getMaTk());
+                KhachHang profile = khachHangService.getForAccount(currentUser.getMaTk());
+                khachHang.setHoTen(currentUser.getHoTen());
+                khachHang.setEmail(currentUser.getEmail());
+                khachHang.setSoDienThoai(currentUser.getSoDienThoai());
+                khachHang.setCccd(profile == null ? null : profile.getCccd());
+                khachHang.setDiaChi(profile == null ? null : profile.getDiaChi());
+            }
             if (ghiChu != null && ghiChu.length() > 255) {
                 throw new IllegalArgumentException("Ghi chú không được vượt quá 255 ký tự.");
             }

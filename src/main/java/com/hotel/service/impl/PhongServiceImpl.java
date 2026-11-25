@@ -1,11 +1,15 @@
 package com.hotel.service.impl;
 
-
 import com.hotel.dto.PhongRequestDTO;
 import com.hotel.dto.PhongResponseDTO;
 import com.hotel.mapper.PhongMapper;
 import com.hotel.model.LoaiPhong;
 import com.hotel.model.Phong;
+import com.hotel.model.PhongSoDoDTO;
+import com.hotel.model.DatPhong;
+import com.hotel.model.ChiTietDatPhong;
+import com.hotel.repository.DatPhongRepository;
+import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.LoaiPhongRepository;
 import com.hotel.repository.PhongRepository;
 import com.hotel.service.PhongService;
@@ -23,13 +27,45 @@ public class PhongServiceImpl implements PhongService {
     private final PhongRepository phongRepository;
     private final PhongMapper phongMapper;
     private final LoaiPhongRepository loaiPhongRepository;
+    private final DatPhongRepository datPhongRepository;
+    private final ChiTietDatPhongRepository chiTietDatPhongRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public PhongResponseDTO getSoDoPhong() {
-        return new PhongResponseDTO(null, null, null, null, null, null, null);
+    public List<PhongSoDoDTO> getSoDoPhong() {
+        List<DatPhong> activeBookings = datPhongRepository.findAllByOrderByNgayDatDesc().stream()
+                .filter(dp -> "CHO_XAC_NHAN".equals(dp.getTrangThai())
+                        || "DA_XAC_NHAN".equals(dp.getTrangThai())
+                        || "DA_NHAN_PHONG".equals(dp.getTrangThai()))
+                .toList();
+        return phongRepository.findAllByDaXoaFalse().stream().map(room -> {
+            PhongSoDoDTO dto = new PhongSoDoDTO();
+            dto.setMaPhong(room.getMaPhong());
+            dto.setSoPhong(room.getSoPhong());
+            dto.setTang(room.getTang() == null ? 0 : room.getTang());
+            dto.setTenLoaiPhong(room.getLoaiPhong() == null ? null : room.getLoaiPhong().getTenLoai());
+            dto.setTrangThai(room.getTrangThaiPhong() == null ? "TRONG" : room.getTrangThaiPhong().name());
+            for (DatPhong booking : activeBookings) {
+                boolean belongs = chiTietDatPhongRepository.findByMaDp(booking.getMaDp()).stream()
+                        .anyMatch(ct -> ct.getPhong() != null
+                                && ct.getPhong().getMaPhong().equals(room.getMaPhong()));
+                if (belongs) {
+                    dto.setMaDpHienTai(booking.getMaDp());
+                    dto.setTenKhachHang(booking.getKhachHang() == null
+                            ? null
+                            : booking.getKhachHang().getHoTen());
+                    if ("DA_NHAN_PHONG".equals(booking.getTrangThai())) {
+                        dto.setTrangThai("DANG_O");
+                    } else if ("DA_XAC_NHAN".equals(booking.getTrangThai())
+                            || "CHO_XAC_NHAN".equals(booking.getTrangThai())) {
+                        dto.setTrangThai("DA_DAT");
+                    }
+                    break;
+                }
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -44,14 +80,14 @@ public class PhongServiceImpl implements PhongService {
     @Transactional(readOnly = true)
     public PhongResponseDTO getPhongById(Integer id) {
         Phong phong = phongRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng có ID: " +  id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng có ID: " + id));
         return phongMapper.toResponse(phong);
     }
 
     @Override
     @Transactional
     public PhongResponseDTO createPhong(PhongRequestDTO requestDTO) {
-        if (phongRepository.existsBySoPhongIgnoreCaseAndDaXoaFalse(requestDTO.soPhong())){
+        if (phongRepository.existsBySoPhongIgnoreCaseAndDaXoaFalse(requestDTO.soPhong())) {
             throw new RuntimeException("Tên/Số phòng đã tồn tại!");
         }
         LoaiPhong loaiPhong = loaiPhongRepository.findByMaLoaiAndDaXoaFalse(requestDTO.maLoaiPhong())
@@ -66,7 +102,7 @@ public class PhongServiceImpl implements PhongService {
 
     @Override
     @Transactional
-    public PhongResponseDTO updatePhong(Integer id, PhongRequestDTO requestDTO){
+    public PhongResponseDTO updatePhong(Integer id, PhongRequestDTO requestDTO) {
         Phong exist = phongRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Phòng có ID: " + id));
 
@@ -76,7 +112,6 @@ public class PhongServiceImpl implements PhongService {
 
         LoaiPhong loaiPhong = loaiPhongRepository.findByMaLoaiAndDaXoaFalse(requestDTO.maLoaiPhong())
                 .orElseThrow(() -> new RuntimeException("Loại phòng không tồn tại!"));
-
 
         exist.setSoPhong(requestDTO.soPhong());
         exist.setMaLoaiPhong(loaiPhong);
@@ -96,7 +131,6 @@ public class PhongServiceImpl implements PhongService {
         phong.setDaXoa(true);
         phongRepository.save(phong);
     }
-
 
     @Override
     @Transactional

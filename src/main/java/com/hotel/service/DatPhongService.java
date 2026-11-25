@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,19 +44,60 @@ public class DatPhongService {
 
     @Transactional
     public String taoDonDatPhong(KhachHang khachHang, DatPhong datPhong,
-                                 List<ChiTietDatPhong> danhSachChiTiet) {
+            List<ChiTietDatPhong> danhSachChiTiet) {
         return taoDonDatPhong(khachHang, datPhong, danhSachChiTiet, java.util.Collections.emptyList());
     }
 
     @Transactional // Đảm bảo All-or-Nothing
     public String taoDonDatPhong(KhachHang khachHang, DatPhong datPhong,
-                                 List<ChiTietDatPhong> danhSachChiTiet,
-                                 List<CartServiceItem> danhSachDichVu) {
+            List<ChiTietDatPhong> danhSachChiTiet,
+            List<CartServiceItem> danhSachDichVu) {
+        if (datPhong.getNgayNhanPhong() == null || datPhong.getNgayTraPhong() == null
+                || !datPhong.getNgayNhanPhong().before(datPhong.getNgayTraPhong())) {
+            throw new IllegalArgumentException("Ngày nhận phòng phải trước ngày trả phòng.");
+        }
+        if (khachHang != null) {
+            khachHang.setHoTen(khachHang.getHoTen() == null ? null : khachHang.getHoTen().trim());
+            khachHang.setEmail(khachHang.getEmail() == null ? null : khachHang.getEmail().trim());
+            khachHang.setSoDienThoai(khachHang.getSoDienThoai() == null
+                    ? null
+                    : khachHang.getSoDienThoai().trim());
+        }
+        if (danhSachChiTiet == null || danhSachChiTiet.isEmpty()) {
+            throw new IllegalArgumentException("Đơn đặt phòng phải có ít nhất một phòng.");
+        }
+        if (khachHang == null || khachHang.getHoTen() == null
+                || khachHang.getEmail() == null || khachHang.getSoDienThoai() == null
+                || khachHang.getHoTen().trim().isEmpty() || khachHang.getEmail().trim().isEmpty()
+                || khachHang.getSoDienThoai().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập đầy đủ họ tên, email và số điện thoại.");
+        }
+        for (ChiTietDatPhong ct : danhSachChiTiet) {
+            long overlapping = chiTietDatPhongRepository.countOverlappingReservations(
+                    ct.getMaPhong(), datPhong.getNgayNhanPhong(), datPhong.getNgayTraPhong());
+            if (overlapping > 0) {
+                throw new IllegalStateException("Phòng bạn chọn vừa bị người khác đặt mất. Vui lòng chọn phòng khác.");
+            }
+        }
         // 1. Lưu khách hàng
         int maKh = -1;
-        Optional<KhachHang> existingKh = khachHangRepository.findByEmailIgnoreCase(khachHang.getEmail());
+        Optional<KhachHang> existingKh = khachHang.getMaTk() == null
+                ? Optional.empty()
+                : khachHangRepository.findByMaTk(khachHang.getMaTk());
+        if (existingKh.isEmpty()) {
+            existingKh = khachHangRepository.findByEmailIgnoreCase(khachHang.getEmail());
+        }
         if (existingKh.isPresent()) {
-            maKh = existingKh.get().getMaKh();
+            KhachHang existing = existingKh.get();
+            if (khachHang.getMaTk() != null && existing.getMaTk() != null
+                    && !existing.getMaTk().equals(khachHang.getMaTk())) {
+                throw new IllegalArgumentException("Email đã liên kết với một tài khoản khách hàng khác.");
+            }
+            if (khachHang.getMaTk() != null && existing.getMaTk() == null) {
+                existing.setMaTk(khachHang.getMaTk());
+                existing = khachHangRepository.save(existing);
+            }
+            maKh = existing.getMaKh();
         } else {
             khachHang.setNgayTao(new Timestamp(System.currentTimeMillis()));
             KhachHang savedKh = khachHangRepository.save(khachHang);
@@ -63,7 +105,10 @@ public class DatPhongService {
         }
 
         // 2. Lưu Đơn Đặt Phòng
-        String maTraCuu = MaTraCuuGenerator.generate(8);
+        String maTraCuu;
+        do {
+            maTraCuu = MaTraCuuGenerator.generate(8);
+        } while (datPhongRepository.findByMaTraCuu(maTraCuu).isPresent());
         datPhong.setMaTraCuu(maTraCuu);
         datPhong.setMaKh(maKh);
         datPhong.setTrangThai("CHO_XAC_NHAN");
@@ -72,13 +117,8 @@ public class DatPhongService {
         datPhong.setTongTien(datPhong.getTienPhong());
         DatPhong savedDp = datPhongRepository.save(datPhong);
 
-        // 3. Lưu Chi Tiết & Check trùng lịch
+        // 3. Lưu Chi Tiết
         for (ChiTietDatPhong ct : danhSachChiTiet) {
-            long overlapping = chiTietDatPhongRepository.countOverlappingReservations(
-                    ct.getMaPhong(), datPhong.getNgayNhanPhong(), datPhong.getNgayTraPhong());
-            if (overlapping > 0) {
-                throw new IllegalStateException("Phòng bạn chọn vừa bị người khác đặt mất. Vui lòng chọn phòng khác.");
-            }
             ct.setMaDp(savedDp.getMaDp());
             chiTietDatPhongRepository.save(ct);
         }
@@ -120,11 +160,34 @@ public class DatPhongService {
                 .map(dp -> {
                     dp.setTrangThai("DA_HUY");
                     datPhongRepository.save(dp);
-                    String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
+                    String message = String.format(
+                            "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                             dp.getMaTraCuu(), dp.getKhachHang().getEmail());
                     publishEventAsync(message);
                     return true;
                 }).orElse(false);
+    }
+
+    @Transactional
+    public boolean huyDonPhongCuaKhach(int maDp, int maTk) {
+        Optional<KhachHang> customer = khachHangRepository.findByMaTk(maTk);
+        if (customer.isEmpty()) {
+            return false;
+        }
+        Optional<DatPhong> booking = datPhongRepository.findById(maDp);
+        if (booking.isEmpty()
+                || booking.get().getKhachHang() == null
+                || !Objects.equals(booking.get().getKhachHang().getMaKh(), customer.get().getMaKh())
+                || !"CHO_XAC_NHAN".equals(booking.get().getTrangThai())) {
+            return false;
+        }
+        DatPhong dp = booking.get();
+        dp.setTrangThai("DA_HUY");
+        datPhongRepository.save(dp);
+        String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
+                dp.getMaTraCuu(), dp.getKhachHang().getEmail());
+        publishEventAsync(message);
+        return true;
     }
 
     @Transactional

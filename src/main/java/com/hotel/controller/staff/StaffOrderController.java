@@ -27,7 +27,7 @@ public class StaffOrderController {
     // private final PhongService phongService;
 
     public StaffOrderController(DatPhongStaffService datPhongStaffService, ThanhToanService thanhToanService,
-                                DatDichVuService datDichVuService, DichVuService dichVuService) {
+            DatDichVuService datDichVuService, DichVuService dichVuService) {
         this.datPhongStaffService = datPhongStaffService;
         this.thanhToanService = thanhToanService;
         this.datDichVuService = datDichVuService;
@@ -35,7 +35,7 @@ public class StaffOrderController {
     }
 
     // Legacy staff entry points now converge on the database-backed dashboard.
-    @GetMapping({"/staff", "/staff/", "/staff/quan-ly-don"})
+    @GetMapping({ "/staff", "/staff/", "/staff/quan-ly-don" })
     public String staffDashboard() {
         return "redirect:/staff/dashboard";
     }
@@ -68,7 +68,9 @@ public class StaffOrderController {
             HttpSession session, HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
         TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
-        boolean success = datPhongStaffService.updateTrangThaiTransaction(maDp, trangThaiMoi, currentUser.getMaTk());
+        boolean success = currentUser != null
+                && ("ADMIN".equals(currentUser.getVaiTro()) || "NHANVIEN".equals(currentUser.getVaiTro()))
+                && datPhongStaffService.updateTrangThaiTransaction(maDp, trangThaiMoi, currentUser.getMaTk());
 
         if (success) {
             redirectAttributes.addFlashAttribute("successMsg", "Cập nhật trạng thái đơn thành công!");
@@ -105,15 +107,16 @@ public class StaffOrderController {
         return "staff/chi-tiet-don";
     }
 
-    @PostMapping({"/staff/don/{maDp}/dich-vu", "/admin/dat-phong/{maDp}/dich-vu"})
+    @PostMapping({ "/staff/don/{maDp}/dich-vu", "/admin/dat-phong/{maDp}/dich-vu" })
     public String addService(@PathVariable int maDp, @RequestParam int maDv,
-                             @RequestParam int soLuong, @RequestParam(required = false) String ngaySuDung,
-                             HttpServletRequest request, HttpSession session,
-                             RedirectAttributes redirectAttributes) {
+            @RequestParam int soLuong, @RequestParam(required = false) String ngaySuDung,
+            HttpServletRequest request, HttpSession session,
+            RedirectAttributes redirectAttributes) {
         TaiKhoan currentUser = (TaiKhoan) session.getAttribute("currentUser");
         try {
             Date usageDate = ngaySuDung == null || ngaySuDung.trim().isEmpty()
-                    ? null : Date.valueOf(ngaySuDung);
+                    ? null
+                    : Date.valueOf(ngaySuDung);
             datDichVuService.addForBooking(maDp, maDv, soLuong, usageDate,
                     currentUser == null ? null : currentUser.getMaTk());
             redirectAttributes.addFlashAttribute("successMsg", "Đã thêm dịch vụ vào đơn đặt phòng.");
@@ -121,14 +124,15 @@ public class StaffOrderController {
             redirectAttributes.addFlashAttribute("errorMsg", ex.getMessage());
         }
         String basePath = request.getServletPath().startsWith("/admin/")
-                ? "/admin/dat-phong" : "/staff/don";
+                ? "/admin/dat-phong"
+                : "/staff/don";
         return "redirect:" + basePath + "/" + maDp;
     }
 
-    @PostMapping({"/staff/don/{maDp}/dich-vu/{maDatDv}/xoa",
-            "/admin/dat-phong/{maDp}/dich-vu/{maDatDv}/xoa"})
+    @PostMapping({ "/staff/don/{maDp}/dich-vu/{maDatDv}/xoa",
+            "/admin/dat-phong/{maDp}/dich-vu/{maDatDv}/xoa" })
     public String removeService(@PathVariable int maDp, @PathVariable int maDatDv,
-                                HttpServletRequest request, RedirectAttributes redirectAttributes) {
+            HttpServletRequest request, RedirectAttributes redirectAttributes) {
         try {
             datDichVuService.removeFromBooking(maDatDv, maDp);
             redirectAttributes.addFlashAttribute("successMsg", "Đã xóa dịch vụ khỏi đơn đặt phòng.");
@@ -136,7 +140,8 @@ public class StaffOrderController {
             redirectAttributes.addFlashAttribute("errorMsg", ex.getMessage());
         }
         String basePath = request.getServletPath().startsWith("/admin/")
-                ? "/admin/dat-phong" : "/staff/don";
+                ? "/admin/dat-phong"
+                : "/staff/don";
         return "redirect:" + basePath + "/" + maDp;
     }
 

@@ -3,12 +3,15 @@ package com.hotel.service;
 import com.hotel.dto.DatPhongHistoryDTO;
 import com.hotel.dto.KhachHangAdminDTO;
 import com.hotel.dto.KhachHangProfileDTO;
+import com.hotel.dto.ThanhToanHistoryDTO;
 import com.hotel.model.DatPhong;
 import com.hotel.model.KhachHang;
 import com.hotel.model.TaiKhoan;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.KhachHangRepository;
 import com.hotel.repository.TaiKhoanRepository;
+import com.hotel.repository.ChiTietDatPhongRepository;
+import com.hotel.repository.ThanhToanRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,21 +25,37 @@ public class KhachHangService {
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
     private final DatPhongRepository datPhongRepository;
+    private final ChiTietDatPhongRepository chiTietDatPhongRepository;
+    private final ThanhToanRepository thanhToanRepository;
 
     public KhachHangService(KhachHangRepository khachHangRepository,
-                            TaiKhoanRepository taiKhoanRepository,
-                            DatPhongRepository datPhongRepository) {
+            TaiKhoanRepository taiKhoanRepository,
+            DatPhongRepository datPhongRepository, ChiTietDatPhongRepository chiTietDatPhongRepository,
+            ThanhToanRepository thanhToanRepository) {
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
         this.datPhongRepository = datPhongRepository;
+        this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.thanhToanRepository = thanhToanRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public KhachHang getForAccount(int maTk) {
-        return khachHangRepository.findByMaTk(maTk)
-                .orElseGet(() -> taiKhoanRepository.findById(maTk)
-                        .map(account -> khachHangRepository.findByEmailIgnoreCase(account.getEmail()).orElse(null))
-                        .orElse(null));
+        Optional<KhachHang> linked = khachHangRepository.findByMaTk(maTk);
+        if (linked.isPresent()) {
+            return linked.get();
+        }
+        Optional<TaiKhoan> account = taiKhoanRepository.findById(maTk);
+        if (account.isEmpty()) {
+            return null;
+        }
+        Optional<KhachHang> emailMatch = khachHangRepository.findByEmailIgnoreCase(account.get().getEmail());
+        if (emailMatch.isEmpty() || emailMatch.get().getMaTk() != null) {
+            return null;
+        }
+        KhachHang customer = emailMatch.get();
+        customer.setMaTk(maTk);
+        return khachHangRepository.save(customer);
     }
 
     @Transactional
@@ -85,7 +104,7 @@ public class KhachHangService {
 
     @Transactional(readOnly = true)
     public List<KhachHangAdminDTO> searchAdvanced(String hoTen, String email, String phone,
-                                                    String cccd, String order) {
+            String cccd, String order) {
         String nameFilter = normalizeFilter(hoTen);
         String emailFilter = normalizeFilter(email);
         String phoneFilter = normalizeFilter(phone);
@@ -154,14 +173,16 @@ public class KhachHangService {
         KhachHang customer = khachHangRepository.findById(maKh)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng."));
         if (!datPhongRepository.findByMaKhOrderByNgayDatDesc(maKh).isEmpty()) {
-            throw new IllegalArgumentException("Không thể xóa khách hàng đã có lịch sử đặt phòng. Hãy gộp hồ sơ hoặc khóa tài khoản.");
+            throw new IllegalArgumentException(
+                    "Không thể xóa khách hàng đã có lịch sử đặt phòng. Hãy gộp hồ sơ hoặc khóa tài khoản.");
         }
         khachHangRepository.delete(customer);
     }
 
     @Transactional(readOnly = true)
     public List<DatPhongHistoryDTO> history(int maKh) {
-        return datPhongRepository.findByMaKhOrderByNgayDatDesc(maKh).stream().map(this::toHistory).collect(Collectors.toList());
+        return datPhongRepository.findByMaKhOrderByNgayDatDesc(maKh).stream().map(this::toHistory)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -198,6 +219,24 @@ public class KhachHangService {
         dto.setNgayTraPhong(item.getNgayTraPhong());
         dto.setTrangThai(item.getTrangThai());
         dto.setTongTien(item.getTongTien());
+        dto.setTienPhong(item.getTienPhong());
+        dto.setTienDichVu(item.getTienDichVu());
+        dto.setSoPhong(chiTietDatPhongRepository.findByMaDp(item.getMaDp()).stream()
+                .filter(ct -> ct.getPhong() != null)
+                .map(ct -> ct.getPhong().getSoPhong())
+                .distinct()
+                .collect(Collectors.toList()));
+        dto.setLichSuThanhToan(thanhToanRepository.findByDatPhong_MaDp(item.getMaDp()).stream()
+                .map(payment -> {
+                    ThanhToanHistoryDTO paymentDTO = new ThanhToanHistoryDTO();
+                    paymentDTO.setSoTien(payment.getSoTien());
+                    paymentDTO.setNgayThanhToan(payment.getNgayThanhToan());
+                    paymentDTO.setPhuongThuc(payment.getPhuongThuc());
+                    paymentDTO.setMaGiaoDich(payment.getMaGiaoDich());
+                    paymentDTO.setLoaiThanhToan(payment.getLoaiThanhToan());
+                    return paymentDTO;
+                })
+                .collect(Collectors.toList()));
         return dto;
     }
 

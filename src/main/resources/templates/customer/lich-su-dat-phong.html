@@ -35,8 +35,12 @@
                     <th>Mã đơn</th>
                     <th>Ngày đặt</th>
                     <th>Nhận - Trả phòng</th>
+                    <th>Phòng</th>
+                    <th>Tiền phòng</th>
+                    <th>Tiền dịch vụ</th>
                     <th>Tổng tiền</th>
                     <th>Trạng thái</th>
+                    <th>Lịch sử thanh toán</th>
                     <th class="text-end">Thao tác</th>
                 </tr>
                 </thead>
@@ -48,12 +52,29 @@
                         <span th:text="${#dates.format(don.ngayNhanPhong, 'dd/MM/yyyy')}"></span><br>
                         <span class="text-muted" th:text="${#dates.format(don.ngayTraPhong, 'dd/MM/yyyy')}"></span>
                     </td>
+                    <td>
+                        <span th:each="room, iter : ${don.soPhong}">
+                            <span th:text="${room}"></span><span th:if="${!iter.last}">, </span>
+                        </span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(don.tienPhong, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    <td th:text="${#numbers.formatDecimal(don.tienDichVu, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                     <td class="text-danger fw-semibold" th:text="${#numbers.formatDecimal(don.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                     <td>
                         <span class="badge" 
                               th:classappend="${don.trangThai == 'CHO_XAC_NHAN' ? 'bg-warning text-dark' : (don.trangThai == 'DA_HUY' ? 'bg-secondary' : 'bg-success')}" 
                               th:text="${don.trangThai == 'CHO_XAC_NHAN' ? 'Chờ xác nhận' : (don.trangThai == 'DA_HUY' ? 'Đã hủy' : don.trangThai)}">
                         </span>
+                    </td>
+                    <td>
+                        <div th:if="${#lists.isEmpty(don.lichSuThanhToan)}" class="text-muted small">Chưa có</div>
+                        <div th:each="payment : ${don.lichSuThanhToan}" class="small">
+                            <span th:text="${payment.phuongThuc}"></span>
+                            -
+                            <span th:text="${payment.loaiThanhToan}"></span>
+                            -
+                            <strong th:text="${#numbers.formatDecimal(payment.soTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                        </div>
                     </td>
                     <td class="text-end">
                         <form th:if="${don.trangThai == 'CHO_XAC_NHAN'}" 
@@ -66,7 +87,7 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(historyList)}">
-                    <td colspan="6" class="text-center py-4 text-muted">Bạn chưa có đơn đặt phòng nào.</td>
+                    <td colspan="10" class="text-center py-4 text-muted">Bạn chưa có đơn đặt phòng nào.</td>
                 </tr>
                 </tbody>
             </table>
