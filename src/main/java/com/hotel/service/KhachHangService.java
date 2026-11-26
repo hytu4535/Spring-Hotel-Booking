@@ -218,6 +218,7 @@ public class KhachHangService {
         dto.setNgayNhanPhong(item.getNgayNhanPhong());
         dto.setNgayTraPhong(item.getNgayTraPhong());
         dto.setTrangThai(item.getTrangThai());
+        dto.setTrangThaiLabel(statusLabel(item.getTrangThai()));
         dto.setTongTien(item.getTongTien());
         dto.setTienPhong(item.getTienPhong());
         dto.setTienDichVu(item.getTienDichVu());
@@ -238,6 +239,20 @@ public class KhachHangService {
                 })
                 .collect(Collectors.toList()));
         return dto;
+    }
+
+    private String statusLabel(String status) {
+        if ("CHO_XAC_NHAN".equals(status))
+            return "Chờ xác nhận";
+        if ("DA_XAC_NHAN".equals(status))
+            return "Đã xác nhận";
+        if ("DA_NHAN_PHONG".equals(status))
+            return "Đã nhận phòng";
+        if ("DA_TRA_PHONG".equals(status))
+            return "Đã trả phòng";
+        if ("DA_HUY".equals(status))
+            return "Đã hủy";
+        return status == null ? "" : status;
     }
 
     private String normalize(String value) {

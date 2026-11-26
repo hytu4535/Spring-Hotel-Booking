@@ -4,11 +4,17 @@ import com.hotel.model.DatPhong;
 import com.hotel.model.ThanhToan;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.ThanhToanRepository;
+import com.hotel.repository.ChiTietDatPhongRepository;
+import com.hotel.repository.PhongRepository;
+import com.hotel.enums.TrangThaiPhong;
+import com.hotel.model.Phong;
+import com.hotel.model.ChiTietDatPhong;
 import com.hotel.util.VNPayUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +33,8 @@ public class ThanhToanService {
 
     private final ThanhToanRepository thanhToanRepository;
     private final DatPhongRepository datPhongRepository;
+    private final ChiTietDatPhongRepository chiTietDatPhongRepository;
+    private final PhongRepository phongRepository;
 
     @Value("${vnpay.tmn-code}")
     private String vnp_TmnCode;
@@ -41,13 +49,23 @@ public class ThanhToanService {
     private String vnp_ReturnUrl;
 
     public ThanhToanService(ThanhToanRepository thanhToanRepository, DatPhongRepository datPhongRepository) {
+        this(thanhToanRepository, datPhongRepository, null, null);
+    }
+
+    @Autowired
+    public ThanhToanService(ThanhToanRepository thanhToanRepository, DatPhongRepository datPhongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository,
+            PhongRepository phongRepository) {
         this.thanhToanRepository = thanhToanRepository;
         this.datPhongRepository = datPhongRepository;
+        this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.phongRepository = phongRepository;
     }
 
     // Tính tiền cọc 30% tổng tiền
     public BigDecimal calculateDepositAmount(BigDecimal totalAmount) {
-        if (totalAmount == null) return BigDecimal.ZERO;
+        if (totalAmount == null)
+            return BigDecimal.ZERO;
         return totalAmount.multiply(new BigDecimal("0.30")).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -110,20 +128,17 @@ public class ThanhToanService {
                 }
 
                 hashData.append(
-                        URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())
-                );
+                        URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString()));
                 hashData.append('=');
                 hashData.append(
-                        URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString())
-                );
+                        URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
             }
         } catch (java.io.UnsupportedEncodingException e) {
             throw new IllegalStateException("Không thể mã hóa tham số VNPay", e);
         }
 
         // Tạo chữ ký trên chính chuỗi tham số đã mã hóa
-        String vnp_SecureHash =
-                VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
+        String vnp_SecureHash = VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
 
         // Dùng cùng chuỗi tham số để tạo URL thanh toán
         String separator = vnp_PayUrl.contains("?") ? "&" : "?";
@@ -136,8 +151,7 @@ public class ThanhToanService {
     private String sanitizePaymentUrlForLog(String paymentUrl) {
         return paymentUrl.replaceAll(
                 "([?&]vnp_(SecureHash|TxnRef|Amount|IpAddr))=[^&]*",
-                "$1=[REDACTED]"
-        );
+                "$1=[REDACTED]");
     }
 
     // Xử lý kết quả trả về từ VNPay
@@ -202,10 +216,12 @@ public class ThanhToanService {
                 thanhToanRepository.save(tt);
             }
 
-            // Tự động chuyển trạng thái đơn sang Đã xác nhận khi thanh toán online thành công
+            // Tự động chuyển trạng thái đơn sang Đã xác nhận khi thanh toán online thành
+            // công
             if ("CHO_XAC_NHAN".equals(dp.getTrangThai())) {
                 dp.setTrangThai("DA_XAC_NHAN");
                 datPhongRepository.save(dp);
+                reserveRooms(dp);
             }
 
             result.put("status", "SUCCESS");
@@ -216,6 +232,29 @@ public class ThanhToanService {
         }
 
         return result;
+    }
+
+    private void reserveRooms(DatPhong booking) {
+        if (chiTietDatPhongRepository == null || phongRepository == null || booking.getMaDp() == null) {
+            return;
+        }
+        List<Integer> roomIds = chiTietDatPhongRepository.findByMaDp(booking.getMaDp()).stream()
+                .map(ChiTietDatPhong::getMaPhong)
+                .toList();
+        if (roomIds.isEmpty()) {
+            return;
+        }
+        List<Phong> rooms = phongRepository.findAllById(roomIds);
+        boolean changed = false;
+        for (Phong room : rooms) {
+            if (room.getTrangThaiPhong() == TrangThaiPhong.TRONG) {
+                room.setTrangThaiPhong(TrangThaiPhong.DA_DAT);
+                changed = true;
+            }
+        }
+        if (changed) {
+            phongRepository.saveAll(rooms);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -252,8 +291,7 @@ public class ThanhToanService {
         return thanhToanRepository.searchTransactions(
                 loaiThanhToan != null && loaiThanhToan.isEmpty() ? null : loaiThanhToan,
                 phuongThuc != null && phuongThuc.isEmpty() ? null : phuongThuc,
-                keyword
-        );
+                keyword);
     }
 
     @Transactional(readOnly = true)
@@ -274,7 +312,8 @@ public class ThanhToanService {
     }
 
     @Transactional
-    public Map<String, Object> ghiNhanThanhToanThuCong(Integer maDp, BigDecimal soTien, String loaiThanhToan, String phuongThuc, String maGiaoDich, String ghiChu, com.hotel.model.TaiKhoan currentUser) {
+    public Map<String, Object> ghiNhanThanhToanThuCong(Integer maDp, BigDecimal soTien, String loaiThanhToan,
+            String phuongThuc, String maGiaoDich, String ghiChu, com.hotel.model.TaiKhoan currentUser) {
         if (maDp == null || soTien == null || soTien.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Mã đặt phòng và số tiền thanh toán không hợp lệ.");
         }
@@ -286,7 +325,8 @@ public class ThanhToanService {
         thanhToan.setSoTien(soTien);
         thanhToan.setLoaiThanhToan(loaiThanhToan != null && !loaiThanhToan.isEmpty() ? loaiThanhToan : "THANH_TOAN_DU");
         thanhToan.setPhuongThuc(phuongThuc != null && !phuongThuc.isEmpty() ? phuongThuc : "TIEN_MAT");
-        thanhToan.setMaGiaoDich(maGiaoDich != null && !maGiaoDich.isEmpty() ? maGiaoDich : "MANUAL_" + System.currentTimeMillis());
+        thanhToan.setMaGiaoDich(
+                maGiaoDich != null && !maGiaoDich.isEmpty() ? maGiaoDich : "MANUAL_" + System.currentTimeMillis());
         thanhToan.setMaNvThu(currentUser != null ? currentUser.getMaTk() : null);
         thanhToan.setGhiChu(ghiChu != null && !ghiChu.isEmpty() ? ghiChu : "Thu tiền thủ công tại quầy");
         thanhToan.setNgayThanhToan(new Timestamp(System.currentTimeMillis()));
@@ -301,8 +341,8 @@ public class ThanhToanService {
 
     @Transactional
     public void updateManualPayment(Integer maTt, BigDecimal soTien, String loaiThanhToan,
-                                    String phuongThuc, String maGiaoDich, String ghiChu,
-                                    com.hotel.model.TaiKhoan currentUser) {
+            String phuongThuc, String maGiaoDich, String ghiChu,
+            com.hotel.model.TaiKhoan currentUser) {
         if (soTien == null || soTien.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Số tiền thanh toán phải lớn hơn 0.");
         }
@@ -322,7 +362,8 @@ public class ThanhToanService {
         thanhToan.setLoaiThanhToan(loaiThanhToan);
         thanhToan.setPhuongThuc(phuongThuc);
         thanhToan.setMaGiaoDich(maGiaoDich == null || maGiaoDich.trim().isEmpty()
-                ? thanhToan.getMaGiaoDich() : maGiaoDich.trim());
+                ? thanhToan.getMaGiaoDich()
+                : maGiaoDich.trim());
         thanhToan.setGhiChu(ghiChu == null ? "" : ghiChu.trim());
         thanhToan.setMaNvThu(currentUser == null ? thanhToan.getMaNvThu() : currentUser.getMaTk());
         thanhToanRepository.save(thanhToan);

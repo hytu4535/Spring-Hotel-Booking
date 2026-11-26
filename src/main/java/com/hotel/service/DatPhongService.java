@@ -7,6 +7,11 @@ import com.hotel.model.KhachHang;
 import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.KhachHangRepository;
+import com.hotel.repository.PhongRepository;
+import com.hotel.repository.ThanhToanRepository;
+import com.hotel.enums.TrangThaiPhong;
+import com.hotel.model.Phong;
+import com.hotel.model.ThanhToan;
 import com.hotel.util.MaTraCuuGenerator;
 import com.hotel.event.BookingConfirmationEmailEvent;
 import com.hotel.event.BookingStatusEmailEvent;
@@ -24,6 +29,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 public class DatPhongService {
@@ -35,6 +42,8 @@ public class DatPhongService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final DatDichVuService datDichVuService;
     private final ApplicationEventPublisher eventPublisher;
+    private final PhongRepository phongRepository;
+    private final ThanhToanRepository thanhToanRepository;
 
     public DatPhongService(DatPhongRepository datPhongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository,
@@ -45,7 +54,6 @@ public class DatPhongService {
                 kafkaTemplate, datDichVuService, null);
     }
 
-    @Autowired
     public DatPhongService(DatPhongRepository datPhongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository,
             KhachHangRepository khachHangRepository,
@@ -58,6 +66,26 @@ public class DatPhongService {
         this.kafkaTemplate = kafkaTemplate;
         this.datDichVuService = datDichVuService;
         this.eventPublisher = eventPublisher;
+        this.phongRepository = null;
+        this.thanhToanRepository = null;
+    }
+
+    @Autowired
+    public DatPhongService(DatPhongRepository datPhongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository,
+            KhachHangRepository khachHangRepository,
+            KafkaTemplate<String, String> kafkaTemplate,
+            DatDichVuService datDichVuService,
+            ApplicationEventPublisher eventPublisher,
+            PhongRepository phongRepository, ThanhToanRepository thanhToanRepository) {
+        this.datPhongRepository = datPhongRepository;
+        this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.khachHangRepository = khachHangRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.datDichVuService = datDichVuService;
+        this.eventPublisher = eventPublisher;
+        this.phongRepository = phongRepository;
+        this.thanhToanRepository = thanhToanRepository;
     }
 
     @Transactional
@@ -149,7 +177,6 @@ public class DatPhongService {
         String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CREATED\"}", maTraCuu,
                 khachHang.getEmail());
         publishEventAsync(message);
-        publishBookingConfirmationEmail(datPhong, khachHang);
 
         return maTraCuu;
     }
@@ -179,6 +206,8 @@ public class DatPhongService {
                 .map(dp -> {
                     dp.setTrangThai("DA_HUY");
                     datPhongRepository.save(dp);
+                    releaseBookedRooms(dp);
+                    recordRefund(dp);
                     String message = String.format(
                             "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                             dp.getMaTraCuu(), dp.getKhachHang().getEmail());
@@ -204,6 +233,8 @@ public class DatPhongService {
         DatPhong dp = booking.get();
         dp.setTrangThai("DA_HUY");
         datPhongRepository.save(dp);
+        releaseBookedRooms(dp);
+        recordRefund(dp);
         String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
                 dp.getMaTraCuu(), dp.getKhachHang().getEmail());
         publishEventAsync(message);
@@ -217,6 +248,8 @@ public class DatPhongService {
             if ("CHO_XAC_NHAN".equals(dp.getTrangThai())) {
                 dp.setTrangThai("DA_HUY");
                 datPhongRepository.save(dp);
+                releaseBookedRooms(dp);
+                recordRefund(dp);
 
                 // KAFKA INTEGRATION: Bắn event hủy đơn
                 String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
@@ -225,6 +258,62 @@ public class DatPhongService {
                 publishBookingStatusEmail(dp, "DA_HUY");
             }
         });
+    }
+
+    private void releaseBookedRooms(DatPhong booking) {
+        if (phongRepository == null) {
+            return;
+        }
+        List<Integer> roomIds = chiTietDatPhongRepository.findByMaDp(booking.getMaDp()).stream()
+                .map(ChiTietDatPhong::getMaPhong)
+                .toList();
+        if (roomIds.isEmpty()) {
+            return;
+        }
+        List<Phong> rooms = phongRepository.findAllById(roomIds);
+        boolean changed = false;
+        for (Phong room : rooms) {
+            if (room.getTrangThaiPhong() == TrangThaiPhong.DA_DAT) {
+                room.setTrangThaiPhong(TrangThaiPhong.TRONG);
+                changed = true;
+            }
+        }
+        if (changed) {
+            phongRepository.saveAll(rooms);
+        }
+    }
+
+    private void recordRefund(DatPhong booking) {
+        if (thanhToanRepository == null) {
+            return;
+        }
+        List<ThanhToan> payments = thanhToanRepository.findByDatPhong_MaDp(booking.getMaDp());
+        boolean alreadyRefunded = payments.stream()
+                .anyMatch(payment -> "HOAN_TIEN".equalsIgnoreCase(payment.getLoaiThanhToan()));
+        if (alreadyRefunded) {
+            return;
+        }
+        BigDecimal paidAmount = payments.stream()
+                .filter(payment -> !"HOAN_TIEN".equalsIgnoreCase(payment.getLoaiThanhToan()))
+                .map(ThanhToan::getSoTien)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+        ThanhToan refund = new ThanhToan();
+        refund.setDatPhong(booking);
+        refund.setSoTien(paidAmount.setScale(2, RoundingMode.HALF_UP));
+        refund.setNgayThanhToan(new Timestamp(System.currentTimeMillis()));
+        refund.setPhuongThuc(payments.stream()
+                .filter(payment -> payment.getPhuongThuc() != null)
+                .map(ThanhToan::getPhuongThuc)
+                .findFirst()
+                .orElse("TIEN_MAT"));
+        refund.setLoaiThanhToan("HOAN_TIEN");
+        refund.setMaGiaoDich("REFUND_" + booking.getMaTraCuu());
+        refund.setGhiChu("Hoàn tiền khi khách hủy đơn đặt phòng.");
+        thanhToanRepository.save(refund);
     }
 
     private void publishBookingConfirmationEmail(DatPhong booking, KhachHang customer) {

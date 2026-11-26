@@ -62,8 +62,8 @@
                     <td class="text-danger fw-semibold" th:text="${#numbers.formatDecimal(don.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                     <td>
                         <span class="badge" 
-                              th:classappend="${don.trangThai == 'CHO_XAC_NHAN' ? 'bg-warning text-dark' : (don.trangThai == 'DA_HUY' ? 'bg-secondary' : 'bg-success')}" 
-                              th:text="${don.trangThai == 'CHO_XAC_NHAN' ? 'Chờ xác nhận' : (don.trangThai == 'DA_HUY' ? 'Đã hủy' : don.trangThai)}">
+                              th:classappend="${don.trangThai == 'CHO_XAC_NHAN' ? 'bg-warning text-dark' : (don.trangThai == 'DA_HUY' ? 'bg-secondary' : (don.trangThai == 'DA_TRA_PHONG' ? 'bg-dark' : 'bg-success'))}" 
+                              th:text="${don.trangThaiLabel}">
                         </span>
                     </td>
                     <td>

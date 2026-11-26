@@ -8,12 +8,18 @@ import com.hotel.model.Phong;
 import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.PhongRepository;
+import com.hotel.repository.ThanhToanRepository;
 import com.hotel.service.DatPhongStaffService;
+import com.hotel.model.ThanhToan;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -138,5 +144,94 @@ class DatPhongStaffServiceTest {
                                 maintenanceRoom.getTrangThaiPhong());
 
                 verify(bookingRepository).save(booking);
+        }
+
+        @Test
+        void tuChoiCheckInTruocNgayNhanPhong() {
+                DatPhongRepository bookingRepository = mock(DatPhongRepository.class);
+                PhongRepository phongRepository = mock(PhongRepository.class);
+                ChiTietDatPhongRepository detailRepository = mock(ChiTietDatPhongRepository.class);
+                DatPhong booking = new DatPhong();
+                booking.setMaDp(1);
+                booking.setTrangThai("DA_XAC_NHAN");
+                booking.setNgayNhanPhong(Date.valueOf(LocalDate.now().plusDays(1)));
+                booking.setNgayTraPhong(Date.valueOf(LocalDate.now().plusDays(3)));
+                Phong room = new Phong();
+                room.setMaPhong(10);
+                room.setTrangThaiPhong(TrangThaiPhong.DA_DAT);
+                ChiTietDatPhong detail = new ChiTietDatPhong();
+                detail.setMaPhong(10);
+                when(bookingRepository.findById(1)).thenReturn(Optional.of(booking));
+                when(detailRepository.findByMaDp(1)).thenReturn(List.of(detail));
+                when(phongRepository.findAllById(List.of(10))).thenReturn(List.of(room));
+                DatPhongStaffService service = new DatPhongStaffService(
+                                bookingRepository, phongRepository, detailRepository);
+                assertFalse(service.updateTrangThaiTransaction(1, "DA_NHAN_PHONG", 5));
+                verify(bookingRepository, never()).save(any());
+        }
+
+        @Test
+        void ghiNhanHoanTienKhiHuyDonDaThanhToan() {
+                DatPhongRepository bookingRepository = mock(DatPhongRepository.class);
+                PhongRepository phongRepository = mock(PhongRepository.class);
+                ChiTietDatPhongRepository detailRepository = mock(ChiTietDatPhongRepository.class);
+                ThanhToanRepository thanhToanRepository = mock(ThanhToanRepository.class);
+
+                DatPhong booking = new DatPhong();
+                booking.setMaDp(1);
+                booking.setMaTraCuu("ABC12345");
+                booking.setTrangThai("CHO_XAC_NHAN");
+
+                ChiTietDatPhong detail = new ChiTietDatPhong();
+                detail.setMaPhong(10);
+                Phong room = new Phong();
+                room.setMaPhong(10);
+                room.setTrangThaiPhong(TrangThaiPhong.DA_DAT);
+                ThanhToan payment = new ThanhToan();
+                payment.setSoTien(new BigDecimal("300000"));
+                payment.setLoaiThanhToan("DAT_COC");
+                payment.setPhuongThuc("VNPAY");
+
+                when(bookingRepository.findById(1)).thenReturn(Optional.of(booking));
+                when(detailRepository.findByMaDp(1)).thenReturn(List.of(detail));
+                when(phongRepository.findAllById(List.of(10))).thenReturn(List.of(room));
+                when(thanhToanRepository.findByDatPhong_MaDp(1)).thenReturn(List.of(payment));
+
+                DatPhongStaffService service = new DatPhongStaffService(
+                                bookingRepository, phongRepository, detailRepository,
+                                thanhToanRepository, null);
+
+                assertTrue(service.updateTrangThaiTransaction(1, "DA_HUY", 5));
+                assertEquals(TrangThaiPhong.TRONG, room.getTrangThaiPhong());
+                verify(thanhToanRepository).save(argThat(refund -> "HOAN_TIEN".equals(refund.getLoaiThanhToan())
+                                && refund.getSoTien().compareTo(new BigDecimal("300000")) == 0));
+        }
+
+        @Test
+        void tuChoiCheckOutTruocNgayNhanPhong() {
+                DatPhongRepository bookingRepository = mock(DatPhongRepository.class);
+                PhongRepository phongRepository = mock(PhongRepository.class);
+                ChiTietDatPhongRepository detailRepository = mock(ChiTietDatPhongRepository.class);
+
+                DatPhong booking = new DatPhong();
+                booking.setMaDp(1);
+                booking.setTrangThai("DA_NHAN_PHONG");
+                booking.setNgayNhanPhong(Date.valueOf(LocalDate.now().plusDays(1)));
+
+                Phong room = new Phong();
+                room.setMaPhong(10);
+                room.setTrangThaiPhong(TrangThaiPhong.DANG_O);
+                ChiTietDatPhong detail = new ChiTietDatPhong();
+                detail.setMaPhong(10);
+
+                when(bookingRepository.findById(1)).thenReturn(Optional.of(booking));
+                when(detailRepository.findByMaDp(1)).thenReturn(List.of(detail));
+                when(phongRepository.findAllById(List.of(10))).thenReturn(List.of(room));
+
+                DatPhongStaffService service = new DatPhongStaffService(
+                                bookingRepository, phongRepository, detailRepository);
+
+                assertFalse(service.updateTrangThaiTransaction(1, "DA_TRA_PHONG", 5));
+                verify(bookingRepository, never()).save(any());
         }
 }
