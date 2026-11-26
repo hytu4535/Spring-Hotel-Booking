@@ -12,8 +12,6 @@ public interface LoaiPhongRepository extends JpaRepository<LoaiPhong, Integer> {
 
     boolean existsByTenLoaiIgnoreCaseAndMaLoaiNot(String tenLoai, Integer maLoai);
 
-    Optional<LoaiPhong> findByTenLoai(String tenLoai);
-
     List<LoaiPhong> findByTenLoaiIgnoreCase(String tenLoai);
 
     List<LoaiPhong> findAllByDaXoaFalse();
