@@ -1,23 +1,246 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ khách hàng</title>
+
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+
+<body>
+
 <div th:replace="~{common/header :: header}"></div>
-<main class="container py-5">
-    <div class="row justify-content-center"><div class="col-lg-7">
-        <div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5">
-            <h1 class="h3 mb-4"><i class="bi bi-person-circle text-primary me-2"></i>Hồ sơ khách hàng</h1>
-            <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
-            <div class="alert alert-danger" th:if="${globalError}" th:text="${globalError}"></div>
-            <form th:action="@{/customer/profile}" th:object="${profile}" method="post">
-                <div class="mb-3"><label class="form-label">Họ tên</label><input th:field="*{hoTen}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Email</label><input th:field="*{email}" type="email" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Số điện thoại</label><input th:field="*{soDienThoai}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">CCCD</label><input th:field="*{cccd}" class="form-control"></div>
-                <div class="mb-4"><label class="form-label">Địa chỉ</label><input th:field="*{diaChi}" class="form-control"></div>
-                <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>Lưu thay đổi</button>
-                <a class="btn btn-outline-secondary ms-2" th:href="@{/}">Về trang chủ</a>
-            </form>
-        </div></div>
-    </div></div>
+
+<main class="site-main section-space profile-page">
+
+    <div class="container">
+
+        <!-- TIÊU ĐỀ -->
+        <div class="text-center mb-5 reveal">
+
+            <p class="hero-kicker">My Account</p>
+
+            <h1 class="section-title">
+                Hồ sơ khách hàng
+            </h1>
+
+            <p class="section-subtitle">
+                Quản lý thông tin cá nhân để thuận tiện hơn trong quá trình đặt phòng và lưu trú.
+            </p>
+
+        </div>
+
+        <div class="row justify-content-center">
+
+            <div class="col-lg-9 col-xl-8">
+
+                <section class="profile-card reveal">
+
+                    <!-- HEADER CARD -->
+                    <div class="profile-card-header">
+
+                        <div class="profile-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+
+                        <div>
+                            <h4 class="mb-1">Thông tin cá nhân</h4>
+
+                            <p class="text-muted small mb-0">
+                                Cập nhật thông tin liên hệ và thông tin khách hàng của bạn.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- BODY CARD -->
+                    <div class="profile-card-body">
+
+                        <!-- THÔNG BÁO THÀNH CÔNG -->
+                        <div class="alert alert-success d-flex align-items-center gap-2"
+                             th:if="${success}">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <span th:text="${success}"></span>
+
+                        </div>
+
+                        <!-- THÔNG BÁO LỖI -->
+                        <div class="alert alert-danger d-flex align-items-center gap-2"
+                             th:if="${globalError}">
+
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+
+                            <span th:text="${globalError}"></span>
+
+                        </div>
+
+                        <!-- FORM -->
+                        <form th:action="@{/customer/profile}"
+                              th:object="${profile}"
+                              method="post">
+
+                            <div class="row g-4">
+
+                                <!-- HỌ TÊN -->
+                                <div class="col-md-6">
+
+                                    <label for="hoTen" class="form-label">
+                                        Họ và tên
+                                    </label>
+
+                                    <div class="profile-input-wrapper">
+
+                                        <i class="bi bi-person"></i>
+
+                                        <input
+                                                id="hoTen"
+                                                th:field="*{hoTen}"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Nhập họ và tên">
+
+                                    </div>
+
+                                </div>
+
+                                <!-- EMAIL -->
+                                <div class="col-md-6">
+
+                                    <label for="email" class="form-label">
+                                        Email
+                                    </label>
+
+                                    <div class="profile-input-wrapper">
+
+                                        <i class="bi bi-envelope"></i>
+
+                                        <input
+                                                id="email"
+                                                th:field="*{email}"
+                                                type="email"
+                                                class="form-control"
+                                                placeholder="example@email.com">
+
+                                    </div>
+
+                                </div>
+
+                                <!-- SỐ ĐIỆN THOẠI -->
+                                <div class="col-md-6">
+
+                                    <label for="soDienThoai" class="form-label">
+                                        Số điện thoại
+                                    </label>
+
+                                    <div class="profile-input-wrapper">
+
+                                        <i class="bi bi-telephone"></i>
+
+                                        <input
+                                                id="soDienThoai"
+                                                th:field="*{soDienThoai}"
+                                                type="tel"
+                                                class="form-control"
+                                                placeholder="Nhập số điện thoại">
+
+                                    </div>
+
+                                </div>
+
+                                <!-- CCCD -->
+                                <div class="col-md-6">
+
+                                    <label for="cccd" class="form-label">
+                                        Căn cước công dân
+                                    </label>
+
+                                    <div class="profile-input-wrapper">
+
+                                        <i class="bi bi-credit-card-2-front"></i>
+
+                                        <input
+                                                id="cccd"
+                                                th:field="*{cccd}"
+                                                type="text"
+                                                class="form-control"
+                                                placeholder="Nhập số CCCD">
+
+                                    </div>
+
+                                </div>
+
+                                <!-- ĐỊA CHỈ -->
+                                <div class="col-12">
+
+                                    <label for="diaChi" class="form-label">
+                                        Địa chỉ
+                                    </label>
+
+                                    <div class="profile-input-wrapper">
+
+                                        <i class="bi bi-geo-alt"></i>
+
+                                        <input
+                                                id="diaChi"
+                                                th:field="*{diaChi}"
+                                                type="text"
+                                                class="form-control"
+                                                placeholder="Nhập địa chỉ liên hệ">
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- BUTTON -->
+                            <div class="profile-actions">
+
+                                <button type="submit" class="btn btn-cta">
+
+                                    <i class="bi bi-check2-circle me-2"></i>
+                                    Lưu thay đổi
+
+                                </button>
+
+                                <a th:href="@{/}" class="btn btn-outline-dark">
+
+                                    <i class="bi bi-house-door me-2"></i>
+                                    Về trang chủ
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+                <!-- GHI CHÚ -->
+                <div class="profile-note text-center mt-4">
+
+                    <i class="bi bi-shield-check me-1"></i>
+
+                    Thông tin cá nhân của bạn được sử dụng để hỗ trợ quá trình đặt phòng và lưu trú.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </main>
+
 <div th:replace="~{common/footer :: footer}"></div>
+
+</body>
 </html>
