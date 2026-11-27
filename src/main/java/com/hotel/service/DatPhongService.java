@@ -1,5 +1,6 @@
 package com.hotel.service;
 
+import com.google.gson.JsonObject;
 import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.CartServiceItem;
 import com.hotel.model.DatPhong;
@@ -15,8 +16,11 @@ import com.hotel.model.ThanhToan;
 import com.hotel.util.MaTraCuuGenerator;
 import com.hotel.event.BookingConfirmationEmailEvent;
 import com.hotel.event.BookingStatusEmailEvent;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -172,11 +176,7 @@ public class DatPhongService {
         datDichVuService.addCartServices(savedDp.getMaDp(), danhSachDichVu,
                 savedDp.getNgayNhanPhong());
 
-        // 4. KAFKA INTEGRATION: Bắn event thông báo tạo đơn thành công (Huyy sẽ dùng để
-        // gửi mail)
-        String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CREATED\"}", maTraCuu,
-                khachHang.getEmail());
-        publishEventAsync(message);
+        publishBookingEvent(savedDp, "CREATED", khachHang.getEmail());
 
         return maTraCuu;
     }
@@ -208,11 +208,7 @@ public class DatPhongService {
                     datPhongRepository.save(dp);
                     releaseBookedRooms(dp);
                     recordRefund(dp);
-                    String message = String.format(
-                            "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
-                            dp.getMaTraCuu(), dp.getKhachHang().getEmail());
-                    publishEventAsync(message);
-                    publishBookingStatusEmail(dp, "DA_HUY");
+                    publishBookingEvent(dp, "CANCELED");
                     return true;
                 }).orElse(false);
     }
@@ -223,7 +219,7 @@ public class DatPhongService {
         if (customer.isEmpty()) {
             return false;
         }
-        Optional<DatPhong> booking = datPhongRepository.findById(maDp);
+        Optional<DatPhong> booking = datPhongRepository.findByIdForUpdate(maDp);
         if (booking.isEmpty()
                 || booking.get().getKhachHang() == null
                 || !Objects.equals(booking.get().getKhachHang().getMaKh(), customer.get().getMaKh())
@@ -235,10 +231,7 @@ public class DatPhongService {
         datPhongRepository.save(dp);
         releaseBookedRooms(dp);
         recordRefund(dp);
-        String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
-                dp.getMaTraCuu(), dp.getKhachHang().getEmail());
-        publishEventAsync(message);
-        publishBookingStatusEmail(dp, "DA_HUY");
+        publishBookingEvent(dp, "CANCELED");
         return true;
     }
 
@@ -251,11 +244,7 @@ public class DatPhongService {
                 releaseBookedRooms(dp);
                 recordRefund(dp);
 
-                // KAFKA INTEGRATION: Bắn event hủy đơn
-                String message = String.format("{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
-                        dp.getMaTraCuu(), dp.getKhachHang().getEmail());
-                publishEventAsync(message);
-                publishBookingStatusEmail(dp, "DA_HUY");
+                publishBookingEvent(dp, "CANCELED");
             }
         });
     }
@@ -329,19 +318,6 @@ public class DatPhongService {
                 formatAmount(booking.getTongTien())));
     }
 
-    private void publishBookingStatusEmail(DatPhong booking, String status) {
-        if (eventPublisher == null || booking == null || booking.getKhachHang() == null) {
-            return;
-        }
-        KhachHang customer = booking.getKhachHang();
-        eventPublisher.publishEvent(new BookingStatusEmailEvent(
-                customer.getEmail(),
-                customer.getHoTen(),
-                booking.getMaTraCuu(),
-                status,
-                statusLabel(status)));
-    }
-
     private String formatDate(java.sql.Date date) {
         return date == null ? "" : date.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
@@ -350,23 +326,38 @@ public class DatPhongService {
         return amount == null ? "0 VNĐ" : amount.toPlainString() + " VNĐ";
     }
 
-    private String statusLabel(String status) {
-        if ("DA_HUY".equals(status)) {
-            return "Đã hủy";
-        }
-        if ("DA_XAC_NHAN".equals(status)) {
-            return "Đã xác nhận";
-        }
-        return status;
+    private void publishBookingEvent(DatPhong booking, String action) {
+        publishBookingEvent(booking, action,
+                booking == null || booking.getKhachHang() == null ? null : booking.getKhachHang().getEmail());
     }
 
-    private void publishEventAsync(String message) {
-        CompletableFuture.runAsync(() -> {
+    private void publishBookingEvent(DatPhong booking, String action, String email) {
+        if (booking == null || email == null) {
+            return;
+        }
+        JsonObject event = new JsonObject();
+        event.addProperty("maTraCuu", booking.getMaTraCuu());
+        event.addProperty("email", email);
+        event.addProperty("action", action);
+        String message = event.toString();
+        Runnable publish = () -> {
             try {
-                kafkaTemplate.send("booking_events", message);
+                kafkaTemplate.send("booking_events", message)
+                        .addCallback(result -> {
+                        }, ex -> log.error("Không thể gửi sự kiện booking_events.", ex));
             } catch (RuntimeException ex) {
-                log.warn("Không thể gửi sự kiện booking_events; không làm ảnh hưởng nghiệp vụ đặt phòng.", ex);
+                log.error("Không thể gửi sự kiện booking_events.", ex);
             }
-        });
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    publish.run();
+                }
+            });
+        } else {
+            publish.run();
+        }
     }
 }
