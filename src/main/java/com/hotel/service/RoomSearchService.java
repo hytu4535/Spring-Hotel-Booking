@@ -51,4 +51,22 @@ public class RoomSearchService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PhongTrongDTO> findAll(int soKhach) {
+        return findAll().stream()
+                .filter(room -> room.getSucChua() >= soKhach)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PhongTrongDTO> findAvailable(
+            Date checkIn,
+            Date checkOut,
+            int soKhach
+    ) {
+        return findAvailable(checkIn, checkOut).stream()
+                .filter(room -> room.getSucChua() >= soKhach)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -1,76 +1,355 @@
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:inline="text">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết phòng</title>
+
+    <link rel="stylesheet" th:href="@{/css/room-detail.css}">
+</head>
+
+<body>
+
 <div th:replace="~{common/header :: header}"></div>
 
+<!-- TIÊU ĐỀ -->
 <section class="page-hero">
     <div class="container">
+        <p class="hero-kicker">Room Details</p>
+
         <h1>Chi tiết phòng lưu trú</h1>
-        <p class="mb-0">Xem đầy đủ thông tin không gian, tiện nghi và giá phòng trước khi đặt.</p>
+
+        <p class="mb-0">
+            Khám phá không gian, tiện nghi và lựa chọn căn phòng phù hợp cho kỳ nghỉ của bạn.
+        </p>
     </div>
 </section>
 
-<section class="container pb-5">
+<main class="container room-detail-page pb-5">
+
+    <!-- CÓ THÔNG TIN PHÒNG -->
     <th:block th:if="${phong != null}">
-        <div class="row g-4">
+
+        <div class="row g-4 align-items-start">
+
+            <!-- CỘT HÌNH ẢNH -->
             <div class="col-lg-7">
-                <div class="detail-card p-3 p-lg-4">
-                    <img class="detail-image-main mb-3"
-                         th:src="${phong.hinhAnh != null and !phong.hinhAnh.isBlank() ? phong.hinhAnh : '/images/rooms/FamilyPremiumSuites/Room_2%20%2810%29a_612902bc62e8d.jpeg'}"
-                         alt="Ảnh phòng">
-                    <div class="row g-2">
-                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/BlossomSuite/Room_6 (1)a_6129022b42612.jpeg}" alt="Không gian 1"></div>
-                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/SignatureSuites/Room_3 (5)a_6129005564f1a.jpeg}" alt="Không gian 2"></div>
-                        <div class="col-4"><img class="detail-thumb" th:src="@{/images/rooms/SkyCornerSuites/Room_1 (11)a_612901bc90d8e.jpeg}" alt="Không gian 3"></div>
+
+                <section class="room-gallery-card reveal">
+
+                    <div class="room-gallery-main">
+
+                        <img
+                                class="room-detail-image"
+                                th:src="${phong.hinhAnh != null and !phong.hinhAnh.isBlank()
+                                ? phong.hinhAnh
+                                : '/images/rooms/FamilyPremiumSuites/Room_2%20%2810%29a_612902bc62e8d.jpeg'}"
+                                th:alt="'Phòng ' + ${phong.soPhong}">
+
+                        <div class="room-gallery-overlay">
+                            <span>
+                                <i class="bi bi-stars me-1"></i>
+                                Không gian lưu trú
+                            </span>
+                        </div>
+
                     </div>
-                </div>
+
+                    <!-- ẢNH BỔ SUNG -->
+                    <div class="room-gallery-thumbnails">
+
+                        <div>
+                            <img
+                                    th:src="@{/images/rooms/BlossomSuite/Room_6 (1)a_6129022b42612.jpeg}"
+                                    alt="Không gian phòng ngủ">
+                        </div>
+
+                        <div>
+                            <img
+                                    th:src="@{/images/rooms/SignatureSuites/Room_3 (5)a_6129005564f1a.jpeg}"
+                                    alt="Không gian nội thất">
+                        </div>
+
+                        <div>
+                            <img
+                                    th:src="@{/images/rooms/SkyCornerSuites/Room_1 (11)a_612901bc90d8e.jpeg}"
+                                    alt="Không gian phòng nghỉ">
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- MÔ TẢ PHÒNG -->
+                <section class="room-description-card mt-4 reveal">
+
+                    <p class="hero-kicker mb-2">
+                        About This Room
+                    </p>
+
+                    <h4 class="fw-bold mb-3">
+                        Không gian nghỉ dưỡng
+                    </h4>
+
+                    <p class="text-muted mb-0"
+                       th:text="${phong.moTa != null and !phong.moTa.isBlank()
+                           ? phong.moTa
+                           : 'Phòng được thiết kế tối ưu công năng, mang lại cảm giác thoải mái và riêng tư cho suốt thời gian lưu trú.'}">
+                    </p>
+
+                </section>
+
             </div>
+
+            <!-- CỘT THÔNG TIN -->
             <div class="col-lg-5">
-                <aside class="detail-card p-4 h-100">
-                    <p class="text-uppercase text-muted mb-2">Room information</p>
-                    <h2 class="mb-2">Phòng [[${phong.soPhong}]] - [[${phong.tenLoai}]]</h2>
-                    <p class="text-muted mb-4" th:text="${phong.moTa != null and !phong.moTa.isBlank() ? phong.moTa : 'Phòng được thiết kế tối ưu công năng, mang lại cảm giác thoải mái và riêng tư cho suốt thời gian lưu trú.'}"></p>
 
-                    <div class="d-flex justify-content-between border-top border-bottom py-2 mb-2">
-                        <span>Tầng</span>
-                        <strong>[[${phong.tang}]]</strong>
+                <aside class="room-detail-booking-card reveal"
+                       th:with="
+                            giaPhongRutGon=${phong.giaPhong.stripTrailingZeros()},
+                            scaleGiaPhong=${phong.giaPhong.stripTrailingZeros().scale() > 0
+                                ? phong.giaPhong.stripTrailingZeros().scale() : 0}
+                       ">
+
+                    <!-- HEADER -->
+                    <div class="room-detail-header">
+
+                        <p class="hero-kicker mb-2">
+                            Room Information
+                        </p>
+
+                        <h2>
+                            Phòng <span th:text="${phong.soPhong}"></span>
+                        </h2>
+
+                        <p class="room-detail-type mb-0"
+                           th:text="${phong.tenLoai}">
+                        </p>
+
                     </div>
-                    <div class="d-flex justify-content-between border-bottom py-2 mb-2">
-                        <span>Sức chứa</span>
-                        <strong>[[${phong.sucChua}]] khách</strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom py-2 mb-3">
-                        <span>Diện tích</span>
-                        <strong>[[${phong.dienTich}]] m²</strong>
-                    </div>
 
-                    <p class="mb-4"><span class="price-tag" th:text="${#numbers.formatDecimal(phong.giaPhong, 1, 2)}"></span> <span class="price-unit">/ đêm</span></p>
+                    <!-- THÔNG TIN -->
+                    <div class="room-detail-body">
 
-                    <div class="d-flex flex-column gap-2">
-                        <a class="btn btn-outline-dark"
-                           th:href="@{/tim-phong(ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">Quay lại danh sách</a>
+                        <div class="room-detail-features">
 
-                        <th:block th:if="${ngayNhan != null and ngayTra != null}">
-                            <form th:action="@{/gio-hang}" method="post">
-                                <input type="hidden" name="maPhong" th:value="${phong.maPhong}">
-                                <input type="hidden" name="soPhong" th:value="${phong.soPhong}">
-                                <input type="hidden" name="tenLoai" th:value="${phong.tenLoai}">
-                                <input type="hidden" name="giaPhong" th:value="${phong.giaPhong}">
-                                <input type="hidden" name="ngayNhan" th:value="${ngayNhan}">
-                                <input type="hidden" name="ngayTra" th:value="${ngayTra}">
-                                <button type="submit" class="btn btn-cta w-100">Thêm vào giỏ đặt phòng</button>
+                            <div class="room-feature-item">
+
+                                <div class="room-feature-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+
+                                <div>
+                                    <span>Tầng</span>
+                                    <strong th:text="${phong.tang}"></strong>
+                                </div>
+
+                            </div>
+
+                            <div class="room-feature-item">
+
+                                <div class="room-feature-icon">
+                                    <i class="bi bi-people"></i>
+                                </div>
+
+                                <div>
+                                    <span>Sức chứa</span>
+                                    <strong>
+                                        <span th:text="${phong.sucChua}"></span> khách
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                            <div class="room-feature-item">
+
+                                <div class="room-feature-icon">
+                                    <i class="bi bi-aspect-ratio"></i>
+                                </div>
+
+                                <div>
+                                    <span>Diện tích</span>
+                                    <strong>
+                                        <span th:text="${phong.dienTich}"></span> m²
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- GIÁ PHÒNG -->
+                        <div class="room-detail-price">
+
+                            <span class="room-price-label">
+                                Giá phòng mỗi đêm
+                            </span>
+
+                            <div class="room-price-value">
+
+                                <strong
+                                        th:text="${#numbers.formatDecimal(
+                                        giaPhongRutGon,
+                                        1,
+                                        'POINT',
+                                        scaleGiaPhong,
+                                        'COMMA'
+                                    )}">
+                                </strong>
+
+                                <span>VNĐ / đêm</span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- THÔNG TIN THỜI GIAN -->
+                        <div class="room-selected-dates"
+                             th:if="${ngayNhan != null and ngayTra != null}">
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Thời gian lưu trú
+                            </h6>
+
+                            <div class="d-flex justify-content-between mb-2">
+
+                                <span class="text-muted">
+                                    Ngày nhận phòng
+                                </span>
+
+                                <strong th:text="${ngayNhan}"></strong>
+
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+
+                                <span class="text-muted">
+                                    Ngày trả phòng
+                                </span>
+
+                                <strong th:text="${ngayTra}"></strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- NÚT CHỨC NĂNG -->
+                        <div class="room-detail-actions">
+
+                            <a class="btn btn-outline-dark w-100"
+                               th:href="@{/tim-phong(ngayNhan=${ngayNhan},ngayTra=${ngayTra})}">
+
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Quay lại danh sách phòng
+
+                            </a>
+
+                            <!-- ĐÃ CHỌN NGÀY -->
+                            <form
+                                    th:if="${ngayNhan != null and ngayTra != null}"
+                                    th:action="@{/gio-hang}"
+                                    method="post">
+
+                                <input type="hidden"
+                                       name="maPhong"
+                                       th:value="${phong.maPhong}">
+
+                                <input type="hidden"
+                                       name="soPhong"
+                                       th:value="${phong.soPhong}">
+
+                                <input type="hidden"
+                                       name="tenLoai"
+                                       th:value="${phong.tenLoai}">
+
+                                <input type="hidden"
+                                       name="giaPhong"
+                                       th:value="${phong.giaPhong}">
+
+                                <input type="hidden"
+                                       name="ngayNhan"
+                                       th:value="${ngayNhan}">
+
+                                <input type="hidden"
+                                       name="ngayTra"
+                                       th:value="${ngayTra}">
+
+                                <button type="submit"
+                                        class="btn btn-cta w-100 py-3">
+
+                                    <i class="bi bi-cart-plus me-2"></i>
+                                    Thêm vào giỏ đặt phòng
+
+                                </button>
+
                             </form>
-                        </th:block>
+
+                            <!-- CHƯA CHỌN NGÀY -->
+                            <a
+                                    th:unless="${ngayNhan != null and ngayTra != null}"
+                                    th:href="@{/tim-phong}"
+                                    class="btn btn-cta w-100 py-3">
+
+                                <i class="bi bi-calendar-plus me-2"></i>
+                                Chọn ngày đặt phòng
+
+                            </a>
+
+                        </div>
+
+                        <!-- CAM KẾT -->
+                        <div class="room-detail-note">
+
+                            <i class="bi bi-shield-check"></i>
+
+                            <span>
+                                Thông tin phòng và giá được cung cấp minh bạch.
+                            </span>
+
+                        </div>
+
                     </div>
-                </div>
+
+                </aside>
+
             </div>
+
         </div>
+
     </th:block>
 
-    <th:block th:if="${phong == null}">
-        <div class="alert alert-warning">Không tìm thấy thông tin phòng.</div>
-        <a class="btn btn-outline-dark" th:href="@{/tim-phong}">Quay lại</a>
-    </th:block>
-</section>
+    <!-- KHÔNG TÌM THẤY PHÒNG -->
+    <section th:if="${phong == null}"
+             class="room-not-found">
+
+        <div class="room-not-found-icon">
+            <i class="bi bi-building-x"></i>
+        </div>
+
+        <h4 class="fw-bold mb-2">
+            Không tìm thấy thông tin phòng
+        </h4>
+
+        <p class="text-muted mb-4">
+            Phòng có thể không tồn tại hoặc thông tin đã thay đổi.
+            Vui lòng quay lại danh sách để lựa chọn phòng khác.
+        </p>
+
+        <a class="btn btn-cta px-4" th:href="@{/tim-phong}">
+
+            <i class="bi bi-arrow-left me-2"></i>
+            Quay lại danh sách phòng
+
+        </a>
+
+    </section>
+
+</main>
 
 <div th:replace="~{common/footer :: footer}"></div>
+
+</body>
 </html>

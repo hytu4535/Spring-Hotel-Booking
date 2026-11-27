@@ -1,127 +1,620 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ phòng đã chọn</title>
+
+    <link rel="stylesheet" th:href="@{/css/cart.css}">
+</head>
+
+<body>
+
 <div th:replace="~{common/header :: header}"></div>
-<main class="container py-5">
-    <h1 class="h2 mb-4">Giỏ phòng đã chọn</h1>
-    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
-    <div th:if="${session.cart == null || session.cart.items.empty}" class="card border-0 shadow-sm">
-        <div class="card-body text-center py-5">
-            <i class="bi bi-cart-x display-4 text-muted"></i>
-            <p class="lead mt-3">Giỏ hàng đang trống.</p>
-            <a class="btn btn-primary" th:href="@{/tim-phong}">Tìm phòng ngay</a>
-        </div>
+
+<!-- TIÊU ĐỀ TRANG -->
+<section class="page-hero">
+    <div class="container">
+        <p class="hero-kicker">Your Reservation</p>
+
+        <h1>Giỏ phòng đã chọn</h1>
+
+        <p class="mb-0">
+            Kiểm tra phòng, lựa chọn dịch vụ và xem lại chi phí trước khi hoàn tất đặt phòng.
+        </p>
     </div>
-    <div th:if="${session.cart != null && !session.cart.items.empty}" class="row g-4">
+</section>
+
+<main class="container cart-page pb-5">
+
+    <!-- THÔNG BÁO LỖI -->
+    <div class="alert alert-danger mb-4"
+         th:if="${error}"
+         th:text="${error}">
+    </div>
+
+    <!-- GIỎ HÀNG TRỐNG -->
+    <section class="cart-empty soft-card"
+             th:if="${session.cart == null or #lists.isEmpty(session.cart.items)}">
+
+        <div class="cart-empty-icon">
+            <i class="bi bi-cart-x"></i>
+        </div>
+
+        <h3 class="fw-bold mb-2">
+            Giỏ phòng của bạn đang trống
+        </h3>
+
+        <p class="text-muted mb-4">
+            Hãy khám phá danh sách phòng và lựa chọn không gian lưu trú phù hợp.
+        </p>
+
+        <a class="btn btn-cta px-4" th:href="@{/tim-phong}">
+            <i class="bi bi-search me-2"></i>
+            Khám phá phòng ngay
+        </a>
+
+    </section>
+
+    <!-- GIỎ HÀNG CÓ PHÒNG -->
+    <div th:if="${session.cart != null and !#lists.isEmpty(session.cart.items)}"
+         class="row g-4">
+
+        <!-- CỘT BÊN TRÁI -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h2 class="h5">Thời gian lưu trú</h2>
-                    <form method="post" th:action="@{/gio-hang}" class="row g-3 align-items-end">
-                        <input type="hidden" name="action" value="update-dates">
+
+            <!-- THỜI GIAN LƯU TRÚ -->
+            <section class="cart-panel mb-4">
+
+                <div class="cart-panel-header">
+                    <div class="cart-section-icon">
+                        <i class="bi bi-calendar-range"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="mb-1">Thời gian lưu trú</h4>
+
+                        <p class="text-muted small mb-0">
+                            Điều chỉnh ngày nhận và trả phòng của bạn.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="cart-panel-body">
+
+                    <form method="post"
+                          th:action="@{/gio-hang}"
+                          class="row g-3 align-items-end">
+
+                        <input type="hidden"
+                               name="action"
+                               value="update-dates">
+
                         <div class="col-md-5">
-                            <label class="form-label">Ngày nhận phòng</label>
-                            <input type="date" name="ngayNhan" class="form-control"
-                                   th:value="${session.cart.ngayNhan}" required>
+
+                            <label class="form-label" for="ngayNhan">
+                                Ngày nhận phòng
+                            </label>
+
+                            <input
+                                    type="date"
+                                    id="ngayNhan"
+                                    name="ngayNhan"
+                                    class="form-control"
+                                    th:value="${session.cart.ngayNhan}"
+                                    required>
+
                         </div>
+
                         <div class="col-md-5">
-                            <label class="form-label">Ngày trả phòng</label>
-                            <input type="date" name="ngayTra" class="form-control"
-                                   th:value="${session.cart.ngayTra}" required>
+
+                            <label class="form-label" for="ngayTra">
+                                Ngày trả phòng
+                            </label>
+
+                            <input
+                                    type="date"
+                                    id="ngayTra"
+                                    name="ngayTra"
+                                    class="form-control"
+                                    th:value="${session.cart.ngayTra}"
+                                    required>
+
                         </div>
+
                         <div class="col-md-2">
-                            <button class="btn btn-outline-primary w-100" type="submit">Cập nhật</button>
+
+                            <button type="submit"
+                                    class="btn btn-cta w-100">
+
+                                Cập nhật
+
+                            </button>
+
                         </div>
+
                     </form>
+
+                    <div class="cart-date-summary mt-4">
+
+                        <div>
+                            <span class="cart-date-label">Số đêm lưu trú</span>
+
+                            <strong>
+                                <span th:text="${session.cart.soDem}"></span> đêm
+                            </strong>
+                        </div>
+
+                        <i class="bi bi-moon-stars"></i>
+
+                    </div>
+
                 </div>
-            </div>
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead><tr><th>Phòng</th><th>Loại phòng</th><th>Đơn giá</th><th>Thành tiền</th><th></th></tr></thead>
-                        <tbody>
-                        <tr th:each="item : ${session.cart.items}">
-                            <td class="fw-semibold" th:text="${item.soPhong}"></td>
-                            <td th:text="${item.tenLoai}"></td>
-                            <td th:text="${item.giaPhong}"></td>
-                            <td class="text-primary fw-semibold" th:text="${item.thanhTien}"></td>
-                            <td><a class="btn btn-sm btn-outline-danger"
-                                   th:href="@{/gio-hang(action='remove',maPhong=${item.maPhong})}">
-                                <i class="bi bi-trash"></i>
-                            </a></td>
-                        </tr>
-                        </tbody>
-                    </table>
+
+            </section>
+
+            <!-- DANH SÁCH PHÒNG -->
+            <section class="cart-panel mb-4">
+
+                <div class="cart-panel-header">
+
+                    <div class="cart-section-icon">
+                        <i class="bi bi-door-open"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="mb-1">Phòng đã chọn</h4>
+
+                        <p class="text-muted small mb-0">
+                            Kiểm tra thông tin và chi phí từng phòng.
+                        </p>
+                    </div>
+
                 </div>
-            </div>
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-body">
-                    <h2 class="h5">Dịch vụ phát sinh</h2>
-                    <form method="post" th:action="@{/gio-hang}" class="row g-2 align-items-end mb-3">
-                        <input type="hidden" name="action" value="add-service">
+
+                <div class="cart-panel-body">
+
+                    <div th:each="item : ${session.cart.items}"
+                         th:with="
+                            giaPhongRutGon=${item.giaPhong.stripTrailingZeros()},
+                            scaleGiaPhong=${item.giaPhong.stripTrailingZeros().scale() > 0
+                                ? item.giaPhong.stripTrailingZeros().scale() : 0},
+                            thanhTienRutGon=${item.thanhTien.stripTrailingZeros()},
+                            scaleThanhTien=${item.thanhTien.stripTrailingZeros().scale() > 0
+                                ? item.thanhTien.stripTrailingZeros().scale() : 0}
+                         "
+                         class="cart-room-item">
+
+                        <div class="cart-room-info">
+
+                            <div class="cart-room-icon">
+                                <i class="bi bi-door-closed"></i>
+                            </div>
+
+                            <div class="flex-grow-1">
+
+                                <h5 class="fw-bold mb-1">
+                                    Phòng <span th:text="${item.soPhong}"></span>
+                                </h5>
+
+                                <p class="text-muted small mb-2"
+                                   th:text="${item.tenLoai}">
+                                </p>
+
+                                <div class="cart-room-price">
+
+                                    <span class="text-muted small">
+                                        Đơn giá:
+                                    </span>
+
+                                    <strong
+                                            th:text="${#numbers.formatDecimal(
+                                            giaPhongRutGon,
+                                            1,
+                                            'POINT',
+                                            scaleGiaPhong,
+                                            'COMMA'
+                                        )} + ' đ / đêm'">
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                            <a class="cart-remove-btn"
+                               th:href="@{/gio-hang(action='remove',maPhong=${item.maPhong})}"
+                               title="Xóa phòng"
+                               onclick="return confirm('Bạn có chắc muốn xóa phòng này khỏi giỏ hàng?');">
+
+                                <i class="bi bi-trash3"></i>
+
+                            </a>
+
+                        </div>
+
+                        <div class="cart-room-total">
+
+                            <span class="text-muted small">
+                                Thành tiền
+                            </span>
+
+                            <strong
+                                    th:text="${#numbers.formatDecimal(
+                                    thanhTienRutGon,
+                                    1,
+                                    'POINT',
+                                    scaleThanhTien,
+                                    'COMMA'
+                                )} + ' đ'">
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- DỊCH VỤ PHÁT SINH -->
+            <section class="cart-panel">
+
+                <div class="cart-panel-header">
+
+                    <div class="cart-section-icon">
+                        <i class="bi bi-stars"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="mb-1">Dịch vụ phát sinh</h4>
+
+                        <p class="text-muted small mb-0">
+                            Bổ sung những tiện ích để chuyến lưu trú thêm thoải mái.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="cart-panel-body">
+
+                    <!-- FORM THÊM DỊCH VỤ -->
+                    <form method="post"
+                          th:action="@{/gio-hang}"
+                          class="row g-3 align-items-end cart-service-form">
+
+                        <input type="hidden"
+                               name="action"
+                               value="add-service">
+
                         <div class="col-md-7">
-                            <label class="form-label">Dịch vụ</label>
-                            <select class="form-select" name="maDv" required>
+
+                            <label class="form-label" for="maDv">
+                                Chọn dịch vụ
+                            </label>
+
+                            <select class="form-select"
+                                    id="maDv"
+                                    name="maDv"
+                                    required>
+
                                 <option value="">-- Chọn dịch vụ --</option>
-                                <option th:each="service : ${dichVuList}" th:value="${service.maDv}"
-                                        th:text="${service.tenDv + ' - ' + service.donGia + ' đ'}"></option>
+
+                                <option
+                                        th:each="service : ${dichVuList}"
+                                        th:with="
+                                        donGiaRutGon=${service.donGia.stripTrailingZeros()},
+                                        scaleDonGia=${service.donGia.stripTrailingZeros().scale() > 0
+                                            ? service.donGia.stripTrailingZeros().scale() : 0}
+                                    "
+                                        th:value="${service.maDv}"
+                                        th:text="${service.tenDv + ' - ' + #numbers.formatDecimal(
+                                        donGiaRutGon,
+                                        1,
+                                        'POINT',
+                                        scaleDonGia,
+                                        'COMMA'
+                                    ) + ' đ'}">
+                                </option>
+
                             </select>
+
                         </div>
+
                         <div class="col-md-3">
-                            <label class="form-label">Số lượng</label>
-                            <input class="form-control" type="number" name="soLuong" min="1" max="100" value="1" required>
+
+                            <label class="form-label" for="soLuong">
+                                Số lượng
+                            </label>
+
+                            <input
+                                    class="form-control"
+                                    id="soLuong"
+                                    type="number"
+                                    name="soLuong"
+                                    min="1"
+                                    max="100"
+                                    value="1"
+                                    required>
+
                         </div>
+
                         <div class="col-md-2">
-                            <button class="btn btn-outline-primary w-100" type="submit">Thêm</button>
+
+                            <button class="btn btn-cta w-100"
+                                    type="submit">
+
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Thêm
+
+                            </button>
+
                         </div>
+
                     </form>
-                    <div class="table-responsive" th:if="${!#lists.isEmpty(session.cart.services)}">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead><tr><th>Dịch vụ</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
-                            <tbody>
-                            <tr th:each="service : ${session.cart.services}">
-                                <td th:text="${service.tenDv}"></td>
-                                <td th:text="${service.soLuong}"></td>
-                                <td th:text="${service.thanhTien + ' đ'}"></td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-danger"
-                                       th:href="@{/gio-hang(action='remove-service',maPhong=${service.maDv})}">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+
+                    <!-- DANH SÁCH DỊCH VỤ ĐÃ CHỌN -->
+                    <div th:if="${!#lists.isEmpty(session.cart.services)}"
+                         class="cart-service-list mt-4">
+
+                        <h6 class="fw-bold mb-3">
+                            Dịch vụ đã chọn
+                        </h6>
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle mb-0">
+
+                                <thead>
+                                <tr>
+                                    <th>Dịch vụ</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+
+                                <tr th:each="service : ${session.cart.services}"
+                                    th:with="
+                                            thanhTienDV=${service.thanhTien.stripTrailingZeros()},
+                                            scaleThanhTienDV=${service.thanhTien.stripTrailingZeros().scale() > 0
+                                                ? service.thanhTien.stripTrailingZeros().scale() : 0}
+                                        ">
+
+                                    <td class="fw-semibold"
+                                        th:text="${service.tenDv}">
+                                    </td>
+
+                                    <td th:text="${service.soLuong}"></td>
+
+                                    <td class="fw-semibold text-nowrap"
+                                        th:text="${#numbers.formatDecimal(
+                                                thanhTienDV,
+                                                1,
+                                                'POINT',
+                                                scaleThanhTienDV,
+                                                'COMMA'
+                                            )} + ' đ'">
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <a class="cart-remove-btn"
+                                           th:href="@{/gio-hang(action='remove-service',maPhong=${service.maDv})}"
+                                           title="Xóa dịch vụ"
+                                           onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">
+
+                                            <i class="bi bi-trash3"></i>
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
                     </div>
-                    <p class="text-muted small mb-0" th:if="${#lists.isEmpty(session.cart.services)}">
-                        Chưa chọn dịch vụ phát sinh.
-                    </p>
+
+                    <!-- CHƯA CÓ DỊCH VỤ -->
+                    <div class="cart-service-empty"
+                         th:if="${#lists.isEmpty(session.cart.services)}">
+
+                        <i class="bi bi-stars"></i>
+
+                        <span>Chưa có dịch vụ phát sinh.</span>
+
+                    </div>
+
                 </div>
+
+            </section>
+
+            <!-- TIẾP TỤC XEM PHÒNG -->
+            <div class="mt-4">
+
+                <a th:href="@{/tim-phong}"
+                   class="btn btn-outline-dark">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Tiếp tục chọn phòng
+
+                </a>
+
             </div>
+
         </div>
+
+        <!-- CỘT BÊN PHẢI: TÓM TẮT -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h2 class="h5">Tóm tắt đặt phòng</h2>
-                    <p class="mb-1">Nhận phòng: <strong th:text="${session.cart.ngayNhan}"></strong></p>
-                    <p>Trả phòng: <strong th:text="${session.cart.ngayTra}"></strong></p>
-                    <p>Số đêm: <strong th:text="${session.cart.soDem}"></strong></p>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Tổng số tiền</span>
-                        <strong class="text-primary"
-                                th:text="${#numbers.formatDecimal(tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-top pt-2">
-                        <span>Tổng số tiền trả trước (Đặt cọc)</span>
-                        <strong class="text-success"
-                                th:text="${#numbers.formatDecimal(tienCoc, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
-                    </div>
-                    <div class="form-text mt-2">Số tiền đặt cọc được tính bằng 30% tổng số tiền.</div>
-                    <a class="btn btn-success w-100 mt-3" th:href="@{/dat-phong}">Tiếp tục đặt phòng</a>
+
+            <aside class="cart-summary">
+
+                <div class="cart-summary-header">
+
+                    <p class="hero-kicker mb-2">
+                        Reservation Summary
+                    </p>
+
+                    <h4 class="fw-bold mb-0">
+                        Tóm tắt đặt phòng
+                    </h4>
+
                 </div>
-            </div>
+
+                <div class="cart-summary-body">
+
+                    <!-- THỜI GIAN -->
+                    <div class="cart-summary-date">
+
+                        <div>
+                            <span class="cart-date-label">
+                                Ngày nhận phòng
+                            </span>
+
+                            <strong th:text="${session.cart.ngayNhan}"></strong>
+                        </div>
+
+                        <i class="bi bi-calendar-check"></i>
+
+                    </div>
+
+                    <div class="cart-summary-date">
+
+                        <div>
+                            <span class="cart-date-label">
+                                Ngày trả phòng
+                            </span>
+
+                            <strong th:text="${session.cart.ngayTra}"></strong>
+                        </div>
+
+                        <i class="bi bi-calendar-x"></i>
+
+                    </div>
+
+                    <div class="cart-summary-date">
+
+                        <div>
+                            <span class="cart-date-label">
+                                Tổng thời gian lưu trú
+                            </span>
+
+                            <strong>
+                                <span th:text="${session.cart.soDem}"></span> đêm
+                            </strong>
+                        </div>
+
+                        <i class="bi bi-moon-stars"></i>
+
+                    </div>
+
+                    <hr>
+
+                    <!-- TỔNG TIỀN -->
+                    <div th:with="
+                        tongTienRutGon=${tongTien.stripTrailingZeros()},
+                        scaleTongTien=${tongTien.stripTrailingZeros().scale() > 0
+                            ? tongTien.stripTrailingZeros().scale() : 0},
+                        tienCocRutGon=${tienCoc.stripTrailingZeros()},
+                        scaleTienCoc=${tienCoc.stripTrailingZeros().scale() > 0
+                            ? tienCoc.stripTrailingZeros().scale() : 0}
+                    ">
+
+                        <div class="d-flex justify-content-between gap-3 mb-3">
+
+                            <span class="text-muted">
+                                Tổng số tiền
+                            </span>
+
+                            <strong class="cart-total-price"
+                                    th:text="${#numbers.formatDecimal(
+                                        tongTienRutGon,
+                                        1,
+                                        'POINT',
+                                        scaleTongTien,
+                                        'COMMA'
+                                    )} + ' đ'">
+                            </strong>
+
+                        </div>
+
+                        <div class="cart-deposit">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                <div>
+                                    <span class="cart-date-label">
+                                        Số tiền đặt cọc
+                                    </span>
+
+                                    <p class="small text-muted mb-0">
+                                        Thanh toán trước 30%
+                                    </p>
+                                </div>
+
+                                <strong class="cart-deposit-price"
+                                        th:text="${#numbers.formatDecimal(
+                                            tienCocRutGon,
+                                            1,
+                                            'POINT',
+                                            scaleTienCoc,
+                                            'COMMA'
+                                        )} + ' đ'">
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- GHI CHÚ -->
+                    <div class="cart-summary-note mt-3">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        Số tiền đặt cọc được tính bằng 30% tổng chi phí đặt phòng.
+
+                    </div>
+
+                    <!-- TIẾP TỤC -->
+                    <a class="btn btn-cta w-100 mt-4 py-3"
+                       th:href="@{/dat-phong}">
+
+                        Tiếp tục đặt phòng
+
+                        <i class="bi bi-arrow-right ms-2"></i>
+
+                    </a>
+
+                    <div class="text-center mt-3">
+
+                        <span class="text-muted small">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Thông tin đặt phòng được bảo mật.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
         </div>
+
     </div>
+
 </main>
+
 <div th:replace="~{common/footer :: footer}"></div>
+
+</body>
 </html>

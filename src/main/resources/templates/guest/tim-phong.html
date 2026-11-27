@@ -12,42 +12,50 @@
 
 <div th:replace="~{common/header :: header}"></div>
 
-<!-- TIÊU ĐỀ TRANG -->
-<section class="page-hero">
-    <div class="container">
-        <p class="hero-kicker">Our Accommodation</p>
+<main class="container pb-5"
+      th:with="coDuNgay=${ngayNhan != null and !#strings.isEmpty(ngayNhan) and ngayTra != null and !#strings.isEmpty(ngayTra)}">
 
-        <h1>Không gian lưu trú</h1>
+    <!-- TIÊU ĐỀ TRANG -->
+    <section class="page-hero">
+        <div class="container">
+            <p class="hero-kicker">Our Accommodation</p>
 
-        <p class="mb-0">
-            Khám phá những căn phòng được thiết kế tinh tế,
-            mang đến trải nghiệm nghỉ dưỡng thoải mái và trọn vẹn.
-        </p>
-    </div>
-</section>
+            <h1>Không gian lưu trú</h1>
 
-<main class="container pb-5">
+            <p class="mb-0">
+                Khám phá những căn phòng được thiết kế tinh tế,
+                mang đến trải nghiệm nghỉ dưỡng thoải mái và trọn vẹn.
+            </p>
+        </div>
+    </section>
 
     <!-- FORM TÌM KIẾM -->
     <section class="search-panel mt-0 mb-5" id="searchForm">
 
         <div class="mb-4">
-            <p class="hero-kicker mb-2">Find Your Room</p>
+
+            <p class="hero-kicker mb-2">
+                Find Your Room
+            </p>
 
             <h4 class="fw-bold mb-2">
                 Tìm phòng phù hợp
             </h4>
 
             <p class="text-muted small mb-0">
-                Lựa chọn thời gian lưu trú để kiểm tra tình trạng phòng còn trống.
+                Lựa chọn thời gian lưu trú và số lượng khách
+                để tìm phòng phù hợp với nhu cầu của bạn.
             </p>
+
         </div>
 
         <form method="get"
               th:action="@{/tim-phong}"
               class="row g-3 align-items-end">
 
-            <div class="col-md-5">
+            <!-- NGÀY NHẬN PHÒNG -->
+            <div class="col-md-4">
+
                 <label class="form-label" for="ngayNhan">
                     Ngày nhận phòng
                 </label>
@@ -60,9 +68,12 @@
                         th:value="${ngayNhan}"
                         th:min="${today}"
                         required>
+
             </div>
 
-            <div class="col-md-5">
+            <!-- NGÀY TRẢ PHÒNG -->
+            <div class="col-md-4">
+
                 <label class="form-label" for="ngayTra">
                     Ngày trả phòng
                 </label>
@@ -75,22 +86,49 @@
                         th:value="${ngayTra}"
                         th:min="${today}"
                         required>
+
             </div>
 
+            <!-- SỐ KHÁCH -->
             <div class="col-md-2">
+
+                <label class="form-label" for="soKhach">
+                    Số khách
+                </label>
+
+                <input
+                        type="number"
+                        id="soKhach"
+                        name="soKhach"
+                        class="form-control"
+                        min="1"
+                        th:value="${soKhach}"
+                        required>
+
+            </div>
+
+            <!-- NÚT TÌM KIẾM -->
+            <div class="col-md-2">
+
                 <button type="submit" class="btn btn-cta w-100">
+
                     <i class="bi bi-search me-1"></i>
                     Tìm phòng
+
                 </button>
+
             </div>
 
         </form>
 
         <div class="mt-3 pt-3 border-top">
+
             <p class="text-muted small mb-0">
                 <i class="bi bi-info-circle me-1"></i>
                 Giá phòng được tính theo mỗi đêm lưu trú.
+                Sức chứa của phòng phải đáp ứng số lượng khách đã chọn.
             </p>
+
         </div>
 
     </section>
@@ -100,25 +138,30 @@
          th:if="${error != null}">
 
         <i class="bi bi-exclamation-circle-fill me-2"></i>
+
         <span th:text="${error}"></span>
 
     </div>
 
-    <!-- TIÊU ĐỀ VÀ THÔNG TIN TÌM KIẾM -->
+    <!-- THÔNG TIN KẾT QUẢ TÌM KIẾM -->
     <section class="mb-4">
 
-        <!-- ĐÃ CHỌN NGÀY -->
-        <div th:if="${ngayNhan != null and ngayTra != null}"
+        <!-- ĐÃ CHỌN ĐỦ NGÀY -->
+        <div th:if="${coDuNgay}"
              class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
 
             <div>
-                <p class="hero-kicker mb-2">Available Rooms</p>
+
+                <p class="hero-kicker mb-2">
+                    Available Rooms
+                </p>
 
                 <h2 class="section-title">
                     Phòng còn trống
                 </h2>
 
-                <p class="text-muted mb-0">
+                <div class="text-muted">
+
                     Thời gian lưu trú:
 
                     <strong th:text="${ngayNhan}"></strong>
@@ -130,13 +173,20 @@
                     <span class="mx-1">|</span>
 
                     <strong th:text="${soDem}"></strong> đêm
-                </p>
+
+                    <span class="mx-1">|</span>
+
+                    <strong th:text="${soKhach}"></strong> khách
+
+                </div>
+
             </div>
 
             <a th:href="@{/tim-phong}"
                class="btn btn-outline-dark">
 
                 <i class="bi bi-arrow-counterclockwise me-1"></i>
+
                 Xem tất cả phòng
 
             </a>
@@ -144,9 +194,11 @@
         </div>
 
         <!-- DANH SÁCH MẶC ĐỊNH -->
-        <div th:if="${ngayNhan == null or ngayTra == null}">
+        <div th:if="${!coDuNgay and error == null}">
 
-            <p class="hero-kicker mb-2">Our Rooms</p>
+            <p class="hero-kicker mb-2">
+                Our Rooms
+            </p>
 
             <h2 class="section-title">
                 Danh sách phòng
@@ -169,19 +221,17 @@
             <div class="col-md-6 col-xl-4"
                  th:each="phong : ${danhSachPhong}">
 
-                <!--
-                    Rút gọn BigDecimal để bỏ các số 0 không cần thiết.
-                    Số chữ số thập phân được lấy theo scale thực tế.
-                -->
-                <article class="room-card h-100 d-flex flex-column"
-                         th:with="
-                            giaPhongRutGon=${phong.giaPhong.stripTrailingZeros()},
-                            soChuSoThapPhan=${phong.giaPhong.stripTrailingZeros().scale() > 0
-                                ? phong.giaPhong.stripTrailingZeros().scale()
-                                : 0}
-                         ">
+                <!-- RÚT GỌN BIGDECIMAL -->
+                <article
+                        class="room-card h-100 d-flex flex-column"
+                        th:with="
+                        giaPhongRutGon=${phong.giaPhong.stripTrailingZeros()},
+                        soChuSoThapPhan=${phong.giaPhong.stripTrailingZeros().scale() > 0
+                            ? phong.giaPhong.stripTrailingZeros().scale()
+                            : 0}
+                    ">
 
-                    <!-- HÌNH ẢNH PHÒNG -->
+                    <!-- HÌNH ẢNH -->
                     <div class="overflow-hidden">
 
                         <img
@@ -204,15 +254,19 @@
                             </h4>
 
                             <span class="badge text-bg-light border">
-                                Tầng <span th:text="${phong.tang}"></span>
+                                Tầng
+                                <span th:text="${phong.tang}"></span>
                             </span>
 
                         </div>
 
                         <!-- LOẠI PHÒNG -->
                         <p class="room-meta mb-3">
+
                             <i class="bi bi-door-open me-1"></i>
+
                             <span th:text="${phong.tenLoai}"></span>
+
                         </p>
 
                         <hr class="my-2">
@@ -220,6 +274,7 @@
                         <!-- THÔNG TIN PHÒNG -->
                         <div class="py-2">
 
+                            <!-- SỨC CHỨA -->
                             <div class="d-flex justify-content-between align-items-center mb-3">
 
                                 <span class="text-muted small">
@@ -233,6 +288,7 @@
 
                             </div>
 
+                            <!-- DIỆN TÍCH -->
                             <div class="d-flex justify-content-between align-items-center">
 
                                 <span class="text-muted small">
@@ -258,6 +314,7 @@
                             </span>
 
                             <div>
+
                                 <span
                                         class="price-tag"
                                         th:text="${#numbers.formatDecimal(
@@ -269,67 +326,89 @@
                                     )}">
                                 </span>
 
-                                <span class="price-unit">VNĐ / đêm</span>
+                                <span class="price-unit">
+                                    VNĐ / đêm
+                                </span>
+
                             </div>
 
                         </div>
 
-                        <!-- NÚT CHỨC NĂNG -->
+                        <!-- CÁC NÚT CHỨC NĂNG -->
                         <div class="mt-auto d-flex flex-column gap-2">
 
-                            <!-- XEM CHI TIẾT KHI ĐÃ CHỌN NGÀY -->
+                            <!-- XEM CHI TIẾT KHI ĐÃ TÌM KIẾM -->
                             <a
-                                    th:if="${ngayNhan != null and ngayTra != null}"
+                                    th:if="${coDuNgay}"
                                     class="btn btn-outline-dark w-100"
                                     th:href="@{/chi-tiet-phong(
                                     maPhong=${phong.maPhong},
                                     ngayNhan=${ngayNhan},
-                                    ngayTra=${ngayTra}
+                                    ngayTra=${ngayTra},
+                                    soKhach=${soKhach}
                                 )}">
 
                                 <i class="bi bi-info-circle me-1"></i>
+
                                 Xem chi tiết
 
                             </a>
 
                             <!-- XEM CHI TIẾT KHI CHƯA CHỌN NGÀY -->
                             <a
-                                    th:unless="${ngayNhan != null and ngayTra != null}"
+                                    th:unless="${coDuNgay}"
                                     class="btn btn-outline-dark w-100"
-                                    th:href="@{/chi-tiet-phong(maPhong=${phong.maPhong})}">
+                                    th:href="@{/chi-tiet-phong(
+                                    maPhong=${phong.maPhong},
+                                    soKhach=${soKhach}
+                                )}">
 
                                 <i class="bi bi-info-circle me-1"></i>
+
                                 Xem chi tiết
 
                             </a>
 
-                            <!-- ĐẶT PHÒNG KHI ĐÃ TÌM KIẾM -->
+                            <!-- ĐẶT PHÒNG KHI ĐÃ CHỌN NGÀY -->
                             <form
-                                    th:if="${ngayNhan != null and ngayTra != null}"
+                                    th:if="${coDuNgay}"
                                     th:action="@{/gio-hang}"
                                     method="post">
 
-                                <input type="hidden" name="maPhong"
-                                       th:value="${phong.maPhong}">
+                                <input
+                                        type="hidden"
+                                        name="maPhong"
+                                        th:value="${phong.maPhong}">
 
-                                <input type="hidden" name="soPhong"
-                                       th:value="${phong.soPhong}">
+                                <input
+                                        type="hidden"
+                                        name="soPhong"
+                                        th:value="${phong.soPhong}">
 
-                                <input type="hidden" name="tenLoai"
-                                       th:value="${phong.tenLoai}">
+                                <input
+                                        type="hidden"
+                                        name="tenLoai"
+                                        th:value="${phong.tenLoai}">
 
-                                <input type="hidden" name="giaPhong"
-                                       th:value="${phong.giaPhong}">
+                                <input
+                                        type="hidden"
+                                        name="giaPhong"
+                                        th:value="${phong.giaPhong}">
 
-                                <input type="hidden" name="ngayNhan"
-                                       th:value="${ngayNhan}">
+                                <input
+                                        type="hidden"
+                                        name="ngayNhan"
+                                        th:value="${ngayNhan}">
 
-                                <input type="hidden" name="ngayTra"
-                                       th:value="${ngayTra}">
+                                <input
+                                        type="hidden"
+                                        name="ngayTra"
+                                        th:value="${ngayTra}">
 
                                 <button type="submit" class="btn btn-cta w-100">
 
                                     <i class="bi bi-calendar-check me-1"></i>
+
                                     Đặt phòng
 
                                 </button>
@@ -338,11 +417,12 @@
 
                             <!-- CHƯA CHỌN NGÀY -->
                             <a
-                                    th:unless="${ngayNhan != null and ngayTra != null}"
+                                    th:unless="${coDuNgay}"
                                     href="#searchForm"
                                     class="btn btn-cta w-100">
 
                                 <i class="bi bi-calendar-plus me-1"></i>
+
                                 Chọn ngày đặt phòng
 
                             </a>
@@ -359,7 +439,7 @@
 
     </section>
 
-    <!-- KHÔNG CÓ PHÒNG -->
+    <!-- KHÔNG CÓ PHÒNG PHÙ HỢP -->
     <section
             th:if="${danhSachPhong != null
             and #lists.isEmpty(danhSachPhong)
@@ -378,24 +458,29 @@
             Không tìm thấy phòng phù hợp
         </h4>
 
+        <!-- ĐÃ TÌM KIẾM -->
         <p class="text-muted mb-4"
-           th:if="${ngayNhan != null and ngayTra != null}">
+           th:if="${coDuNgay}">
 
-            Hiện chưa có phòng trống trong khoảng thời gian bạn đã chọn.
-            Vui lòng thử tìm kiếm với ngày khác.
+            Hiện chưa có phòng trống đáp ứng số lượng khách
+            trong khoảng thời gian bạn đã chọn.
+            Vui lòng thử ngày khác hoặc điều chỉnh số khách.
 
         </p>
 
+        <!-- DANH SÁCH MẶC ĐỊNH -->
         <p class="text-muted mb-4"
-           th:if="${ngayNhan == null or ngayTra == null}">
+           th:unless="${coDuNgay}">
 
-            Hiện chưa có phòng nào trong hệ thống.
+            Hiện chưa có phòng đủ sức chứa cho số lượng khách đã chọn.
 
         </p>
 
-        <a th:href="@{/tim-phong}" class="btn btn-outline-dark">
+        <a th:href="@{/tim-phong}"
+           class="btn btn-outline-dark">
 
             <i class="bi bi-arrow-counterclockwise me-1"></i>
+
             Xem lại danh sách phòng
 
         </a>

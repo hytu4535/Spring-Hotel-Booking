@@ -349,7 +349,6 @@ CREATE TABLE `phong` (
   `so_phong` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `ma_loai` int NOT NULL,
   `tang` int DEFAULT NULL,
-  `trang_thai` enum('TRONG','DA_DAT','DANG_O','BAO_TRI') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRONG',
   `ghi_chu` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `da_xoa` bit(1) NOT NULL,
   PRIMARY KEY (`ma_phong`),

@@ -1,6 +1,5 @@
 package com.hotel.service;
 
-import com.hotel.enums.TrangThaiPhong;
 import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
 import com.hotel.model.DatPhongDTO;
@@ -106,60 +105,38 @@ public class DatPhongStaffService {
     }
 
     @Transactional
-    public boolean updateTrangThaiTransaction(int maDp, String newTrangThai, Integer maNvXuLy) {
+    public boolean updateTrangThaiTransaction(
+            int maDp,
+            String newTrangThai,
+            Integer maNvXuLy) {
+
         DatPhong dp = datPhongRepository.findById(maDp).orElse(null);
+
         if (dp == null) {
             return false;
         }
 
-        List<ChiTietDatPhong> chiTiet = chiTietDatPhongRepository.findByMaDp(maDp);
+        List<ChiTietDatPhong> chiTiet =
+                chiTietDatPhongRepository.findByMaDp(maDp);
+
         if (!isValidStatusTransition(dp, newTrangThai, chiTiet)) {
             return false;
         }
 
+        // Chỉ cập nhật trạng thái đơn đặt phòng
         dp.setTrangThai(newTrangThai);
         dp.setMaNvXuLy(maNvXuLy);
 
-        TrangThaiPhong phongTrangThai = null;
-        if (newTrangThai.equals("DA_XAC_NHAN")) {
-            phongTrangThai = TrangThaiPhong.DA_DAT;
-        } else if (newTrangThai.equals("DA_NHAN_PHONG")) {
-            phongTrangThai = TrangThaiPhong.DANG_O;
-        } else if (newTrangThai.equals("DA_TRA_PHONG")) {
-            phongTrangThai = TrangThaiPhong.TRONG;
-        }
-
-        if (phongTrangThai != null) {
-            List<Integer> maPhongList = chiTiet
-                    .stream()
-                    .map(ct -> ct.getMaPhong())
-                    .collect(Collectors.toList());
-
-            if (!maPhongList.isEmpty()) {
-                List<Phong> phongs = phongRepository.findAllById(maPhongList);
-                for (Phong p : phongs) {
-                    p.setTrangThaiPhong(phongTrangThai);
-                }
-                phongRepository.saveAll(phongs);
-            }
-        } else if ("DA_HUY".equals(newTrangThai)) {
-            List<Phong> bookedRooms = phongRepository.findAllById(chiTiet.stream()
-                    .map(ChiTietDatPhong::getMaPhong)
-                    .collect(Collectors.toList()));
-            List<Phong> roomsToRelease = bookedRooms.stream()
-                    .filter(room -> room.getTrangThaiPhong() == TrangThaiPhong.DA_DAT)
-                    .collect(Collectors.toList());
-            roomsToRelease.forEach(room -> room.setTrangThaiPhong(TrangThaiPhong.TRONG));
-            if (!roomsToRelease.isEmpty()) {
-                phongRepository.saveAll(roomsToRelease);
-            }
-        }
-
         datPhongRepository.save(dp);
+
+        // Gửi email thông báo
         publishStatusEmail(dp, newTrangThai);
+
+        // Hoàn tiền nếu đơn bị hủy
         if ("DA_HUY".equals(newTrangThai)) {
             recordRefund(dp);
         }
+
         return true;
     }
 
@@ -177,42 +154,56 @@ public class DatPhongStaffService {
                 "DA_XAC_NHAN".equals(status) ? "Đã xác nhận" : "Đã hủy"));
     }
 
-    private boolean isValidStatusTransition(DatPhong dp, String newTrangThai,
+    private boolean isValidStatusTransition(
+            DatPhong dp,
+            String newTrangThai,
             List<ChiTietDatPhong> chiTiet) {
+
         if (newTrangThai == null || chiTiet.isEmpty()) {
             return false;
         }
+
+        // Lấy danh sách mã phòng trong đơn
         List<Integer> maPhongList = chiTiet.stream()
                 .map(ChiTietDatPhong::getMaPhong)
+                .distinct()
                 .collect(Collectors.toList());
+
+        // Kiểm tra các phòng có tồn tại không
         List<Phong> phongs = phongRepository.findAllById(maPhongList);
+
         if (phongs.size() != maPhongList.size()) {
             return false;
         }
 
+        // 1. Xác nhận đặt phòng
         if ("DA_XAC_NHAN".equals(newTrangThai)) {
+
             return "CHO_XAC_NHAN".equals(dp.getTrangThai())
-                    && phongs.stream()
-                            .allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.TRONG);
+                    && !hasRoomConflict(dp, maPhongList);
         }
+
+        // 2. Nhận phòng
         if ("DA_NHAN_PHONG".equals(newTrangThai)) {
+
             return "DA_XAC_NHAN".equals(dp.getTrangThai())
-                    && isCheckInDateValid(dp)
-                    && phongs.stream()
-                            .allMatch(phong -> phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.BAO_TRI
-                                    && phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.DANG_O);
+                    && isCheckInDateValid(dp);
         }
+
+        // 3. Trả phòng
         if ("DA_TRA_PHONG".equals(newTrangThai)) {
+
             return "DA_NHAN_PHONG".equals(dp.getTrangThai())
-                    && isCheckOutDateValid(dp)
-                    && phongs.stream()
-                            .allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+                    && isCheckOutDateValid(dp);
         }
+
+        // 4. Hủy đặt phòng
         if ("DA_HUY".equals(newTrangThai)) {
-            return ("CHO_XAC_NHAN".equals(dp.getTrangThai()) || "DA_XAC_NHAN".equals(dp.getTrangThai()))
-                    && phongs.stream()
-                            .noneMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
+
+            return "CHO_XAC_NHAN".equals(dp.getTrangThai())
+                    || "DA_XAC_NHAN".equals(dp.getTrangThai());
         }
+
         return false;
     }
 
@@ -276,5 +267,24 @@ public class DatPhongStaffService {
         refund.setMaGiaoDich("REFUND_" + booking.getMaTraCuu());
         refund.setGhiChu("Hoàn tiền khi nhân viên hủy đơn đặt phòng.");
         thanhToanRepository.save(refund);
+    }
+
+    private boolean hasRoomConflict(
+            DatPhong booking,
+            List<Integer> maPhongList) {
+
+        if (booking.getNgayNhanPhong() == null
+                || booking.getNgayTraPhong() == null) {
+            return true;
+        }
+
+        long conflictCount = chiTietDatPhongRepository.countRoomConflicts(
+                maPhongList,
+                booking.getMaDp(),
+                booking.getNgayNhanPhong(),
+                booking.getNgayTraPhong()
+        );
+
+        return conflictCount > 0;
     }
 }

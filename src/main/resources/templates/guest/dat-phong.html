@@ -1,4 +1,404 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin đặt phòng</title>
+
+    <link rel="stylesheet" th:href="@{/css/booking-form.css}">
+</head>
+
+<body>
+
 <div th:replace="~{common/header :: header}"></div>
-<main class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5"><h1 class="h3 mb-2">Thông tin đặt phòng</h1><p class="text-muted mb-4">Vui lòng nhập thông tin liên hệ để chúng tôi xác nhận đơn.</p><div class="alert alert-danger" th:if="${error}" th:text="${error}"></div><form th:action="@{/dat-phong}" method="post"><div class="mb-3"><label class="form-label">Họ tên <span class="text-danger">*</span></label><input name="hoTen" class="form-control" th:value="${hoTen}" required></div><div class="mb-3"><label class="form-label">Email <span class="text-danger">*</span></label><input name="email" type="email" class="form-control" th:value="${email}" required></div><div class="mb-3"><label class="form-label">Số điện thoại <span class="text-danger">*</span></label><input name="soDienThoai" class="form-control" th:value="${soDienThoai}" required></div><div class="mb-3"><label class="form-label">CCCD</label><input name="cccd" class="form-control" th:value="${cccd}"></div><div class="mb-3"><label class="form-label">Địa chỉ</label><input name="diaChi" class="form-control" th:value="${diaChi}"></div><div class="mb-4"><label class="form-label">Ghi chú cho nhân viên</label><textarea name="ghiChu" class="form-control" rows="3" maxlength="255" placeholder="Ví dụ: cần nhận phòng sớm, chuẩn bị nôi em bé..."></textarea><div class="form-text">Tối đa 255 ký tự.</div></div><div class="card bg-light border-0 mb-4"><div class="card-body"><h2 class="h5 mb-3">Thông tin cần biết</h2><ul class="mb-0"><li>Không cần thẻ tín dụng để đặt phòng.</li><li>Bạn có thể hủy miễn phí trước ngày nhận phòng.</li><li>Bạn sẽ sử dụng riêng phòng đã chọn trong đơn đặt phòng.</li><li>Chưa cần thanh toán ngay; bạn thanh toán tại khách sạn.</li><li>Hệ thống sẽ kiểm tra lại tình trạng phòng tại thời điểm xác nhận đơn.</li></ul></div></div><div class="d-flex justify-content-between"><a class="btn btn-outline-secondary" th:href="@{/gio-hang}">Quay lại</a><button class="btn btn-success" type="submit"><i class="bi bi-check-circle"></i> Xác nhận đặt phòng</button></div></form></div></div></div></div></main><div th:replace="~{common/footer :: footer}"></div></html>
+
+<!-- TIÊU ĐỀ -->
+<section class="page-hero">
+    <div class="container">
+        <p class="hero-kicker">Complete Your Reservation</p>
+
+        <h1>Thông tin đặt phòng</h1>
+
+        <p class="mb-0">
+            Chỉ còn một bước nữa để hoàn tất lựa chọn không gian nghỉ dưỡng của bạn.
+        </p>
+    </div>
+</section>
+
+<main class="container booking-form-page pb-5">
+
+    <!-- TIẾN TRÌNH -->
+    <div class="booking-progress reveal">
+
+        <div class="booking-progress-item completed">
+            <span class="progress-number">
+                <i class="bi bi-check-lg"></i>
+            </span>
+            <span>Chọn phòng</span>
+        </div>
+
+        <div class="booking-progress-line active"></div>
+
+        <div class="booking-progress-item active">
+            <span class="progress-number">02</span>
+            <span>Thông tin đặt phòng</span>
+        </div>
+
+        <div class="booking-progress-line"></div>
+
+        <div class="booking-progress-item">
+            <span class="progress-number">03</span>
+            <span>Xác nhận</span>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- FORM THÔNG TIN KHÁCH HÀNG -->
+        <div class="col-lg-8">
+
+            <section class="booking-form-card reveal">
+
+                <!-- CARD HEADER -->
+                <div class="booking-form-header">
+
+                    <div class="booking-form-icon">
+                        <i class="bi bi-person-vcard"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="mb-1">Thông tin khách hàng</h4>
+
+                        <p class="text-muted small mb-0">
+                            Vui lòng cung cấp thông tin chính xác để khách sạn liên hệ xác nhận đơn.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="booking-form-body">
+
+                    <!-- THÔNG BÁO LỖI -->
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4"
+                         th:if="${error}">
+
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+
+                        <span th:text="${error}"></span>
+
+                    </div>
+
+                    <form th:action="@{/dat-phong}" method="post">
+
+                        <div class="row g-4">
+
+                            <!-- HỌ TÊN -->
+                            <div class="col-md-6">
+
+                                <label for="hoTen" class="form-label">
+                                    Họ và tên
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <div class="booking-input-wrapper">
+
+                                    <i class="bi bi-person"></i>
+
+                                    <input
+                                            id="hoTen"
+                                            name="hoTen"
+                                            type="text"
+                                            class="form-control"
+                                            th:value="${hoTen}"
+                                            placeholder="Nhập họ và tên"
+                                            autocomplete="name"
+                                            required>
+
+                                </div>
+
+                            </div>
+
+                            <!-- EMAIL -->
+                            <div class="col-md-6">
+
+                                <label for="email" class="form-label">
+                                    Email
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <div class="booking-input-wrapper">
+
+                                    <i class="bi bi-envelope"></i>
+
+                                    <input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            class="form-control"
+                                            th:value="${email}"
+                                            placeholder="example@email.com"
+                                            autocomplete="email"
+                                            required>
+
+                                </div>
+
+                            </div>
+
+                            <!-- SỐ ĐIỆN THOẠI -->
+                            <div class="col-md-6">
+
+                                <label for="soDienThoai" class="form-label">
+                                    Số điện thoại
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <div class="booking-input-wrapper">
+
+                                    <i class="bi bi-telephone"></i>
+
+                                    <input
+                                            id="soDienThoai"
+                                            name="soDienThoai"
+                                            type="tel"
+                                            class="form-control"
+                                            th:value="${soDienThoai}"
+                                            placeholder="Nhập số điện thoại"
+                                            autocomplete="tel"
+                                            required>
+
+                                </div>
+
+                            </div>
+
+                            <!-- CCCD -->
+                            <div class="col-md-6">
+
+                                <label for="cccd" class="form-label">
+                                    Căn cước công dân
+                                </label>
+
+                                <div class="booking-input-wrapper">
+
+                                    <i class="bi bi-credit-card-2-front"></i>
+
+                                    <input
+                                            id="cccd"
+                                            name="cccd"
+                                            type="text"
+                                            class="form-control"
+                                            th:value="${cccd}"
+                                            placeholder="Nhập số CCCD"
+                                            autocomplete="off">
+
+                                </div>
+
+                            </div>
+
+                            <!-- ĐỊA CHỈ -->
+                            <div class="col-12">
+
+                                <label for="diaChi" class="form-label">
+                                    Địa chỉ
+                                </label>
+
+                                <div class="booking-input-wrapper">
+
+                                    <i class="bi bi-geo-alt"></i>
+
+                                    <input
+                                            id="diaChi"
+                                            name="diaChi"
+                                            type="text"
+                                            class="form-control"
+                                            th:value="${diaChi}"
+                                            placeholder="Nhập địa chỉ liên hệ"
+                                            autocomplete="street-address">
+
+                                </div>
+
+                            </div>
+
+                            <!-- GHI CHÚ -->
+                            <div class="col-12">
+
+                                <label for="ghiChu" class="form-label">
+                                    Ghi chú cho nhân viên
+                                </label>
+
+                                <textarea
+                                        id="ghiChu"
+                                        name="ghiChu"
+                                        class="form-control booking-textarea"
+                                        rows="4"
+                                        maxlength="255"
+                                        placeholder="Ví dụ: cần nhận phòng sớm, chuẩn bị nôi em bé..."
+                                        th:text="${ghiChu}"></textarea>
+
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Tối đa 255 ký tự.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- NÚT CHỨC NĂNG -->
+                        <div class="booking-form-actions">
+
+                            <a class="btn btn-outline-dark"
+                               th:href="@{/gio-hang}">
+
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Quay lại giỏ phòng
+
+                            </a>
+
+                            <button class="btn btn-cta booking-submit-btn"
+                                    type="submit">
+
+                                <i class="bi bi-check-circle me-2"></i>
+                                Xác nhận đặt phòng
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- THÔNG TIN CẦN BIẾT -->
+        <div class="col-lg-4">
+
+            <aside class="booking-notice reveal">
+
+                <div class="booking-notice-header">
+
+                    <div class="booking-notice-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+
+                    <div>
+                        <p class="hero-kicker mb-1">
+                            Important Information
+                        </p>
+
+                        <h4 class="mb-0">
+                            Thông tin cần biết
+                        </h4>
+                    </div>
+
+                </div>
+
+                <div class="booking-notice-body">
+
+                    <p class="text-muted small mb-4">
+                        Một số lưu ý quan trọng trước khi bạn hoàn tất đặt phòng.
+                    </p>
+
+                    <div class="booking-notice-item">
+
+                        <i class="bi bi-credit-card"></i>
+
+                        <div>
+                            <h6>Không cần thẻ tín dụng</h6>
+
+                            <p>
+                                Không cần cung cấp thông tin thẻ tín dụng để đặt phòng.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="booking-notice-item">
+
+                        <i class="bi bi-calendar-check"></i>
+
+                        <div>
+                            <h6>Chính sách hủy</h6>
+
+                            <p>
+                                Bạn có thể hủy miễn phí trước ngày nhận phòng.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="booking-notice-item">
+
+                        <i class="bi bi-door-closed"></i>
+
+                        <div>
+                            <h6>Không gian riêng tư</h6>
+
+                            <p>
+                                Bạn sẽ sử dụng riêng phòng đã chọn trong đơn đặt phòng.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="booking-notice-item">
+
+                        <i class="bi bi-wallet2"></i>
+
+                        <div>
+                            <h6>Thanh toán tại khách sạn</h6>
+
+                            <p>
+                                Chưa cần thanh toán ngay khi gửi yêu cầu đặt phòng.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="booking-notice-item">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+                            <h6>Kiểm tra tình trạng phòng</h6>
+
+                            <p>
+                                Hệ thống sẽ kiểm tra lại tình trạng phòng tại thời điểm xác nhận đơn.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="booking-notice-footer">
+
+                        <i class="bi bi-headset"></i>
+
+                        <div>
+                            <strong>Cần hỗ trợ?</strong>
+
+                            <p class="mb-0">
+                                Vui lòng liên hệ bộ phận lễ tân của khách sạn.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</main>
+
+<div th:replace="~{common/footer :: footer}"></div>
+
+</body>
+</html>

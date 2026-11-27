@@ -1,9 +1,6 @@
 package com.hotel.model;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
-import com.hotel.enums.TrangThaiPhong;
-import com.hotel.mapper.LoaiPhongMapper;
 import javax.persistence.*;
 
 import lombok.Getter;
@@ -29,9 +26,6 @@ public class Phong {
     @Column(name = "tang")
     private Integer tang;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "trang_thai")
-    private TrangThaiPhong trangThaiPhong;
 
     @Column(name = "ghi_chu", length = 255)
     private String ghiChu;
