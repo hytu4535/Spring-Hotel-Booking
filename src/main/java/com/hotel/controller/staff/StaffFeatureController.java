@@ -30,13 +30,14 @@ public class StaffFeatureController {
     @GetMapping("/staff/loai-phong")
     public String roomTypes(@RequestParam(required = false) String tenLoai, Model model) {
         model.addAttribute("tenLoai", tenLoai == null ? "" : tenLoai);
-        model.addAttribute("loaiPhongList", loaiPhongService.getAllLoaiPhong());
+        model.addAttribute("loaiPhongList", loaiPhongService.searchLoaiPhong(tenLoai));
         return "staff/loai-phong";
     }
 
     @GetMapping("/staff/phong")
-    public String rooms(Model model) {
-        model.addAttribute("phongList", phongService.getAllPhong());
+    public String rooms(@RequestParam(required = false) String soPhong, Model model) {
+        model.addAttribute("soPhong", soPhong == null ? "" : soPhong);
+        model.addAttribute("phongList", phongService.searchPhong(soPhong));
         return "staff/phong";
     }
 

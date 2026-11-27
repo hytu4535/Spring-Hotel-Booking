@@ -3,6 +3,7 @@ package com.hotel.controller.admin;
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.TaiKhoanService;
 import com.hotel.util.PasswordUtil;
+import com.hotel.service.RolePermissionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,33 +12,45 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping({"/admin/tai-khoan", "/admin/nhan-vien"})
+@RequestMapping({"/admin/tai-khoan", "/admin/nhan-vien", "/staff/tai-khoan"})
 public class AdminAccountController {
     private final TaiKhoanService service;
-    public AdminAccountController(TaiKhoanService service) { this.service = service; }
+    private final RolePermissionService rolePermissionService;
+    public AdminAccountController(TaiKhoanService service, RolePermissionService rolePermissionService) {
+        this.service = service;
+        this.rolePermissionService = rolePermissionService;
+    }
 
     @GetMapping
     public String list(HttpServletRequest request, Model model) {
-        if (!isAdmin(request)) return "redirect:/login";
+        if (!canManage(request, "ACCOUNT_MANAGE")) return "redirect:/login";
         model.addAttribute("taiKhoanList", service.findAll());
         model.addAttribute("filterTenDangNhap", request.getParameter("tenDangNhap"));
         model.addAttribute("filterHoTen", request.getParameter("hoTen"));
+        model.addAttribute("staffView", request.getServletPath().startsWith("/staff/"));
+        model.addAttribute("accountBasePath", request.getServletPath().startsWith("/staff/")
+                ? "/staff/tai-khoan" : "/admin/tai-khoan");
         return "admin/taiKhoanManage";
     }
 
     @GetMapping("/{maTk}/sua")
     public String editForm(@PathVariable int maTk, HttpServletRequest request, Model model) {
-        if (!isAdmin(request)) return "redirect:/login";
+        if (!canManage(request, "ACCOUNT_MANAGE")) return "redirect:/login";
         TaiKhoan account = service.findById(maTk);
-        if (account == null) return "redirect:/admin/tai-khoan";
+        if (account == null) {
+            return "redirect:" + request.getRequestURI().replaceFirst("/\\d+/sua$", "");
+        }
         model.addAttribute("account", account);
+        model.addAttribute("staffView", request.getServletPath().startsWith("/staff/"));
+        model.addAttribute("accountBasePath", request.getServletPath().startsWith("/staff/")
+                ? "/staff/tai-khoan" : "/admin/tai-khoan");
         return "admin/form-tai-khoan";
     }
 
     @PostMapping
     public String action(@RequestParam String action, @RequestParam(required = false) Integer maTk,
                          HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        if (!isAdmin(request)) return "redirect:/login";
+        if (!canManage(request, "ACCOUNT_MANAGE")) return "redirect:/login";
         if ("create".equals(action)) {
             String username = request.getParameter("tenDangNhap");
             String password = request.getParameter("matKhau");
@@ -92,16 +105,16 @@ public class AdminAccountController {
                        @RequestParam(required = false) String matKhau,
                        HttpServletRequest request,
                        RedirectAttributes redirectAttributes) {
-        if (!isAdmin(request)) return "redirect:/login";
+        if (!canManage(request, "ACCOUNT_MANAGE")) return "redirect:/login";
         TaiKhoan account = service.findById(maTk);
         if (account == null) {
             redirectAttributes.addFlashAttribute("error", "Tài khoản không tồn tại.");
-            return "redirect:/admin/tai-khoan";
+            return "redirect:" + request.getRequestURI().replaceFirst("/\\d+/sua$", "");
         }
         if (hoTen == null || hoTen.isBlank() || email == null || email.isBlank()
                 || service.existsEmail(email.trim(), maTk)) {
             redirectAttributes.addFlashAttribute("error", "Họ tên/email không hợp lệ hoặc email đã tồn tại.");
-            return "redirect:/admin/tai-khoan/" + maTk + "/sua";
+            return "redirect:" + request.getRequestURI();
         }
         account.setHoTen(hoTen.trim());
         account.setEmail(email.trim());
@@ -109,13 +122,13 @@ public class AdminAccountController {
         if (matKhau != null && !matKhau.isBlank()) {
             if (matKhau.length() < 6) {
                 redirectAttributes.addFlashAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự.");
-                return "redirect:/admin/tai-khoan/" + maTk + "/sua";
+                return "redirect:" + request.getRequestURI();
             }
             account.setMatKhau(PasswordUtil.hash(matKhau));
         }
         service.update(account);
         redirectAttributes.addFlashAttribute("success", "Cập nhật tài khoản thành công.");
-        return "redirect:/admin/tai-khoan";
+        return "redirect:" + request.getRequestURI().replaceFirst("/\\d+/sua$", "");
     }
 
     private TaiKhoan currentUser(HttpServletRequest request) {
@@ -127,6 +140,12 @@ public class AdminAccountController {
         HttpSession session = request.getSession(false);
         TaiKhoan user = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
         return user != null && "ADMIN".equals(user.getVaiTro());
+    }
+
+    private boolean canManage(HttpServletRequest request, String permission) {
+        HttpSession session = request.getSession(false);
+        TaiKhoan user = session == null ? null : (TaiKhoan) session.getAttribute("currentUser");
+        return user != null && rolePermissionService.hasPermission(user.getVaiTro(), permission);
     }
 
     private String nextRole(String currentRole) {

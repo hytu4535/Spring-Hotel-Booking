@@ -261,6 +261,17 @@
 
         modalInstance.show();
     }
+
+    const roomParams = new URLSearchParams(window.location.search);
+    if (roomParams.get('openCreate') === 'true') {
+        openCreateModal();
+    } else if (roomParams.get('editId')) {
+        const editButton = document.querySelector('[data-id="' + roomParams.get('editId') + '"]');
+        if (editButton) openEditModalFromBtn(editButton);
+    } else if (roomParams.get('deleteId')) {
+        const deleteForm = document.querySelector('form[action$="/delete/' + roomParams.get('deleteId') + '"]');
+        if (deleteForm && confirm('Bạn có chắc chắn muốn xóa phòng này không?')) deleteForm.submit();
+    }
 </script>
 </body>
 </html>

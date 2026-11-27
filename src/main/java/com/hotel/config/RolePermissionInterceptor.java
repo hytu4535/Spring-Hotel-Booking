@@ -20,7 +20,7 @@ public class RolePermissionInterceptor implements HandlerInterceptor {
         TaiKhoan user = request.getSession(false) == null ? null
                 : (TaiKhoan) request.getSession(false).getAttribute("currentUser");
         if (user == null) { response.sendRedirect(request.getContextPath() + "/login"); return false; }
-        if (!service.canAccess(user.getVaiTro(), path)) {
+        if (!service.canAccess(user.getVaiTro(), path, request.getMethod())) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập chức năng này.");
             return false;
         }
