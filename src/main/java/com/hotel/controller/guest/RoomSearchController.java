@@ -18,28 +18,74 @@ public class RoomSearchController {
         this.roomSearchService = roomSearchService;
     }
 
+
     @GetMapping("/tim-phong")
-    public String search(@RequestParam(required = false) String ngayNhan,
-                         @RequestParam(required = false) String ngayTra, Model model) {
+    public String search(
+            @RequestParam(required = false) String ngayNhan,
+            @RequestParam(required = false) String ngayTra,
+            Model model
+    ) {
         model.addAttribute("ngayNhan", ngayNhan);
         model.addAttribute("ngayTra", ngayTra);
         model.addAttribute("today", LocalDate.now());
-        if (ngayNhan == null || ngayTra == null) {
-            model.addAttribute("danhSachPhong", Collections.emptyList());
-            return "guest/tim-phong";
+
+        String viewName = "guest/tim-phong";
+
+        boolean chuaNhapNgayNhan = ngayNhan == null || ngayNhan.isBlank();
+        boolean chuaNhapNgayTra = ngayTra == null || ngayTra.isBlank();
+
+        if (chuaNhapNgayNhan && chuaNhapNgayTra) {
+            model.addAttribute(
+                    "danhSachPhong",
+                    roomSearchService.findAll()
+            );
+
+            return viewName;
         }
+        if (chuaNhapNgayNhan || chuaNhapNgayTra) {
+            model.addAttribute(
+                    "error",
+                    "Vui lòng chọn đầy đủ ngày nhận phòng và ngày trả phòng."
+            );
+
+            model.addAttribute("danhSachPhong", Collections.emptyList());
+
+            return viewName;
+        }
+
         try {
-            LocalDate checkIn = DateUtil.parse(ngayNhan), checkOut = DateUtil.parse(ngayTra);
-            if (!DateUtil.isValidBookingRange(checkIn, checkOut)) throw new IllegalArgumentException();
-            model.addAttribute("soDem", DateUtil.soDem(checkIn, checkOut));
-            model.addAttribute("danhSachPhong",
-                    roomSearchService.findAvailable(Date.valueOf(checkIn), Date.valueOf(checkOut)));
+            LocalDate checkIn = DateUtil.parse(ngayNhan);
+            LocalDate checkOut = DateUtil.parse(ngayTra);
+
+            if (!DateUtil.isValidBookingRange(checkIn, checkOut)) {
+                throw new IllegalArgumentException();
+            }
+
+            model.addAttribute(
+                    "soDem",
+                    DateUtil.soDem(checkIn, checkOut)
+            );
+
+            model.addAttribute(
+                    "danhSachPhong",
+                    roomSearchService.findAvailable(
+                            Date.valueOf(checkIn),
+                            Date.valueOf(checkOut)
+                    )
+            );
+
         } catch (RuntimeException ex) {
-            model.addAttribute("error", "Ngày nhận/trả phòng không hợp lệ.");
+            model.addAttribute(
+                    "error",
+                    "Ngày nhận/trả phòng không hợp lệ."
+            );
+
             model.addAttribute("danhSachPhong", Collections.emptyList());
         }
-        return "guest/tim-phong";
+
+        return viewName;
     }
+
 
     @GetMapping("/chi-tiet-phong")
     public String details(@RequestParam int maPhong, @RequestParam(required = false) String ngayNhan,

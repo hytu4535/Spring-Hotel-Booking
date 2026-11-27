@@ -1,133 +1,445 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu đơn đặt phòng</title>
+
+    <link rel="stylesheet" th:href="@{/css/tracking.css}">
+</head>
+
+<body>
+
 <div th:replace="~{common/header :: header}"></div>
-<style>
-    .tracking-card { max-width: 960px; }
-    .lookup-panel { background: linear-gradient(135deg, #0d6efd, #315fbe); color: #fff; }
-    .status-step { border-left: 3px solid #0d6efd; padding-left: 1rem; }
-    .booking-code { letter-spacing: .1em; }
-</style>
 
-<main class="container tracking-card py-5">
-    <div class="text-center mb-4">
-        <h1 class="h2 fw-bold">Tra cứu đơn đặt phòng</h1>
-        <p class="text-muted">Nhập mã tra cứu và email đã dùng khi đặt phòng để xem thông tin đơn.</p>
-    </div>
+<main class="section-space">
+    <div class="container tracking-page">
 
-    <div class="card border-0 shadow-sm mb-4 lookup-panel">
-        <div class="card-body p-4 p-md-5">
-            <form th:action="@{/tra-cuu-don}" method="post" class="row g-3">
+        <!-- TIÊU ĐỀ -->
+        <div class="text-center mb-5 reveal">
+            <p class="hero-kicker">Booking Support</p>
+
+            <h1 class="section-title">
+                Tra cứu đơn đặt phòng
+            </h1>
+
+            <p class="section-subtitle">
+                Theo dõi trạng thái, kiểm tra thông tin và quản lý đơn đặt phòng của bạn.
+            </p>
+        </div>
+
+        <!-- FORM TRA CỨU -->
+        <section class="tracking-search reveal mb-4">
+
+            <div class="mb-4">
+                <h4 class="fw-bold mb-2">
+                    <i class="bi bi-search me-2"></i>
+                    Thông tin tra cứu
+                </h4>
+
+                <p class="text-muted small mb-0">
+                    Nhập mã tra cứu và email đã sử dụng khi đặt phòng để xem thông tin chi tiết.
+                </p>
+            </div>
+
+            <form th:action="@{/tra-cuu-don}" method="post"
+                  class="row g-3 align-items-end">
+
                 <input type="hidden" name="action" value="search">
+
                 <div class="col-md-5">
-                    <label class="form-label" for="maTraCuu">Mã tra cứu</label>
-                    <input id="maTraCuu" name="maTraCuu" class="form-control form-control-lg booking-code"
-                           placeholder="Ví dụ: HB8K2P4Q" th:value="${maTraCuuInput}"
-                           required maxlength="20" autocomplete="off">
+                    <label class="form-label" for="maTraCuu">
+                        Mã tra cứu
+                    </label>
+
+                    <input
+                            id="maTraCuu"
+                            name="maTraCuu"
+                            class="form-control booking-code"
+                            placeholder="Ví dụ: HB8K2P4Q"
+                            th:value="${maTraCuuInput}"
+                            required
+                            maxlength="20"
+                            autocomplete="off">
                 </div>
+
                 <div class="col-md-5">
-                    <label class="form-label" for="email">Email đặt phòng</label>
-                    <input id="email" name="email" type="email" class="form-control form-control-lg"
-                           placeholder="email@example.com" th:value="${emailInput}" required>
+                    <label class="form-label" for="email">
+                        Email đặt phòng
+                    </label>
+
+                    <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            class="form-control"
+                            placeholder="email@example.com"
+                            th:value="${emailInput}"
+                            required>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-warning btn-lg w-100" type="submit">
-                        <i class="bi bi-search me-1"></i>Tra cứu
+
+                <div class="col-md-2">
+                    <button class="btn btn-cta w-100 py-2" type="submit">
+                        <i class="bi bi-search me-1"></i>
+                        Tra cứu
                     </button>
                 </div>
+
             </form>
-        </div>
-    </div>
 
-    <div class="alert alert-success d-flex align-items-center" th:if="${success}">
-        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${success}"></span>
-    </div>
-    <div class="alert alert-danger d-flex align-items-center" th:if="${error}">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
-    </div>
-
-    <section class="card border-0 shadow-sm" th:if="${donDatPhong}">
-        <div class="card-body p-4 p-md-5">
-            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 border-bottom pb-3 mb-4">
-                <div>
-                    <div class="text-muted small">MÃ ĐƠN ĐẶT PHÒNG</div>
-                    <h2 class="h4 booking-code text-primary mb-0" th:text="${donDatPhong.maTraCuu}"></h2>
-                </div>
-                <div class="text-md-end">
-                    <div class="text-muted small">TRẠNG THÁI</div>
-                    <span class="badge fs-6"
-                          th:classappend="${donDatPhong.trangThai == 'CHO_XAC_NHAN' ? ' bg-warning text-dark' : (donDatPhong.trangThai == 'DA_HUY' ? ' bg-secondary' : ' bg-success')}"
-                          th:text="${donDatPhong.trangThai == 'CHO_XAC_NHAN' ? 'Chờ xác nhận' : (donDatPhong.trangThai == 'DA_HUY' ? 'Đã hủy' : donDatPhong.trangThai)}"></span>
-                </div>
+            <div class="mt-4 pt-3 border-top">
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Mã tra cứu và email giúp xác minh thông tin đơn đặt phòng của bạn.
+                </p>
             </div>
 
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="status-step">
-                        <div class="text-muted small">THÔNG TIN KHÁCH HÀNG</div>
-                        <div class="fw-semibold" th:text="${khachHang.hoTen}"></div>
-                        <div th:text="${khachHang.email}"></div>
-                        <div class="text-muted" th:text="${khachHang.soDienThoai}"></div>
+        </section>
+
+        <!-- THÔNG BÁO -->
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-4"
+             th:if="${success}">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${success}"></span>
+        </div>
+
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4"
+             th:if="${error}">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- KẾT QUẢ TRA CỨU -->
+        <section class="tracking-result reveal" th:if="${donDatPhong}">
+
+            <!-- HEADER KẾT QUẢ -->
+            <div class="tracking-result-header">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                    <div>
+                        <p class="hero-kicker mb-2">
+                            Booking Information
+                        </p>
+
+                        <h4 class="fw-bold mb-2">
+                            Chi tiết đơn đặt phòng
+                        </h4>
+
+                        <div class="text-muted small">
+                            Mã đơn:
+                            <span class="booking-code fw-bold text-primary"
+                                  th:text="${donDatPhong.maTraCuu}"></span>
+                        </div>
                     </div>
+
+                    <!-- TRẠNG THÁI -->
+                    <div class="text-md-end">
+
+                        <div class="small text-muted mb-2">
+                            TRẠNG THÁI ĐƠN
+                        </div>
+
+                        <span class="tracking-status bg-warning text-dark"
+                              th:if="${donDatPhong.trangThai == 'CHO_XAC_NHAN'}">
+                            <i class="bi bi-clock me-1"></i>
+                            Chờ xác nhận
+                        </span>
+
+                        <span class="tracking-status bg-primary text-white"
+                              th:if="${donDatPhong.trangThai == 'DA_XAC_NHAN'}">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Đã xác nhận
+                        </span>
+
+                        <span class="tracking-status bg-success text-white"
+                              th:if="${donDatPhong.trangThai == 'DA_NHAN_PHONG'}">
+                            <i class="bi bi-door-open me-1"></i>
+                            Đang lưu trú
+                        </span>
+
+                        <span class="tracking-status bg-secondary text-white"
+                              th:if="${donDatPhong.trangThai == 'DA_TRA_PHONG'}">
+                            <i class="bi bi-check2-all me-1"></i>
+                            Đã trả phòng
+                        </span>
+
+                        <span class="tracking-status bg-danger text-white"
+                              th:if="${donDatPhong.trangThai == 'DA_HUY'}">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Đã hủy
+                        </span>
+
+                    </div>
+
                 </div>
-                <div class="col-md-6">
-                    <div class="status-step">
-                        <div class="text-muted small">THỜI GIAN LƯU TRÚ</div>
+
+            </div>
+
+            <!-- BODY KẾT QUẢ -->
+            <div class="tracking-result-body">
+
+                <div class="row g-4">
+
+                    <!-- THÔNG TIN KHÁCH HÀNG -->
+                    <div class="col-md-6">
+                        <div class="tracking-info">
+
+                            <h5 class="tracking-info-title">
+                                <i class="bi bi-person-circle"></i>
+                                Thông tin khách hàng
+                            </h5>
+
+                            <div class="tracking-info-row">
+                                <span class="tracking-info-label">
+                                    Họ và tên
+                                </span>
+
+                                <div class="tracking-info-value"
+                                     th:text="${khachHang.hoTen}"></div>
+                            </div>
+
+                            <div class="tracking-info-row">
+                                <span class="tracking-info-label">
+                                    Email
+                                </span>
+
+                                <div class="tracking-info-value"
+                                     th:text="${khachHang.email}"></div>
+                            </div>
+
+                            <div class="tracking-info-row">
+                                <span class="tracking-info-label">
+                                    Số điện thoại
+                                </span>
+
+                                <div class="tracking-info-value"
+                                     th:text="${khachHang.soDienThoai}"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- THỜI GIAN LƯU TRÚ -->
+                    <div class="col-md-6">
+                        <div class="tracking-info">
+
+                            <h5 class="tracking-info-title">
+                                <i class="bi bi-calendar-check"></i>
+                                Thời gian lưu trú
+                            </h5>
+
+                            <div class="tracking-info-row">
+                                <span class="tracking-info-label">
+                                    Ngày nhận phòng
+                                </span>
+
+                                <div class="tracking-info-value">
+                                    <i class="bi bi-calendar-plus text-muted me-1"></i>
+                                    <span th:text="${#dates.format(donDatPhong.ngayNhanPhong, 'dd/MM/yyyy')}"></span>
+                                </div>
+                            </div>
+
+                            <div class="tracking-info-row">
+                                <span class="tracking-info-label">
+                                    Ngày trả phòng
+                                </span>
+
+                                <div class="tracking-info-value">
+                                    <i class="bi bi-calendar-minus text-muted me-1"></i>
+                                    <span th:text="${#dates.format(donDatPhong.ngayTraPhong, 'dd/MM/yyyy')}"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CHI TIẾT THANH TOÁN -->
+                <div class="mt-4">
+
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-wallet2 me-2"></i>
+                        Chi tiết thanh toán
+                    </h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <div class="tracking-info">
+                                <span class="tracking-info-label">
+                                    Tiền phòng
+                                </span>
+
+                                <div class="tracking-info-value"
+                                     th:text="${#numbers.formatDecimal(donDatPhong.tienPhong, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="tracking-info">
+                                <span class="tracking-info-label">
+                                    Dịch vụ phát sinh
+                                </span>
+
+                                <div class="tracking-info-value"
+                                     th:text="${#numbers.formatDecimal(donDatPhong.tienDichVu, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="tracking-total h-100">
+                                <span class="tracking-info-label">
+                                    Tổng tiền
+                                </span>
+
+                                <div class="tracking-total-amount"
+                                     th:text="${#numbers.formatDecimal(donDatPhong.tongTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- DỊCH VỤ PHÁT SINH -->
+                <div class="tracking-services" th:if="${danhSachDichVu != null}">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-stars me-2"></i>
+                            Dịch vụ phát sinh
+                        </h5>
+                    </div>
+
+                    <div class="table-responsive"
+                         th:if="${!#lists.isEmpty(danhSachDichVu)}">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead>
+                            <tr>
+                                <th>Dịch vụ</th>
+                                <th>Số lượng</th>
+                                <th>Ngày sử dụng</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+
+                            <tr th:each="service : ${danhSachDichVu}">
+
+                                <td class="fw-semibold"
+                                    th:text="${service.tenDv}"></td>
+
+                                <td th:text="${service.soLuong}"></td>
+
+                                <td th:text="${service.ngaySuDung != null ? #dates.format(service.ngaySuDung, 'dd/MM/yyyy') : '-'}"></td>
+
+                                <td class="text-end fw-semibold"
+                                    th:text="${#numbers.formatDecimal(service.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                </td>
+
+                            </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="text-center text-muted py-4"
+                         th:if="${#lists.isEmpty(danhSachDichVu)}">
+
+                        <i class="bi bi-info-circle me-1"></i>
+                        Chưa có dịch vụ phát sinh.
+
+                    </div>
+
+                </div>
+
+                <!-- HỦY ĐƠN -->
+                <div class="tracking-cancel">
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
                         <div>
-                            <i class="bi bi-calendar-check text-primary me-1"></i>
-                            <span th:text="${#dates.format(donDatPhong.ngayNhanPhong, 'dd/MM/yyyy')}"></span>
-                            đến
-                            <span th:text="${#dates.format(donDatPhong.ngayTraPhong, 'dd/MM/yyyy')}"></span>
+                            <h6 class="fw-bold mb-1">
+                                Quản lý đơn đặt phòng
+                            </h6>
+
+                            <p class="text-muted small mb-0">
+                                Chỉ được hủy đơn khi đơn đang ở trạng thái chờ xác nhận.
+                            </p>
                         </div>
-                        <div class="mt-2"><span class="text-muted">Tiền phòng:</span>
-                            <strong th:text="${#numbers.formatDecimal(donDatPhong.tienPhong, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
-                        </div>
-                        <div><span class="text-muted">Dịch vụ phát sinh:</span>
-                            <strong th:text="${#numbers.formatDecimal(donDatPhong.tienDichVu, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
-                        </div>
-                        <div><span class="text-muted">Tổng tiền:</span>
-                            <strong class="text-danger" th:text="${#numbers.formatDecimal(donDatPhong.tongTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
-                        </div>
+
+                        <form th:if="${donDatPhong.trangThai == 'CHO_XAC_NHAN'}"
+                              th:action="@{/tra-cuu-don}"
+                              method="post"
+                              onsubmit="return confirm('Bạn có chắc muốn hủy đơn đặt phòng này?');">
+
+                            <input type="hidden" name="action" value="cancel">
+
+                            <input type="hidden" name="maDp"
+                                   th:value="${donDatPhong.maDp}">
+
+                            <input type="hidden" name="maTraCuu"
+                                   th:value="${donDatPhong.maTraCuu}">
+
+                            <input type="hidden" name="email"
+                                   th:value="${khachHang.email}">
+
+                            <button class="btn btn-outline-danger" type="submit">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Hủy đơn đặt phòng
+                            </button>
+
+                        </form>
+
                     </div>
+
                 </div>
+
             </div>
 
-            <div class="mt-4" th:if="${danhSachDichVu != null}">
-                <h3 class="h5 border-bottom pb-2">Dịch vụ phát sinh</h3>
-                <div class="table-responsive" th:if="${!#lists.isEmpty(danhSachDichVu)}">
-                    <table class="table table-sm align-middle">
-                        <thead><tr><th>Dịch vụ</th><th>Số lượng</th><th>Ngày sử dụng</th><th class="text-end">Thành tiền</th></tr></thead>
-                        <tbody>
-                        <tr th:each="service : ${danhSachDichVu}">
-                            <td th:text="${service.tenDv}"></td>
-                            <td th:text="${service.soLuong}"></td>
-                            <td th:text="${service.ngaySuDung != null ? #dates.format(service.ngaySuDung, 'dd/MM/yyyy') : '-'}"></td>
-                            <td class="text-end" th:text="${#numbers.formatDecimal(service.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="text-muted small" th:if="${#lists.isEmpty(danhSachDichVu)}">Chưa có dịch vụ phát sinh.</p>
+        </section>
+
+        <!-- CHƯA CÓ KẾT QUẢ -->
+        <section class="tracking-empty reveal" th:if="${donDatPhong == null}">
+
+            <div class="tracking-empty-icon">
+                <i class="bi bi-journal-search"></i>
             </div>
 
-            <div class="mt-4 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
-                <div class="text-muted small"><i class="bi bi-info-circle me-1"></i>Chỉ được hủy khi đơn đang chờ xác nhận.</div>
-                <form th:if="${donDatPhong.trangThai == 'CHO_XAC_NHAN'}"
-                      th:action="@{/tra-cuu-don}" method="post"
-                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn đặt phòng này?');">
-                    <input type="hidden" name="action" value="cancel">
-                    <input type="hidden" name="maDp" th:value="${donDatPhong.maDp}">
-                    <input type="hidden" name="maTraCuu" th:value="${donDatPhong.maTraCuu}">
-                    <input type="hidden" name="email" th:value="${khachHang.email}">
-                    <button class="btn btn-outline-danger" type="submit">
-                        <i class="bi bi-x-circle me-1"></i>Hủy đơn đặt phòng
-                    </button>
-                </form>
-            </div>
+            <h5 class="fw-bold mb-2">
+                Thông tin đơn đặt phòng
+            </h5>
+
+            <p class="text-muted mb-0">
+                Sau khi nhập mã tra cứu và email, thông tin chi tiết về đơn đặt phòng sẽ hiển thị tại đây.
+            </p>
+
+        </section>
+
+        <!-- HỖ TRỢ -->
+        <div class="text-center mt-4">
+            <p class="text-muted small mb-0">
+                <i class="bi bi-headset me-1"></i>
+                Cần hỗ trợ? Vui lòng liên hệ bộ phận lễ tân của khách sạn.
+            </p>
         </div>
-    </section>
 
-    <div class="text-center text-muted small mt-4">Cần hỗ trợ? Vui lòng liên hệ bộ phận lễ tân của khách sạn.</div>
+    </div>
 </main>
 
 <div th:replace="~{common/footer :: footer}"></div>
+
+</body>
 </html>

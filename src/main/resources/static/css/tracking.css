@@ -1,0 +1,263 @@
+/* ==============================
+   BOOKING TRACKING PAGE
+============================== */
+
+.tracking-page {
+    max-width: 1000px;
+}
+
+/* KICKER */
+.tracking-page .hero-kicker {
+    color: var(--brand-gold-strong);
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+}
+
+/* FORM TRA CỨU */
+.tracking-search {
+    background: #fff;
+    border: 1px solid var(--line-soft);
+    border-radius: 0.9rem;
+    padding: 1.8rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.tracking-search .form-label {
+    font-weight: 600;
+    color: var(--brand-deep);
+    font-size: 0.9rem;
+}
+
+.tracking-search .form-control {
+    min-height: 46px;
+    border-radius: 0.5rem;
+    border-color: rgba(43, 39, 34, 0.16);
+    color: var(--text-main);
+}
+
+.tracking-search .form-control:focus {
+    border-color: var(--brand-gold);
+    box-shadow: 0 0 0 0.2rem rgba(183, 154, 99, 0.15);
+}
+
+.booking-code {
+    letter-spacing: 0.1em;
+}
+
+/* KẾT QUẢ TRA CỨU */
+.tracking-result {
+    background: #fff;
+    border: 1px solid var(--line-soft);
+    border-radius: 0.9rem;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.tracking-result-header {
+    padding: 1.8rem 2rem 1.4rem;
+    border-bottom: 1px solid var(--line-soft);
+    background: linear-gradient(
+            135deg,
+            #fff,
+            var(--brand-light)
+    );
+}
+
+.tracking-result-body {
+    padding: 2rem;
+}
+
+/* THÔNG TIN CHI TIẾT */
+.tracking-info {
+    height: 100%;
+    padding: 1.35rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 0.75rem;
+    background: #fff;
+    transition: box-shadow 0.2s ease;
+}
+
+.tracking-info:hover {
+    box-shadow: 0 8px 22px rgba(20, 16, 12, 0.05);
+}
+
+.tracking-info-title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--brand-deep);
+    margin-bottom: 1.2rem;
+}
+
+.tracking-info-title i {
+    color: var(--brand-gold-strong);
+    font-size: 1.15rem;
+}
+
+.tracking-info-row {
+    margin-bottom: 1rem;
+}
+
+.tracking-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.tracking-info-label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.tracking-info-value {
+    font-weight: 600;
+    color: var(--text-main);
+    overflow-wrap: anywhere;
+}
+
+/* CHI TIẾT THANH TOÁN */
+.tracking-total {
+    height: 100%;
+    padding: 1.35rem;
+    background: var(--brand-light);
+    border: 1px solid var(--line-soft);
+    border-radius: 0.75rem;
+}
+
+.tracking-total-amount {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--brand-gold-strong);
+}
+
+/* TRẠNG THÁI ĐƠN */
+.tracking-status {
+    display: inline-block;
+    padding: 0.55rem 0.95rem;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+/* Chờ xác nhận */
+.tracking-status.bg-warning {
+    background: rgba(183, 154, 99, 0.2) !important;
+    color: var(--brand-deep) !important;
+}
+
+/* Đã xác nhận */
+.tracking-status.bg-primary {
+    background: var(--brand-gold) !important;
+    color: #fff !important;
+}
+
+/* Đang lưu trú */
+.tracking-status.bg-success {
+    background: var(--brand-deep) !important;
+    color: #fff !important;
+}
+
+/* Đã trả phòng */
+.tracking-status.bg-secondary {
+    background: #eae6df !important;
+    color: var(--brand-deep) !important;
+}
+
+/* Đã hủy */
+.tracking-status.bg-danger {
+    background: #f7e9e6 !important;
+    color: #a23d32 !important;
+}
+
+/* BẢNG DỊCH VỤ */
+.tracking-services {
+    margin-top: 2rem;
+}
+
+.tracking-services .table {
+    margin-bottom: 0;
+    color: var(--text-main);
+}
+
+.tracking-services .table th {
+    white-space: nowrap;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--brand-deep);
+    background: var(--brand-light);
+    border-bottom: 1px solid var(--line-soft);
+    padding: 0.9rem;
+}
+
+.tracking-services .table td {
+    padding: 0.9rem;
+    vertical-align: middle;
+    border-color: rgba(183, 154, 99, 0.13);
+}
+
+/* HỦY ĐƠN */
+.tracking-cancel {
+    margin-top: 1.8rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line-soft);
+}
+
+.tracking-cancel h6 {
+    color: var(--brand-deep);
+}
+
+/* TRẠNG THÁI CHƯA CÓ KẾT QUẢ */
+.tracking-empty {
+    text-align: center;
+    padding: 2.8rem 1.5rem;
+    background: #fff;
+    border: 1px solid var(--line-soft);
+    border-radius: 0.9rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.tracking-empty-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.2rem;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--brand-light);
+    color: var(--brand-gold-strong);
+    font-size: 1.8rem;
+}
+
+.tracking-empty h5 {
+    color: var(--brand-deep);
+}
+
+/* THÔNG BÁO */
+.tracking-page .alert {
+    border-radius: 0.65rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 767.98px) {
+    .tracking-search {
+        padding: 1.25rem;
+    }
+
+    .tracking-result-header,
+    .tracking-result-body {
+        padding: 1.3rem;
+    }
+
+    .tracking-total-amount {
+        font-size: 1.25rem;
+    }
+
+    .tracking-services .table th,
+    .tracking-services .table td {
+        padding: 0.7rem;
+        font-size: 0.82rem;
+    }
+}
