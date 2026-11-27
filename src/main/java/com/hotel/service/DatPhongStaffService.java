@@ -9,12 +9,17 @@ import com.hotel.event.BookingStatusEmailEvent;
 import com.hotel.repository.ChiTietDatPhongRepository;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.PhongRepository;
+import com.hotel.repository.ThanhToanRepository;
+import com.hotel.model.ThanhToan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,19 +30,32 @@ public class DatPhongStaffService {
     private final PhongRepository phongRepository;
     private final ChiTietDatPhongRepository chiTietDatPhongRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ThanhToanRepository thanhToanRepository;
 
     public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository) {
         this(datPhongRepository, phongRepository, chiTietDatPhongRepository, null);
     }
 
-    @Autowired
     public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
             ChiTietDatPhongRepository chiTietDatPhongRepository,
             ApplicationEventPublisher eventPublisher) {
         this.datPhongRepository = datPhongRepository;
         this.phongRepository = phongRepository;
         this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.eventPublisher = eventPublisher;
+        this.thanhToanRepository = null;
+    }
+
+    @Autowired
+    public DatPhongStaffService(DatPhongRepository datPhongRepository, PhongRepository phongRepository,
+            ChiTietDatPhongRepository chiTietDatPhongRepository,
+            ThanhToanRepository thanhToanRepository,
+            ApplicationEventPublisher eventPublisher) {
+        this.datPhongRepository = datPhongRepository;
+        this.phongRepository = phongRepository;
+        this.chiTietDatPhongRepository = chiTietDatPhongRepository;
+        this.thanhToanRepository = thanhToanRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -139,6 +157,9 @@ public class DatPhongStaffService {
 
         datPhongRepository.save(dp);
         publishStatusEmail(dp, newTrangThai);
+        if ("DA_HUY".equals(newTrangThai)) {
+            recordRefund(dp);
+        }
         return true;
     }
 
@@ -176,12 +197,14 @@ public class DatPhongStaffService {
         }
         if ("DA_NHAN_PHONG".equals(newTrangThai)) {
             return "DA_XAC_NHAN".equals(dp.getTrangThai())
+                    && isCheckInDateValid(dp)
                     && phongs.stream()
                             .allMatch(phong -> phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.BAO_TRI
                                     && phong.getTrangThaiPhong() != com.hotel.enums.TrangThaiPhong.DANG_O);
         }
         if ("DA_TRA_PHONG".equals(newTrangThai)) {
             return "DA_NHAN_PHONG".equals(dp.getTrangThai())
+                    && isCheckOutDateValid(dp)
                     && phongs.stream()
                             .allMatch(phong -> phong.getTrangThaiPhong() == com.hotel.enums.TrangThaiPhong.DANG_O);
         }
@@ -205,5 +228,53 @@ public class DatPhongStaffService {
             return null;
         }
         return Timestamp.valueOf(date.trim() + " 23:59:59");
+    }
+
+    private boolean isCheckInDateValid(DatPhong booking) {
+        if (booking.getNgayNhanPhong() == null || booking.getNgayTraPhong() == null) {
+            return true;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate checkIn = booking.getNgayNhanPhong().toLocalDate();
+        LocalDate checkOut = booking.getNgayTraPhong().toLocalDate();
+        return !today.isBefore(checkIn) && today.isBefore(checkOut);
+    }
+
+    private boolean isCheckOutDateValid(DatPhong booking) {
+        if (booking.getNgayNhanPhong() == null) {
+            return true;
+        }
+        return !LocalDate.now().isBefore(booking.getNgayNhanPhong().toLocalDate());
+    }
+
+    private void recordRefund(DatPhong booking) {
+        if (thanhToanRepository == null) {
+            return;
+        }
+        List<ThanhToan> payments = thanhToanRepository.findByDatPhong_MaDp(booking.getMaDp());
+        if (payments.stream().anyMatch(payment -> "HOAN_TIEN".equalsIgnoreCase(payment.getLoaiThanhToan()))) {
+            return;
+        }
+        BigDecimal paidAmount = payments.stream()
+                .filter(payment -> !"HOAN_TIEN".equalsIgnoreCase(payment.getLoaiThanhToan()))
+                .map(ThanhToan::getSoTien)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+        ThanhToan refund = new ThanhToan();
+        refund.setDatPhong(booking);
+        refund.setSoTien(paidAmount.setScale(2, RoundingMode.HALF_UP));
+        refund.setNgayThanhToan(new Timestamp(System.currentTimeMillis()));
+        refund.setPhuongThuc(payments.stream()
+                .map(ThanhToan::getPhuongThuc)
+                .filter(method -> method != null)
+                .findFirst()
+                .orElse("TIEN_MAT"));
+        refund.setLoaiThanhToan("HOAN_TIEN");
+        refund.setMaGiaoDich("REFUND_" + booking.getMaTraCuu());
+        refund.setGhiChu("Hoàn tiền khi nhân viên hủy đơn đặt phòng.");
+        thanhToanRepository.save(refund);
     }
 }

@@ -15,6 +15,7 @@ public class DatPhongHistoryDTO {
     private Date ngayNhanPhong;
     private Date ngayTraPhong;
     private String trangThai;
+    private String trangThaiLabel;
     private BigDecimal tongTien;
     private BigDecimal tienPhong;
     private BigDecimal tienDichVu;
@@ -67,6 +68,14 @@ public class DatPhongHistoryDTO {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getTrangThaiLabel() {
+        return trangThaiLabel;
+    }
+
+    public void setTrangThaiLabel(String trangThaiLabel) {
+        this.trangThaiLabel = trangThaiLabel;
     }
 
     public BigDecimal getTongTien() {
