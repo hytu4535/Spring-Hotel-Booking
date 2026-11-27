@@ -43,4 +43,12 @@ public class RoomSearchService {
         dto.setHinhAnh(room.getLoaiPhong().getHinhAnh());
         return dto;
     }
+
+    @Transactional(readOnly = true)
+    public List<PhongTrongDTO> findAll() {
+        return phongRepository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
 }

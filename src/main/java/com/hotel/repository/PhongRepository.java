@@ -14,8 +14,6 @@ public interface PhongRepository extends JpaRepository<Phong, Integer> {
 
     List<Phong> findBySoPhongContainingIgnoreCase(String soPhong);
 
-    Optional<Phong> findByMaPhongAndDaXoaFalse(Integer maPhong);
-
     boolean existsBySoPhongIgnoreCaseAndDaXoaFalse(String soPhong);
 
     boolean existsBySoPhongIgnoreCaseAndMaPhongNot(String soPhong, Integer maPhong);
