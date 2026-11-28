@@ -12,8 +12,10 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
     Optional<KhachHang> findByEmailIgnoreCase(String email);
     Optional<KhachHang> findBySoDienThoai(String soDienThoai);
     Optional<KhachHang> findByMaTk(Integer maTk);
+    Optional<KhachHang> findByCccd(String cccd);
 
     List<KhachHang> findAllByOrderByNgayTaoDesc();
+    List<KhachHang> findAllByDaXoaFalseOrderByNgayTaoDesc();
 
     @Query("SELECT k FROM KhachHang k WHERE k.hoTen LIKE %:keyword% OR k.email LIKE %:keyword% OR k.soDienThoai LIKE %:keyword% OR k.cccd LIKE %:keyword%")
     List<KhachHang> search(@Param("keyword") String keyword);

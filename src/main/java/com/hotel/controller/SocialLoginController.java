@@ -192,7 +192,7 @@ public class SocialLoginController {
 
     private String uniqueUsername(String provider, String providerId) {
         String base = provider + "_" + providerId;
-        return taiKhoanRepository.findByTenDangNhapAndTrangThai(base, 1).isEmpty()
+        return taiKhoanRepository.findByTenDangNhapAndTrangThaiAndDaXoaFalse(base, 1).isEmpty()
                 ? base : base + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 

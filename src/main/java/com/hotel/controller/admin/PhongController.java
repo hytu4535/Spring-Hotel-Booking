@@ -24,28 +24,39 @@ public class PhongController {
 
     @GetMapping
     public String showListPage(@RequestParam(name = "soPhong", required = false) String soPhong, Model model) {
-        List<PhongResponseDTO> dsPhong = phongService.searchPhong(soPhong);
-        model.addAttribute("dsPhong", dsPhong);
-        model.addAttribute("dsLoaiPhong", loaiPhongService.getAllLoaiPhong());
+        prepareListModel(soPhong, model);
+        model.addAttribute("phongForm", new PhongRequestDTO(null, null, null, null));
+        model.addAttribute("formAction", "/admin/phong/create");
+        model.addAttribute("openPhongModal", false);
         return "admin/phong/list";
     }
 
     @PostMapping("/create")
     public String handleCreate(
-            @Valid @ModelAttribute PhongRequestDTO request,
+            @Valid @ModelAttribute("phongForm") PhongRequestDTO request,
             BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu nhập vào không hợp lệ!");
-            return "redirect:/admin/phong";
+            prepareListModel(null, model);
+            model.addAttribute("formAction", "/admin/phong/create");
+            model.addAttribute("openPhongModal", true);
+            return "admin/phong/list";
         }
 
         try {
             phongService.createPhong(request);
             redirectAttributes.addFlashAttribute("successMessage", "Thêm mới phòng thành công!");
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (!addBusinessFieldError(bindingResult, e)) {
+                redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+                return "redirect:/admin/phong";
+            }
+            prepareListModel(null, model);
+            model.addAttribute("formAction", "/admin/phong/create");
+            model.addAttribute("openPhongModal", true);
+            return "admin/phong/list";
         }
         return "redirect:/admin/phong";
     }
@@ -53,22 +64,54 @@ public class PhongController {
     @PostMapping("/edit/{id}")
     public String handleUpdate(
             @PathVariable("id") Integer id,
-            @Valid @ModelAttribute PhongRequestDTO request,
+            @Valid @ModelAttribute("phongForm") PhongRequestDTO request,
             BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu cập nhật không hợp lệ!");
-            return "redirect:/admin/phong";
+            prepareListModel(null, model);
+            model.addAttribute("formAction", "/admin/phong/edit/" + id);
+            model.addAttribute("openPhongModal", true);
+            return "admin/phong/list";
         }
 
         try {
             phongService.updatePhong(id, request);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (!addBusinessFieldError(bindingResult, e)) {
+                redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+                return "redirect:/admin/phong";
+            }
+            prepareListModel(null, model);
+            model.addAttribute("formAction", "/admin/phong/edit/" + id);
+            model.addAttribute("openPhongModal", true);
+            return "admin/phong/list";
         }
         return "redirect:/admin/phong";
+    }
+
+    private void prepareListModel(String soPhong, Model model) {
+        List<PhongResponseDTO> dsPhong = phongService.searchPhong(soPhong);
+        model.addAttribute("dsPhong", dsPhong);
+        model.addAttribute("dsLoaiPhong", loaiPhongService.getAllLoaiPhong());
+    }
+
+    private boolean addBusinessFieldError(BindingResult bindingResult, RuntimeException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        if (message.contains("phòng")) {
+            bindingResult.rejectValue("soPhong", "duplicate", message);
+            return true;
+        }
+        if (message.contains("Loại phòng")) {
+            bindingResult.rejectValue("maLoaiPhong", "invalid", message);
+            return true;
+        }
+        return false;
     }
 
     @PostMapping("/delete/{id}")

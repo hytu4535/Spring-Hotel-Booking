@@ -1,0 +1,2 @@
+ALTER TABLE tai_khoan
+    ADD COLUMN da_xoa TINYINT(1) NOT NULL DEFAULT 0 AFTER trang_thai;

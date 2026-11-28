@@ -3,6 +3,7 @@ package com.hotel.dto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
 public record PhongRequestDTO (
@@ -14,6 +15,7 @@ public record PhongRequestDTO (
   Integer maLoaiPhong,
 
   @NotNull(message = "Tầng không được để trống")
+  @Min(value = 1, message = "Tầng phải lớn hơn hoặc bằng 1")
   Integer tang,
 
   @Size(max = 255, message = "Ghi chú không vượt qua 255 kí tự")

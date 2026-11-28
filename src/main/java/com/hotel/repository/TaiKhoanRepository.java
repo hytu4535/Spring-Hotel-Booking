@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaiKhoanRepository extends JpaRepository<TaiKhoan, Integer> {
-    Optional<TaiKhoan> findByTenDangNhapAndTrangThai(String tenDangNhap, int trangThai);
+    Optional<TaiKhoan> findByTenDangNhapAndTrangThaiAndDaXoaFalse(String tenDangNhap, int trangThai);
     Optional<TaiKhoan> findByTenDangNhapIgnoreCase(String tenDangNhap);
     Optional<TaiKhoan> findByProviderAndProviderId(String provider, String providerId);
     Optional<TaiKhoan> findByEmailIgnoreCase(String email);
     List<TaiKhoan> findAllByOrderByNgayTaoDesc();
+    List<TaiKhoan> findAllByDaXoaFalseOrderByNgayTaoDesc();
+    List<TaiKhoan> findByVaiTroAndDaXoaFalseOrderByTenDangNhapAsc(String vaiTro);
     boolean existsByTenDangNhapIgnoreCase(String tenDangNhap);
     boolean existsByTenDangNhapIgnoreCaseAndMaTkNot(String tenDangNhap, int maTk);
     boolean existsByEmailIgnoreCase(String email);

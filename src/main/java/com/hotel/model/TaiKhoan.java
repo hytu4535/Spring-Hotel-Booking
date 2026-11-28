@@ -27,6 +27,8 @@ public class TaiKhoan {
     private Timestamp ngayTao;
     @Column(name = "trang_thai", nullable = false)
     private int trangThai;
+    @Column(name = "da_xoa", nullable = false)
+    private boolean daXoa = false;
     @Column(name = "provider", length = 20)
     private String provider;
     @Column(name = "provider_id", length = 100)
@@ -107,6 +109,12 @@ public class TaiKhoan {
 
     public void setTrangThai(int trangThai) {
         this.trangThai = trangThai;
+    }
+    public boolean isDaXoa() {
+        return daXoa;
+    }
+    public void setDaXoa(boolean daXoa) {
+        this.daXoa = daXoa;
     }
     public String getProvider() { return provider; }
     public void setProvider(String provider) { this.provider = provider; }

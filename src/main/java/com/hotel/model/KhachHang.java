@@ -34,6 +34,9 @@ public class KhachHang {
     @Column(name = "ngay_tao")
     private Timestamp ngayTao;
 
+    @Column(name = "da_xoa", nullable = false)
+    private boolean daXoa = false;
+
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL)
     private List<DatPhong> datPhongs;
 
@@ -61,6 +64,8 @@ public class KhachHang {
 
     public Timestamp getNgayTao() { return ngayTao; }
     public void setNgayTao(Timestamp ngayTao) { this.ngayTao = ngayTao; }
+    public boolean isDaXoa() { return daXoa; }
+    public void setDaXoa(boolean daXoa) { this.daXoa = daXoa; }
 
     public List<DatPhong> getDatPhongs() { return datPhongs; }
     public void setDatPhongs(List<DatPhong> datPhongs) { this.datPhongs = datPhongs; }

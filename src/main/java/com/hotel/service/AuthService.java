@@ -31,7 +31,7 @@ public class AuthService {
         }
 
         TaiKhoan tk = taiKhoanRepository
-                .findByTenDangNhapAndTrangThai(tenDangNhap.trim(), 1)
+                .findByTenDangNhapAndTrangThaiAndDaXoaFalse(tenDangNhap.trim(), 1)
                 .orElse(null);
         if (tk == null) {
             return null;

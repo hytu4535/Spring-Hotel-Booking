@@ -115,9 +115,12 @@
                                             th:value="${hoTen}"
                                             placeholder="Nhập họ và tên"
                                             autocomplete="name"
+                                            pattern="^[\p{L}][\p{L} .'-]{1,99}$"
+                                            title="Họ tên chỉ được chứa chữ cái và khoảng trắng (có thể có . ' -)."
                                             required>
 
                                 </div>
+                                <div class="booking-validation-message text-danger small mt-1">Vui lòng nhập họ tên hợp lệ.</div>
 
                             </div>
 
@@ -141,9 +144,12 @@
                                             th:value="${email}"
                                             placeholder="example@email.com"
                                             autocomplete="email"
+                                            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                                            title="Vui lòng nhập email đúng định dạng, ví dụ example@email.com."
                                             required>
 
                                 </div>
+                                <div class="booking-validation-message text-danger small mt-1">Vui lòng nhập email đúng định dạng.</div>
 
                             </div>
 
@@ -167,9 +173,12 @@
                                             th:value="${soDienThoai}"
                                             placeholder="Nhập số điện thoại"
                                             autocomplete="tel"
+                                            pattern="^0\d{9}$"
+                                            title="Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0."
                                             required>
 
                                 </div>
+                                <div class="booking-validation-message text-danger small mt-1">Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.</div>
 
                             </div>
 
@@ -202,6 +211,7 @@
 
                                 <label for="diaChi" class="form-label">
                                     Địa chỉ
+                                    <span class="text-danger">*</span>
                                 </label>
 
                                 <div class="booking-input-wrapper">
@@ -215,9 +225,14 @@
                                             class="form-control"
                                             th:value="${diaChi}"
                                             placeholder="Nhập địa chỉ liên hệ"
-                                            autocomplete="street-address">
+                                            autocomplete="street-address"
+                                            maxlength="255"
+                                            pattern=".*\S.*"
+                                            title="Địa chỉ là bắt buộc và tối đa 255 ký tự."
+                                            required>
 
                                 </div>
+                                <div class="booking-validation-message text-danger small mt-1">Địa chỉ là bắt buộc.</div>
 
                             </div>
 

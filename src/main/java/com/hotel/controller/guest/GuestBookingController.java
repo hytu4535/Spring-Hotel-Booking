@@ -30,6 +30,9 @@ import java.util.List;
 public class GuestBookingController {
 
     private static final Logger log = LoggerFactory.getLogger(GuestBookingController.class);
+    private static final String NAME_REGEX = "^[\\p{L}][\\p{L} .'-]{1,99}$";
+    private static final String EMAIL_REGEX = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+    private static final String PHONE_REGEX = "^0\\d{9}$";
     private final DatPhongService datPhongService;
     private final DichVuService dichVuService;
     private final ThanhToanService thanhToanService;
@@ -175,6 +178,7 @@ public class GuestBookingController {
                 khachHang.setCccd(profile == null ? null : profile.getCccd());
                 khachHang.setDiaChi(profile == null ? null : profile.getDiaChi());
             }
+            validateBookingCustomer(khachHang);
             if (ghiChu != null && ghiChu.length() > 255) {
                 throw new IllegalArgumentException("Ghi chú không được vượt quá 255 ký tự.");
             }
@@ -214,6 +218,33 @@ public class GuestBookingController {
                     "Không thể hoàn tất đặt phòng lúc này. Vui lòng kiểm tra thông tin và thử lại.");
             return "redirect:/dat-phong";
         }
+    }
+
+    private void validateBookingCustomer(KhachHang khachHang) {
+        String hoTen = trim(khachHang.getHoTen());
+        String email = trim(khachHang.getEmail());
+        String soDienThoai = trim(khachHang.getSoDienThoai());
+        String diaChi = trim(khachHang.getDiaChi());
+        if (hoTen.isEmpty() || !hoTen.matches(NAME_REGEX)) {
+            throw new IllegalArgumentException("Họ tên bắt buộc và chỉ được chứa chữ cái, khoảng trắng, dấu chấm, gạch nối hoặc dấu nháy.");
+        }
+        if (email.isEmpty() || !email.matches(EMAIL_REGEX)) {
+            throw new IllegalArgumentException("Email bắt buộc và phải đúng định dạng, ví dụ example@email.com.");
+        }
+        if (soDienThoai.isEmpty() || !soDienThoai.matches(PHONE_REGEX)) {
+            throw new IllegalArgumentException("Số điện thoại bắt buộc, gồm 10 chữ số và bắt đầu bằng 0.");
+        }
+        if (diaChi.isEmpty() || diaChi.length() > 255) {
+            throw new IllegalArgumentException("Địa chỉ bắt buộc và không được vượt quá 255 ký tự.");
+        }
+        khachHang.setHoTen(hoTen);
+        khachHang.setEmail(email);
+        khachHang.setSoDienThoai(soDienThoai);
+        khachHang.setDiaChi(diaChi);
+    }
+
+    private String trim(String value) {
+        return value == null ? "" : value.trim();
     }
 
     @GetMapping("/dat-phong-thanh-cong")

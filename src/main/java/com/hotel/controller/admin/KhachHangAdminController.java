@@ -1,5 +1,6 @@
 package com.hotel.controller.admin;
 
+import com.hotel.dto.KhachHangAdminForm;
 import com.hotel.dto.KhachHangProfileDTO;
 import com.hotel.service.KhachHangService;
 import org.springframework.stereotype.Controller;
@@ -43,16 +44,18 @@ public class KhachHangAdminController {
 
     @GetMapping("/moi")
     public String createForm(Model model) {
-        model.addAttribute("customerForm", new KhachHangProfileDTO());
+        model.addAttribute("customerForm", new KhachHangAdminForm());
+        model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(null));
         model.addAttribute("formTitle", "Thêm khách hàng");
         model.addAttribute("formAction", "/admin/khach-hang/moi");
         return "admin/form-khach-hang";
     }
 
     @PostMapping("/moi")
-    public String create(@Valid @ModelAttribute("customerForm") KhachHangProfileDTO form,
+    public String create(@Valid @ModelAttribute("customerForm") KhachHangAdminForm form,
                          BindingResult result, Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(form.getMaTk()));
             model.addAttribute("formTitle", "Thêm khách hàng");
             model.addAttribute("formAction", "/admin/khach-hang/moi");
             return "admin/form-khach-hang";
@@ -62,9 +65,10 @@ public class KhachHangAdminController {
             redirectAttributes.addFlashAttribute("success", "Đã thêm khách hàng.");
             return "redirect:/admin/khach-hang";
         } catch (IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
+            result.reject("customer.save.failed", ex.getMessage());
             model.addAttribute("formTitle", "Thêm khách hàng");
             model.addAttribute("formAction", "/admin/khach-hang/moi");
+            model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(form.getMaTk()));
             return "admin/form-khach-hang";
         }
     }
@@ -85,13 +89,12 @@ public class KhachHangAdminController {
     public String editForm(@PathVariable int maKh, Model model, RedirectAttributes redirectAttributes) {
         try {
             com.hotel.dto.KhachHangAdminDTO customer = khachHangService.getAdmin(maKh);
-            KhachHangProfileDTO form = new KhachHangProfileDTO();
-            form.setHoTen(customer.getHoTen());
-            form.setEmail(customer.getEmail());
-            form.setSoDienThoai(customer.getSoDienThoai());
+            KhachHangAdminForm form = new KhachHangAdminForm();
+            form.setMaTk(customer.getMaTk());
             form.setCccd(customer.getCccd());
             form.setDiaChi(customer.getDiaChi());
             model.addAttribute("customerForm", form);
+            model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(customer.getMaTk()));
             model.addAttribute("formTitle", "Cập nhật khách hàng");
             model.addAttribute("formAction", "/admin/khach-hang/" + maKh + "/sua");
             return "admin/form-khach-hang";
@@ -103,21 +106,23 @@ public class KhachHangAdminController {
 
     @PostMapping("/{maKh}/sua")
     public String update(@PathVariable int maKh,
-                         @Valid @ModelAttribute("customerForm") KhachHangProfileDTO form,
+                         @Valid @ModelAttribute("customerForm") KhachHangAdminForm form,
                          BindingResult result, Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             model.addAttribute("formTitle", "Cập nhật khách hàng");
             model.addAttribute("formAction", "/admin/khach-hang/" + maKh + "/sua");
+            model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(form.getMaTk()));
             return "admin/form-khach-hang";
         }
         try {
             khachHangService.updateProfileByAdmin(maKh, form);
             redirectAttributes.addFlashAttribute("success", "Đã cập nhật thông tin khách hàng.");
-            return "redirect:/admin/khach-hang/" + maKh;
+            return "redirect:/admin/khach-hang";
         } catch (IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
+            result.reject("customer.save.failed", ex.getMessage());
             model.addAttribute("formTitle", "Cập nhật khách hàng");
             model.addAttribute("formAction", "/admin/khach-hang/" + maKh + "/sua");
+            model.addAttribute("customerAccounts", khachHangService.availableCustomerAccounts(form.getMaTk()));
             return "admin/form-khach-hang";
         }
     }

@@ -1,1 +1,64 @@
-<!doctype html><html xmlns:th="http://www.thymeleaf.org"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link rel="stylesheet" th:href="@{/assets/css/style.css}"><link rel="stylesheet" th:href="@{/assets/css/admin-sidebar.css}"><link rel="stylesheet" th:href="@{/assets/css/admin.css}"><meta charset="UTF-8"><title>Chi tiết khách hàng</title></head><body><main class="container py-4"><h1>Chi tiết khách hàng</h1><dl th:if="${customer}"><dt>Họ tên</dt><dd th:text="${customer.hoTen}"></dd><dt>Email</dt><dd th:text="${customer.email}"></dd><dt>Số điện thoại</dt><dd th:text="${customer.soDienThoai}"></dd></dl><h2>Lịch sử đặt phòng</h2><ul><li th:each="item : ${bookingHistory}" th:text="${item}"></li></ul><a th:href="@{/admin/khach-hang}">Quay lại</a></main></body></html>
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết khách hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/admin-sidebar.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/admin.css}">
+</head>
+<body>
+<aside th:replace="~{admin/fragments :: sidebar}"></aside>
+<main class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 class="h2 mb-1">Chi tiết khách hàng</h1><p class="text-muted mb-0">Thông tin hồ sơ và toàn bộ lịch sử đặt phòng.</p></div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/admin/khach-hang}"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+            <a class="btn btn-primary" th:href="@{/admin/khach-hang/{id}/sua(id=${customer.maKh})}"><i class="fas fa-pen me-1"></i>Chỉnh sửa</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width:76px;height:76px;font-size:2rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h2 class="h4 text-center mb-1" th:text="${customer.hoTen}"></h2>
+                    <p class="text-center text-muted mb-4" th:text="|Mã khách hàng #${customer.maKh}|"></p>
+                    <div class="border-top pt-3">
+                        <div class="d-flex gap-3 mb-3"><i class="fas fa-envelope text-primary mt-1"></i><div><small class="text-muted d-block">Email</small><span th:text="${customer.email}"></span></div></div>
+                        <div class="d-flex gap-3 mb-3"><i class="fas fa-phone text-primary mt-1"></i><div><small class="text-muted d-block">Số điện thoại</small><span th:text="${customer.soDienThoai ?: 'Chưa cập nhật'}"></span></div></div>
+                        <div class="d-flex gap-3 mb-3"><i class="fas fa-id-card text-primary mt-1"></i><div><small class="text-muted d-block">CCCD</small><span th:text="${customer.cccd ?: 'Chưa cập nhật'}"></span></div></div>
+                        <div class="d-flex gap-3"><i class="fas fa-location-dot text-primary mt-1"></i><div><small class="text-muted d-block">Địa chỉ</small><span th:text="${customer.diaChi ?: 'Chưa cập nhật'}"></span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3"><h2 class="h5 mb-0"><i class="fas fa-calendar-check text-primary me-2"></i>Lịch sử đặt phòng</h2></div>
+                <div class="card-body p-0">
+                    <div th:if="${#lists.isEmpty(bookingHistory)}" class="text-center text-muted py-5">
+                        <i class="fas fa-calendar-xmark fa-2x mb-2 d-block"></i>Khách hàng chưa có đơn đặt phòng.
+                    </div>
+                    <div th:each="item : ${bookingHistory}" class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div><div class="fw-semibold" th:text="|Mã tra cứu: ${item.maTraCuu}|"></div><small class="text-muted" th:text="${#dates.format(item.ngayDat, 'dd/MM/yyyy HH:mm')}"></small></div>
+                            <span class="badge bg-primary" th:text="${item.trangThaiLabel}"></span>
+                        </div>
+                        <div class="row g-3 small">
+                            <div class="col-md-4"><span class="text-muted d-block">Phòng</span><span th:text="${#strings.listJoin(item.soPhong, ', ')}"></span></div>
+                            <div class="col-md-4"><span class="text-muted d-block">Nhận - trả</span><span th:text="${#dates.format(item.ngayNhanPhong, 'dd/MM/yyyy') + ' - ' + #dates.format(item.ngayTraPhong, 'dd/MM/yyyy')}"></span></div>
+                            <div class="col-md-4"><span class="text-muted d-block">Tổng tiền</span><strong th:text="${#numbers.formatDecimal(item.tongTien, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}"></strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

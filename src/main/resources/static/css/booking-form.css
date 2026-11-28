@@ -153,6 +153,14 @@
     box-shadow: 0 0 0 0.2rem rgba(183, 154, 99, 0.14);
 }
 
+.booking-validation-message {
+    display: none;
+}
+
+.booking-input-wrapper:has(.form-control:invalid) + .booking-validation-message {
+    display: block;
+}
+
 .booking-textarea {
     border: 1px solid rgba(43, 39, 34, 0.16);
     border-radius: 0.55rem;

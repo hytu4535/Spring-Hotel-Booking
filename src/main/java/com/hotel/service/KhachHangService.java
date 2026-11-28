@@ -3,6 +3,7 @@ package com.hotel.service;
 import com.hotel.dto.DatPhongHistoryDTO;
 import com.hotel.dto.KhachHangAdminDTO;
 import com.hotel.dto.KhachHangProfileDTO;
+import com.hotel.dto.KhachHangAdminForm;
 import com.hotel.dto.ThanhToanHistoryDTO;
 import com.hotel.model.DatPhong;
 import com.hotel.model.KhachHang;
@@ -110,7 +111,7 @@ public class KhachHangService {
         String emailFilter = normalizeFilter(email);
         String phoneFilter = normalizeFilter(phone);
         String cccdFilter = normalizeFilter(cccd);
-        List<KhachHangAdminDTO> result = khachHangRepository.findAllByOrderByNgayTaoDesc().stream()
+        List<KhachHangAdminDTO> result = khachHangRepository.findAllByDaXoaFalseOrderByNgayTaoDesc().stream()
                 .filter(item -> contains(item.getHoTen(), nameFilter))
                 .filter(item -> contains(item.getEmail(), emailFilter))
                 .filter(item -> contains(item.getSoDienThoai(), phoneFilter))
@@ -129,7 +130,9 @@ public class KhachHangService {
 
     @Transactional(readOnly = true)
     public KhachHangAdminDTO getAdmin(int maKh) {
-        return khachHangRepository.findById(maKh).map(this::toAdminDTO)
+        return khachHangRepository.findById(maKh)
+                .filter(item -> !item.isDaXoa())
+                .map(this::toAdminDTO)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng."));
     }
 
@@ -145,6 +148,33 @@ public class KhachHangService {
         customer.setCccd(normalize(request.getCccd()));
         customer.setDiaChi(normalize(request.getDiaChi()));
         customer.setNgayTao(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer.setDaXoa(false);
+        return khachHangRepository.save(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaiKhoan> availableCustomerAccounts(Integer selectedMaTk) {
+        return taiKhoanRepository.findByVaiTroAndDaXoaFalseOrderByTenDangNhapAsc("CUSTOMER").stream()
+                .filter(account -> {
+                    Optional<KhachHang> linked = khachHangRepository.findByMaTk(account.getMaTk());
+                    return linked.isEmpty() || (selectedMaTk != null && selectedMaTk == account.getMaTk());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public KhachHang createProfile(KhachHangAdminForm request) {
+        TaiKhoan account = findCustomerAccount(request.getMaTk());
+        if (khachHangRepository.findByMaTk(account.getMaTk()).isPresent()) {
+            throw new IllegalArgumentException("Tài khoản này đã có hồ sơ khách hàng.");
+        }
+        validateCccd(request.getCccd(), null);
+        KhachHang customer = new KhachHang();
+        copyAccountData(customer, account);
+        customer.setCccd(normalize(request.getCccd()));
+        customer.setDiaChi(normalize(request.getDiaChi()));
+        customer.setNgayTao(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer.setDaXoa(false);
         return khachHangRepository.save(customer);
     }
 
@@ -166,6 +196,22 @@ public class KhachHangService {
                 taiKhoanRepository.save(account);
             });
         }
+
+        return khachHangRepository.save(customer);
+    }
+
+    @Transactional
+    public KhachHang updateProfileByAdmin(int maKh, KhachHangAdminForm request) {
+        KhachHang customer = khachHangRepository.findById(maKh)
+                .filter(item -> !item.isDaXoa())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng."));
+        if (customer.getMaTk() == null || request.getMaTk() == null
+                || !customer.getMaTk().equals(request.getMaTk())) {
+            throw new IllegalArgumentException("Không được thay đổi tài khoản khách hàng.");
+        }
+        validateCccd(request.getCccd(), maKh);
+        customer.setCccd(normalize(request.getCccd()));
+        customer.setDiaChi(normalize(request.getDiaChi()));
         return khachHangRepository.save(customer);
     }
 
@@ -177,7 +223,8 @@ public class KhachHangService {
             throw new IllegalArgumentException(
                     "Không thể xóa khách hàng đã có lịch sử đặt phòng. Hãy gộp hồ sơ hoặc khóa tài khoản.");
         }
-        khachHangRepository.delete(customer);
+        customer.setDaXoa(true);
+        khachHangRepository.save(customer);
     }
 
     @Transactional(readOnly = true)
@@ -275,6 +322,7 @@ public class KhachHangService {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email là bắt buộc.");
         }
+
         Optional<KhachHang> existing = khachHangRepository.findByEmailIgnoreCase(email.trim());
         if (existing.isPresent() && (customerId == null || existing.get().getMaKh() != customerId)) {
             throw new IllegalArgumentException("Email đã được sử dụng bởi hồ sơ khách hàng khác.");
@@ -289,6 +337,35 @@ public class KhachHangService {
             }
             if (customerId == null || existingAccountBelongsToAnotherCustomer(account.getMaTk(), customerId)) {
                 throw new IllegalArgumentException("Email đã được sử dụng bởi tài khoản khác.");
+            }
+        });
+    }
+
+    private TaiKhoan findCustomerAccount(Integer maTk) {
+        if (maTk == null) {
+            throw new IllegalArgumentException("Vui lòng chọn tên tài khoản.");
+        }
+        TaiKhoan account = taiKhoanRepository.findById(maTk)
+                .orElseThrow(() -> new IllegalArgumentException("Tài khoản không tồn tại."));
+        if (!"CUSTOMER".equalsIgnoreCase(account.getVaiTro()) || account.isDaXoa()) {
+            throw new IllegalArgumentException("Chỉ được chọn tài khoản có vai trò khách hàng đang hoạt động.");
+        }
+        return account;
+    }
+
+    private void copyAccountData(KhachHang customer, TaiKhoan account) {
+        customer.setMaTk(account.getMaTk());
+        customer.setHoTen(account.getHoTen());
+        customer.setEmail(account.getEmail());
+        customer.setSoDienThoai(account.getSoDienThoai());
+    }
+
+    private void validateCccd(String cccd, Integer customerId) {
+        String normalized = normalize(cccd);
+        if (normalized == null) return;
+        khachHangRepository.findByCccd(normalized).ifPresent(existing -> {
+            if (customerId == null || !existing.getMaKh().equals(customerId)) {
+                throw new IllegalArgumentException("CCCD đã được sử dụng bởi hồ sơ khách hàng khác.");
             }
         });
     }

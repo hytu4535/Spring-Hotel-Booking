@@ -3,9 +3,12 @@ package com.hotel.service;
 import com.hotel.model.TaiKhoan;
 import com.hotel.repository.TaiKhoanRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Service
 public class TaiKhoanService {
@@ -32,7 +35,7 @@ public class TaiKhoanService {
     }
 
     public Optional<TaiKhoan> findActiveByUsername(String username) {
-        return taiKhoanRepository.findByTenDangNhapAndTrangThai(username, 1);
+        return taiKhoanRepository.findByTenDangNhapAndTrangThaiAndDaXoaFalse(username, 1);
     }
 
     public TaiKhoan save(TaiKhoan account) {
@@ -43,8 +46,41 @@ public class TaiKhoanService {
         return taiKhoanRepository.findAllByOrderByNgayTaoDesc();
     }
 
+    public List<TaiKhoan> search(String tenDangNhap, String hoTen,
+                                 String vaiTro, Integer trangThai, String sort,
+                                 String xoaFilter) {
+        String username = normalize(tenDangNhap);
+        String name = normalize(hoTen);
+        List<TaiKhoan> source = "deleted".equalsIgnoreCase(xoaFilter)
+                ? taiKhoanRepository.findAllByOrderByNgayTaoDesc().stream()
+                    .filter(TaiKhoan::isDaXoa).collect(Collectors.toList())
+                : "all".equalsIgnoreCase(xoaFilter)
+                    ? taiKhoanRepository.findAllByOrderByNgayTaoDesc()
+                    : taiKhoanRepository.findAllByDaXoaFalseOrderByNgayTaoDesc();
+        List<TaiKhoan> result = source.stream()
+                .filter(item -> username.isEmpty() || contains(item.getTenDangNhap(), username))
+                .filter(item -> name.isEmpty() || contains(item.getHoTen(), name))
+                .filter(item -> vaiTro == null || vaiTro.isBlank() || vaiTro.equalsIgnoreCase(item.getVaiTro()))
+                .filter(item -> trangThai == null || item.getTrangThai() == trangThai)
+                .collect(Collectors.toList());
+        Comparator<TaiKhoan> comparator = Comparator.comparing(
+                TaiKhoan::getNgayTao,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+        if ("asc".equalsIgnoreCase(sort)) {
+            result.sort(comparator);
+        } else if ("name".equalsIgnoreCase(sort)) {
+            result.sort(Comparator.comparing(
+                    TaiKhoan::getHoTen,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+        } else {
+            result.sort(comparator.reversed());
+        }
+        return result;
+    }
+
+    @Transactional
     public boolean update(TaiKhoan tk) {
-        taiKhoanRepository.save(tk);
+        taiKhoanRepository.saveAndFlush(tk);
         return true;
     }
 
@@ -63,8 +99,20 @@ public class TaiKhoanService {
         if (account.isEmpty()) {
             return false;
         }
+
         account.get().setTrangThai(trangThai);
         taiKhoanRepository.save(account.get());
+        return true;
+    }
+
+    @Transactional
+    public boolean softDelete(int maTk) {
+        Optional<TaiKhoan> account = taiKhoanRepository.findById(maTk);
+        if (account.isEmpty() || account.get().isDaXoa()) {
+            return false;
+        }
+        account.get().setDaXoa(true);
+        taiKhoanRepository.saveAndFlush(account.get());
         return true;
     }
 
@@ -78,5 +126,13 @@ public class TaiKhoanService {
         return excludeMaTk == null
                 ? taiKhoanRepository.existsByEmailIgnoreCase(email)
                 : taiKhoanRepository.existsByEmailIgnoreCaseAndMaTkNot(email, excludeMaTk);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
+
+    private boolean contains(String value, String keyword) {
+        return value != null && value.toLowerCase().contains(keyword);
     }
 }

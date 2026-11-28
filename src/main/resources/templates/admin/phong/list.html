@@ -90,7 +90,6 @@
                         <th>Số phòng</th>
                         <th>Loại phòng</th>
                         <th class="text-center">Tầng</th>
-                        <th class="text-center">Trạng thái</th>
                         <th>Ghi chú</th>
                         <th class="text-center" style="width: 130px;">Thao tác</th>
                     </tr>
@@ -98,39 +97,32 @@
                     <tbody>
                     <!-- Vòng lặp danh sách phòng -->
                     <tr th:each="item, iterStat : ${dsPhong}">
-                        <td class="text-center fw-bold" th:text="${item.maPhong()}">1</td>
-                        <td class="fw-bold text-dark" th:text="${item.soPhong != null ? item.soPhong : item.soPhong()}">101</td>
+                        <td class="text-center fw-bold" th:text="${item.maPhong}">1</td>
+                        <td class="fw-bold text-dark" th:text="${item.soPhong}">101</td>
                         <td>
                             <span class="badge bg-info text-dark"
-                                  th:text="${(item.tenLoaiPhong != null ? item.tenLoaiPhong : (item.tenLoaiPhong != null ? item.tenLoaiPhong() : null)) != null ? (item.tenLoaiPhong != null ? item.tenLoaiPhong : item.tenLoaiPhong()) : 'Chưa xếp'}">
+                                  th:text="${item.tenLoaiPhong != null ? item.tenLoaiPhong : 'Chưa xếp'}">
 </span>
                         </td>
-                        <td class="text-center" th:text="${(item.tang != null ? item.tang : item.tang()) != null ? 'Tầng ' + (item.tang != null ? item.tang : item.tang()) : '-'}">Tầng 1</td>
-                        <td class="text-center">
-                            <span th:if="${(item.trangThaiPhong != null ? item.trangThaiPhong : item.trangThaiPhong()) != null and (item.trangThaiPhong != null ? item.trangThaiPhong.name() : item.trangThaiPhong().name()) == 'TRONG'}" class="badge bg-success">Trống</span>
-                            <span th:if="${(item.trangThaiPhong != null ? item.trangThaiPhong : item.trangThaiPhong()) != null and (item.trangThaiPhong != null ? item.trangThaiPhong.name() : item.trangThaiPhong().name()) == 'DA_DAT'}" class="badge bg-warning text-dark">Đã đặt</span>
-                            <span th:if="${(item.trangThaiPhong != null ? item.trangThaiPhong : item.trangThaiPhong()) != null and (item.trangThaiPhong != null ? item.trangThaiPhong.name() : item.trangThaiPhong().name()) == 'DANG_O'}" class="badge bg-danger">Đang ở</span>
-                            <span th:if="${(item.trangThaiPhong != null ? item.trangThaiPhong : item.trangThaiPhong()) != null and (item.trangThaiPhong != null ? item.trangThaiPhong.name() : item.trangThaiPhong().name()) == 'BAO_TRI'}" class="badge bg-secondary">Bảo trì</span>
-                        </td>
-                        <td class="text-muted small text-truncate" style="max-width: 250px;" th:text="${item.ghiChu != null ? item.ghiChu : item.ghiChu()}">Ghi chú...</td>
+                        <td class="text-center" th:text="${item.tang != null ? 'Tầng ' + item.tang : '-'}">Tầng 1</td>
+                        <td class="text-muted small text-truncate" style="max-width: 250px;" th:text="${item.ghiChu}">Ghi chú...</td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
                                 <!-- Nút Sửa Pop-up -->
                                 <button type="button" class="btn btn-sm btn-outline-primary"
-                                        th:data-id="${item.maPhong != null ? item.maPhong : item.maPhong()}"
-                                        th:data-so-phong="${item.soPhong != null ? item.soPhong : item.soPhong()}"
-                                        th:data-ma-loai="${item.maLoaiPhong != null ? item.maLoaiPhong : item.maLoaiPhong()}"
-                                        th:data-tang="${item.tang != null ? item.tang : item.tang()}"
-                                        th:data-trang-thai="${(item.trangThaiPhong != null ? item.trangThaiPhong : item.trangThaiPhong()) != null ? (item.trangThaiPhong != null ? item.trangThaiPhong.name() : item.trangThaiPhong().name()) : 'TRONG'}"
-                                        th:data-ghi-chu="${item.ghiChu != null ? item.ghiChu : item.ghiChu()}"
+                                        th:data-id="${item.maPhong}"
+                                        th:data-so-phong="${item.soPhong}"
+                                        th:data-ma-loai="${item.maLoaiPhong}"
+                                        th:data-tang="${item.tang}"
+                                        th:data-ghi-chu="${item.ghiChu}"
                                         onclick="openEditModalFromBtn(this)"
                                         title="Chỉnh sửa">
                                     <i class="fas fa-pen"></i>
                                 </button>
                                 <!-- Form Xóa -->
-                                <form th:action="@{/admin/phong/delete/{id}(id=${item.maPhong != null ? item.maPhong : item.maPhong()})}"
+                                <form th:action="@{/admin/phong/delete/{id}(id=${item.maPhong})}"
                                       method="post"
-                                      th:onsubmit="return confirm('Bạn có chắc chắn muốn xóa phòng [[${item.soPhong != null ? item.soPhong : item.soPhong()}]] không?')">
+                                      th:onsubmit="return confirm('Bạn có chắc chắn muốn xóa phòng [[${item.soPhong}]] không?')">
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa phòng">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -141,7 +133,7 @@
 
                     <!-- Trường hợp danh sách rỗng -->
                     <tr th:if="${#lists.isEmpty(dsPhong)}">
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-folder-open fa-2x mb-2 d-block"></i>
                             Chưa có dữ liệu phòng nào.
                         </td>
@@ -161,49 +153,55 @@
                 <h5 class="modal-title fw-bold" id="modalTitle">Thêm phòng mới</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="phongForm" method="post">
+            <form id="phongForm" method="post" th:object="${phongForm}"
+                  th:attr="data-open=${openPhongModal},data-action=${formAction}">
                 <div class="modal-body p-4 row g-3">
 
                     <!-- Số phòng -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Số phòng <span class="text-danger">*</span></label>
-                        <input type="text" id="soPhong" name="soPhong" class="form-control" placeholder="Ví dụ: 101" required>
+                        <input type="text" id="soPhong" th:field="*{soPhong}"
+                               class="form-control" placeholder="Ví dụ: 101" required
+                               th:classappend="${#fields.hasErrors('soPhong')} ? ' is-invalid'">
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('soPhong')}"
+                             th:errors="*{soPhong}"></div>
                     </div>
 
                     <!-- Dropdown chọn Loại phòng -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Loại phòng <span class="text-danger">*</span></label>
-                        <select id="maLoaiPhong" name="maLoaiPhong" class="form-select" required>
+                        <select id="maLoaiPhong" th:field="*{maLoaiPhong}"
+                                class="form-select" required
+                                th:classappend="${#fields.hasErrors('maLoaiPhong')} ? ' is-invalid'">
                             <option value="">-- Chọn loại phòng --</option>
                             <option th:each="loai : ${dsLoaiPhong}"
-                                    th:value="${loai.maLoai != null ? loai.maLoai : loai.maLoai()}"
-                                    th:text="${loai.tenLoai != null ? loai.tenLoai : loai.tenLoai()}">
+                                    th:value="${loai.maLoai}"
+                                    th:text="${loai.tenLoai}">
                                 Loại đơn
                             </option>
                         </select>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('maLoaiPhong')}"
+                             th:errors="*{maLoaiPhong}"></div>
                     </div>
 
                     <!-- Tầng -->
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Tầng</label>
-                        <input type="number" id="tang" name="tang" class="form-control" min="1" placeholder="Ví dụ: 1">
-                    </div>
-
-                    <!-- Trạng thái -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Trạng thái phòng</label>
-                        <select id="trangThaiPhong" name="trangThaiPhong" class="form-select">
-                            <option value="TRONG">Trống</option>
-                            <option value="DA_DAT">Đã đặt</option>
-                            <option value="DANG_O">Đang ở</option>
-                            <option value="BAO_TRI">Bảo trì</option>
-                        </select>
+                        <label class="form-label fw-semibold">Tầng <span class="text-danger">*</span></label>
+                        <input type="number" id="tang" th:field="*{tang}"
+                               class="form-control" min="1" placeholder="Ví dụ: 1" required
+                               th:classappend="${#fields.hasErrors('tang')} ? ' is-invalid'">
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('tang')}"
+                             th:errors="*{tang}"></div>
                     </div>
 
                     <!-- Ghi chú -->
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ghi chú</label>
-                        <textarea id="ghiChu" name="ghiChu" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                        <textarea id="ghiChu" th:field="*{ghiChu}" class="form-control"
+                                  rows="3" placeholder="Nhập ghi chú..."
+                                  th:classappend="${#fields.hasErrors('ghiChu')} ? ' is-invalid'"></textarea>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('ghiChu')}"
+                             th:errors="*{ghiChu}"></div>
                     </div>
 
                 </div>
@@ -225,6 +223,13 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         modalInstance = new bootstrap.Modal(document.getElementById('phongModal'));
+        const form = document.getElementById('phongForm');
+        if (form.dataset.action) {
+            form.action = form.dataset.action;
+        }
+        if (form.dataset.open === 'true') {
+            modalInstance.show();
+        }
     });
 
     // Mở Modal Thêm mới
@@ -235,7 +240,6 @@
         document.getElementById('soPhong').value = '';
         document.getElementById('maLoaiPhong').value = '';
         document.getElementById('tang').value = '';
-        document.getElementById('trangThaiPhong').value = 'TRONG';
         document.getElementById('ghiChu').value = '';
 
         modalInstance.show();
@@ -247,7 +251,6 @@
         const soPhong = btn.getAttribute('data-so-phong');
         const maLoai = btn.getAttribute('data-ma-loai');
         const tang = btn.getAttribute('data-tang');
-        const trangThai = btn.getAttribute('data-trang-thai');
         const ghiChu = btn.getAttribute('data-ghi-chu');
 
         document.getElementById('modalTitle').innerText = "Cập nhật phòng #" + (soPhong || id);
@@ -256,7 +259,6 @@
         document.getElementById('soPhong').value = soPhong || '';
         document.getElementById('maLoaiPhong').value = maLoai || '';
         document.getElementById('tang').value = tang || '';
-        document.getElementById('trangThaiPhong').value = trangThai || 'TRONG';
         document.getElementById('ghiChu').value = ghiChu || '';
 
         modalInstance.show();
