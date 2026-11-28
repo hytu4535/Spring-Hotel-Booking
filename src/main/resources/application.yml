@@ -4,10 +4,14 @@ spring:
       - optional:classpath:db.properties
       - optional:classpath:application-local.yml
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
     consumer:
       group-id: hotel-booking-events
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

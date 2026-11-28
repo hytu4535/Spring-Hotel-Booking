@@ -7,6 +7,7 @@ import com.hotel.dto.ThanhToanHistoryDTO;
 import com.hotel.model.DatPhong;
 import com.hotel.model.KhachHang;
 import com.hotel.model.TaiKhoan;
+import com.hotel.model.ThanhToan;
 import com.hotel.repository.DatPhongRepository;
 import com.hotel.repository.KhachHangRepository;
 import com.hotel.repository.TaiKhoanRepository;
@@ -228,6 +229,9 @@ public class KhachHangService {
                 .distinct()
                 .collect(Collectors.toList()));
         dto.setLichSuThanhToan(thanhToanRepository.findByDatPhong_MaDp(item.getMaDp()).stream()
+                .sorted(Comparator.comparing(
+                        ThanhToan::getNgayThanhToan,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .map(payment -> {
                     ThanhToanHistoryDTO paymentDTO = new ThanhToanHistoryDTO();
                     paymentDTO.setSoTien(payment.getSoTien());

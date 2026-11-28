@@ -1,6 +1,7 @@
 
 package com.hotel.service;
 
+import com.google.gson.JsonObject;
 import com.hotel.model.CartServiceItem;
 import com.hotel.model.ChiTietDatPhong;
 import com.hotel.model.DatPhong;
@@ -22,6 +23,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +34,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class DatPhongService {
@@ -275,13 +277,7 @@ public class DatPhongService {
         // Bước 5: Gửi sự kiện Kafka
         // -----------------------------------------------------
 
-        String message = String.format(
-                "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CREATED\"}",
-                maTraCuu,
-                khachHang.getEmail()
-        );
-
-        publishEventAsync(message);
+        publishBookingEvent(savedDp, "CREATED", khachHang.getEmail());
 
         return maTraCuu;
     }
@@ -329,7 +325,7 @@ public class DatPhongService {
             String email) {
 
         Optional<DatPhong> booking =
-                datPhongRepository.findById(maDp);
+                datPhongRepository.findByIdForUpdate(maDp);
 
         if (booking.isEmpty()) {
             return false;
@@ -368,7 +364,7 @@ public class DatPhongService {
         }
 
         Optional<DatPhong> booking =
-                datPhongRepository.findById(maDp);
+                datPhongRepository.findByIdForUpdate(maDp);
 
         if (booking.isEmpty()) {
             return false;
@@ -425,13 +421,7 @@ public class DatPhongService {
 
         if (customer != null && customer.getEmail() != null) {
 
-            String message = String.format(
-                    "{\"maTraCuu\": \"%s\", \"email\": \"%s\", \"action\": \"CANCELED\"}",
-                    dp.getMaTraCuu(),
-                    customer.getEmail()
-            );
-
-            publishEventAsync(message);
+            publishBookingEvent(dp, "CANCELED", customer.getEmail());
         }
 
         // Gửi email thông báo hủy đơn
@@ -597,26 +587,48 @@ public class DatPhongService {
         return status;
     }
 
-    // =========================================================
-    // 11. GỬI SỰ KIỆN KAFKA BẤT ĐỒNG BỘ
-    // =========================================================
+    private void publishBookingEvent(
+            DatPhong booking,
+            String action,
+            String email) {
 
-    private void publishEventAsync(String message) {
+        if (booking == null || email == null) {
+            return;
+        }
 
-        CompletableFuture.runAsync(() -> {
+        JsonObject event = new JsonObject();
+        event.addProperty("maTraCuu", booking.getMaTraCuu());
+        event.addProperty("email", email);
+        event.addProperty("action", action);
+        String message = event.toString();
 
+        Runnable publish = () -> {
             try {
-
-                kafkaTemplate.send("booking_events", message);
-
+                kafkaTemplate.send("booking_events", message)
+                        .addCallback(
+                                result -> {
+                                },
+                                ex -> log.error(
+                                        "Không thể gửi sự kiện booking_events.",
+                                        ex
+                                )
+                        );
             } catch (RuntimeException ex) {
-
-                log.warn(
-                        "Không thể gửi sự kiện booking_events; "
-                                + "không làm ảnh hưởng nghiệp vụ đặt phòng.",
-                        ex
-                );
+                log.error("Không thể gửi sự kiện booking_events.", ex);
             }
-        });
+        };
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            publish.run();
+                        }
+                    }
+            );
+        } else {
+            publish.run();
+        }
     }
 }

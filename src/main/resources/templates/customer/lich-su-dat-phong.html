@@ -68,11 +68,13 @@
                     </td>
                     <td>
                         <div th:if="${#lists.isEmpty(don.lichSuThanhToan)}" class="text-muted small">Chưa có</div>
-                        <div th:each="payment : ${don.lichSuThanhToan}" class="small">
-                            <span th:text="${payment.phuongThuc}"></span>
-                            -
-                            <span th:text="${payment.loaiThanhToan}"></span>
-                            -
+                        <div th:each="payment : ${don.lichSuThanhToan}" class="small border-bottom py-1">
+                            <strong th:text="${payment.loaiThanhToan == 'DAT_COC' ? 'Đặt cọc' : (payment.loaiThanhToan == 'HOAN_TIEN' ? 'Hoàn tiền' : 'Thanh toán đủ')}"></strong>
+                            <span th:if="${payment.ngayThanhToan != null}" class="d-block text-muted"
+                                  th:text="${#dates.format(payment.ngayThanhToan, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span class="d-block" th:text="${payment.phuongThuc}"></span>
+                            <span th:if="${payment.maGiaoDich != null and !#strings.isEmpty(payment.maGiaoDich)}"
+                                  class="d-block text-muted" th:text="'Mã GD: ' + payment.maGiaoDich"></span>
                             <strong th:text="${#numbers.formatDecimal(payment.soTien, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
                         </div>
                     </td>

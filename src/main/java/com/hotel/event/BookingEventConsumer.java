@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hotel.model.DatPhong;
@@ -25,6 +26,7 @@ public class BookingEventConsumer {
     }
 
     @KafkaListener(topics = "booking_events", groupId = "hotel-booking-events")
+    @Transactional(readOnly = true)
     public void consume(String message) {
         try {
             JsonObject event = JsonParser.parseString(message).getAsJsonObject();
@@ -56,7 +58,6 @@ public class BookingEventConsumer {
                         dp.getNgayTraPhong() == null ? "" : dp.getNgayTraPhong().toString(),
                         dp.getTongTien() == null ? "0 VNĐ" : dp.getTongTien().toPlainString() + " VNĐ"));
             }
-            log.info("DA XU LY SU KIEN {} CHO DON {}", action, maTraCuu);
         } catch (RuntimeException ex) {
             log.error("Khong the xu ly su kien booking: {}", message, ex);
         }
