@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.hotel.model.TaiKhoan;
 import com.hotel.service.AuthService;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 public class LoginServlet {
 

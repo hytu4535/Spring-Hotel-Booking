@@ -1,6 +1,6 @@
 package com.hotel.dto;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public record LoaiPhongRequestDTO (

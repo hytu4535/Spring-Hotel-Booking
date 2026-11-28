@@ -1,6 +1,6 @@
 package com.hotel.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 

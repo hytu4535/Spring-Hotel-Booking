@@ -1,6 +1,6 @@
 package com.hotel.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "he_thong_quyen")

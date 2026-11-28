@@ -605,14 +605,14 @@ public class DatPhongService {
         Runnable publish = () -> {
             try {
                 kafkaTemplate.send("booking_events", message)
-                        .addCallback(
-                                result -> {
-                                },
-                                ex -> log.error(
+                        .whenComplete((result, ex) -> {
+                            if (ex != null) {
+                                log.error(
                                         "Không thể gửi sự kiện booking_events.",
                                         ex
-                                )
-                        );
+                                );
+                            }
+                        });
             } catch (RuntimeException ex) {
                 log.error("Không thể gửi sự kiện booking_events.", ex);
             }

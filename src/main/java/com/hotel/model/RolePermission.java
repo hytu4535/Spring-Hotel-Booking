@@ -1,6 +1,6 @@
 package com.hotel.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "vai_tro_quyen", uniqueConstraints = @UniqueConstraint(columnNames = {"vai_tro_id", "quyen_id"}))

@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.dao.DataAccessException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping({"/admin/tai-khoan", "/admin/nhan-vien", "/staff/tai-khoan"})

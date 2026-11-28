@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
